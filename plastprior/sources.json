@@ -1,0 +1,357 @@
+{
+  "schema_version": 1,
+  "description": "Local input declarations for source inspection. Versions and dates are recorded metadata, not independently certified release dates.",
+  "sources": [
+    {
+      "id": "NORMAN_SusDat",
+      "label": "NORMAN SusDat",
+      "filename": "susdat_2025-06-03-092022 (1).xlsx",
+      "role": "identity reference",
+      "version": "2025-06-03 export",
+      "snapshot_date": "2025-06-03",
+      "notes": "The date is taken from the frozen input filename; separate retrieval provenance was not recorded.",
+      "reference": "https://www.norman-network.com/nds/susdat/",
+      "tables": [
+        {
+          "id": "norman_susdat",
+          "sheet": "susdat_2025-06-03-092022",
+          "header": 0,
+          "required_columns": [
+            "Norman_SusDat_ID",
+            "CAS_RN"
+          ],
+          "role": "identity reference"
+        }
+      ]
+    },
+    {
+      "id": "PubChemLite",
+      "label": "PubChemLite",
+      "filename": "PubChemLite.csv",
+      "role": "identity reference",
+      "version": null,
+      "snapshot_date": null,
+      "notes": "The historical input filename and manifest do not record a version or snapshot date.",
+      "reference": "https://pubchemlite.lcsb.uni.lu/",
+      "tables": [
+        {
+          "id": "pubchemlite",
+          "sheet": null,
+          "header": 0,
+          "required_columns": [
+            "Identifier",
+            "InChIKey"
+          ],
+          "role": "identity reference"
+        }
+      ]
+    },
+    {
+      "id": "PlastChem",
+      "label": "PlastChem",
+      "filename": "plastchem_db_v1.01.xlsx",
+      "role": "inventory and curated evidence",
+      "version": "1.01",
+      "snapshot_date": null,
+      "notes": "The version is taken from the frozen input filename; the snapshot date was not recorded.",
+      "reference": "https://doi.org/10.5281/zenodo.15397723",
+      "tables": [
+        {
+          "id": "plastchem",
+          "sheet": "Full database",
+          "header": 1,
+          "required_columns": [
+            "plastchem_ID",
+            "cas"
+          ],
+          "role": "chemical inventory"
+        }
+      ]
+    },
+    {
+      "id": "UNEP",
+      "label": "UNEP",
+      "filename": "UNEP 2023.xlsx",
+      "role": "inventory",
+      "version": "2023",
+      "snapshot_date": null,
+      "notes": "The report year is known; the local workbook snapshot date was not recorded.",
+      "reference": "https://www.unep.org/resources/report/chemicals-plastics-technical-report",
+      "tables": [
+        {
+          "id": "unep",
+          "sheet": "A1 - Combined",
+          "header": 2,
+          "required_columns": [
+            "CASRN",
+            "Name"
+          ],
+          "role": "chemical inventory"
+        }
+      ]
+    },
+    {
+      "id": "NORMAN_MPLEACH",
+      "label": "MPLEACH",
+      "filename": "MPLEACH.xlsx",
+      "role": "inventory",
+      "version": "S133",
+      "snapshot_date": null,
+      "notes": "S133 is the NORMAN list identifier; the local workbook snapshot date was not recorded.",
+      "reference": "https://www.norman-network.com/apex/susdat/susdatSearchShow.php",
+      "tables": [
+        {
+          "id": "mpleach",
+          "sheet": "Table 1",
+          "header": 0,
+          "required_columns": [
+            "Compound_Name",
+            "InChIKey"
+          ],
+          "role": "chemical inventory"
+        }
+      ]
+    },
+    {
+      "id": "FCCmigex",
+      "label": "FCCmigex",
+      "filename": "FCCmigex.xlsx",
+      "role": "inventory and exposure evidence",
+      "version": null,
+      "snapshot_date": null,
+      "notes": "The historical input filename and manifest do not record a version or snapshot date.",
+      "reference": "https://foodpackagingforum.org/resources/databases/fccmigex",
+      "tables": [
+        {
+          "id": "fccmigex",
+          "sheet": "S112_FCCMIGEX",
+          "header": 0,
+          "required_columns": [
+            "Common_Name",
+            "CAS"
+          ],
+          "role": "chemical inventory"
+        }
+      ]
+    },
+    {
+      "id": "FCChumon",
+      "label": "FCChumon",
+      "filename": "FCChumon.xlsx",
+      "role": "inventory and exposure evidence",
+      "version": null,
+      "snapshot_date": null,
+      "notes": "One workbook yields S1 and S2 analytical sources; its frozen sheet labels refer to step 1A and step 2, respectively.",
+      "reference": "https://foodpackagingforum.org/resources/databases/fcchumon",
+      "tables": [
+        {
+          "id": "fcchumon_s1",
+          "sheet": "S1_235 FCCs_step 1A ",
+          "header": 1,
+          "required_columns": [
+            "CAS",
+            "Chemical name"
+          ],
+          "role": "chemical inventory"
+        },
+        {
+          "id": "fcchumon_s2",
+          "sheet": "S2_175 FCCs_step 2 ",
+          "header": 1,
+          "required_columns": [
+            "CAS",
+            "Chemical name"
+          ],
+          "role": "chemical inventory"
+        }
+      ]
+    },
+    {
+      "id": "FCCprio",
+      "label": "FCCprio",
+      "filename": "FCCprio-List-v0-2-Zenodo-20260115.xlsx",
+      "role": "inventory and hazard evidence",
+      "version": "0.2",
+      "snapshot_date": "2026-01-15",
+      "notes": "The version and package date are taken from the frozen input filename.",
+      "reference": "https://doi.org/10.5281/zenodo.14881617",
+      "tables": [
+        {
+          "id": "fccprio",
+          "sheet": "FCCprio Tiers and Materials",
+          "header": 11,
+          "required_columns": [
+            "CAS Number",
+            "Chemical Name"
+          ],
+          "role": "chemical inventory"
+        }
+      ]
+    },
+    {
+      "id": "LitChemPlast",
+      "label": "LitChemPlast",
+      "filename": "LitChemPlast.xls",
+      "role": "inventory and literature evidence",
+      "version": null,
+      "snapshot_date": null,
+      "notes": "The historical input filename and manifest do not record a version or snapshot date.",
+      "reference": "https://doi.org/10.1021/acs.estlett.4c00355",
+      "tables": [
+        {
+          "id": "litchemplast",
+          "sheet": "Chemical",
+          "header": 0,
+          "required_columns": [
+            "Chem_id",
+            "CASRN"
+          ],
+          "role": "chemical inventory"
+        },
+        {
+          "id": "litchemplast_links",
+          "sheet": "LiteratureChemical",
+          "header": 0,
+          "required_columns": [
+            "LitChem_id",
+            "Chem_id"
+          ],
+          "role": "literature-to-chemical links"
+        }
+      ]
+    },
+    {
+      "id": "ICCA",
+      "label": "ICCA",
+      "filename": "icca_chemicals.csv",
+      "role": "inventory",
+      "version": null,
+      "snapshot_date": null,
+      "notes": "The historical input filename and manifest do not record a version or snapshot date.",
+      "reference": "https://plasticscircularity.org/additives/",
+      "tables": [
+        {
+          "id": "icca",
+          "sheet": null,
+          "header": 0,
+          "required_columns": [
+            "CASRN",
+            "Name"
+          ],
+          "role": "chemical inventory"
+        }
+      ]
+    },
+    {
+      "id": "UCSF",
+      "label": "UCSF",
+      "filename": "UCSF paper database.xlsx",
+      "role": "inventory and exposure evidence",
+      "version": null,
+      "snapshot_date": null,
+      "notes": "The source is tied to the cited study; the local workbook version and snapshot date were not recorded.",
+      "reference": "https://doi.org/10.1021/envhealth.5c00197",
+      "tables": [
+        {
+          "id": "ucsf",
+          "sheet": "spreadsheet3",
+          "header": 0,
+          "required_columns": [
+            "INPUT",
+            "INCHIKEY"
+          ],
+          "role": "chemical inventory"
+        }
+      ]
+    },
+    {
+      "id": "PlasticMAP",
+      "label": "PlasticMAP",
+      "filename": "PlasticMAP_S1_210611.xlsx",
+      "role": "inventory",
+      "version": "S1",
+      "snapshot_date": "2021-06-11",
+      "notes": "The version marker and date are inferred from the frozen filename PlasticMAP_S1_210611.xlsx.",
+      "reference": "https://doi.org/10.1021/acs.est.1c00976",
+      "tables": [
+        {
+          "id": "plasticmap",
+          "sheet": "S8 - PlasticMAP",
+          "header": 5,
+          "required_columns": [
+            "id",
+            "CASRN"
+          ],
+          "role": "chemical inventory"
+        }
+      ]
+    }
+  ],
+  "supporting_inputs": [
+    {
+      "label": "Frozen VEGA reports",
+      "folder": "Vega output",
+      "required_files": [
+        "report_BCF_ARNOTGOBAS.txt",
+        "report_BCF_CAESAR.txt",
+        "report_BCF_MEYLAN.txt",
+        "report_CARC_CAESAR.txt",
+        "report_CARC_ISS.txt",
+        "report_DEVTOX_CAESAR.txt",
+        "report_ESTROGEN_CERAPP_2.txt",
+        "report_FISH_LC50_1.txt",
+        "report_KOC_OPERA_2.txt",
+        "report_LOGP_MEYLAN.txt",
+        "report_MUTA_CONSENSUS.txt",
+        "report_PERS_AIR_CORAL_2.txt",
+        "report_PERS_SED_2.txt",
+        "report_PERS_SOIL_2.txt",
+        "report_PERS_SOIL_QUANT_2.txt",
+        "report_PERS_WATER_QUANT_2.txt",
+        "report_PERS_WAT_2.txt",
+        "report_READYBIO_IRFMN_2.txt",
+        "report_VAPOUR_PRESSURE.txt",
+        "report_WS_IRFMN.txt"
+      ]
+    },
+    {
+      "label": "GIC inventory",
+      "folder": "GIC Regulatory Inventory",
+      "required_files": [
+        "inventory_20260330.jsonl",
+        "gic_list_tag_metadata.csv"
+      ]
+    },
+    {
+      "label": "Patent query evidence",
+      "folder": "Patent data",
+      "required_files": [
+        "pubchem_zero_patent_check_final.csv"
+      ]
+    },
+    {
+      "label": "Literature query evidence",
+      "folder": "Literature data",
+      "required_files": [
+        "pubmed_title_abstract_counts_final.csv"
+      ]
+    },
+    {
+      "label": "Production and market evidence",
+      "folder": "Official_Production_Volume_Data",
+      "required_files": [
+        "source_manifest.json"
+      ],
+      "required_directories": [
+        "01_US_EPA_CDR",
+        "02_ECHA_REACH",
+        "03_Nordic_SPIN",
+        "04_Japan_METI_CSCL",
+        "05_South_Korea_Chemical_Statistics",
+        "06_Canada_CEPA_Section71",
+        "07_South_Korea_New_Chemicals",
+        "08_Taiwan_Toxic_Chemicals"
+      ]
+    }
+  ]
+}

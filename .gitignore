@@ -221,3 +221,11 @@ __marimo__/
 
 # Local research input data (distributed separately)
 /data/
+
+# Generated inspection reports and executed notebooks
+/results/
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
