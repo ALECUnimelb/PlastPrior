@@ -23,6 +23,16 @@
           "role": "identity reference",
           "record_mapping": {
             "scope": "identity_reference"
+          },
+          "identity_reference_mapping": {
+            "native_id_column": "Norman_SusDat_ID",
+            "fields": {
+              "name": "Name",
+              "cas": "CAS_RN_Dashboard",
+              "smiles": "SMILES",
+              "inchikey": "MS_Ready_StdInChIKey"
+            },
+            "require_inchikey": true
           }
         }
       ]
@@ -48,6 +58,16 @@
           "role": "identity reference",
           "record_mapping": {
             "scope": "identity_reference"
+          },
+          "identity_reference_mapping": {
+            "native_id_column": "Identifier",
+            "fields": {
+              "name": "Synonym",
+              "cas": null,
+              "smiles": "SMILES",
+              "inchikey": "InChIKey"
+            },
+            "require_inchikey": false
           }
         }
       ]
@@ -90,6 +110,16 @@
               ]
             },
             "required_for_inclusion": []
+          },
+          "identity_reference_mapping": {
+            "native_id_column": "plastchem_ID",
+            "fields": {
+              "name": "pubchem_name",
+              "cas": "cas",
+              "smiles": "isomeric_smiles",
+              "inchikey": "inchikey"
+            },
+            "require_inchikey": false
           }
         }
       ]

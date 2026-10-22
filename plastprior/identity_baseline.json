@@ -1,0 +1,6 @@
+{
+  "run_id": "20261006T233429Z",
+  "run_manifest_sha256": "37409fa3ec043f837efa2b64b265a6018dd6d58e3c56f364de9aff6dfe845f59",
+  "parsed_without_key": 90,
+  "scope": "Frozen source assembly and identity outputs; historical execution used an uncommitted working tree. Do not substitute a Git commit for the recorded code fingerprint."
+}

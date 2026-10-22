@@ -68,7 +68,7 @@ class InputInspection:
         for filename, frame in (("source_inventory.csv", self.sources),
                                 ("table_dimensions.csv", self.tables),
                                 ("supporting_inputs.csv", self.supporting)):
-            frame.to_csv(folder / filename, index=False, encoding="utf-8")
+            frame.to_csv(folder / filename, index=False, encoding="utf-8", lineterminator="\n")
 
 
 def resolve_data_root(data_root: str | Path = "data") -> Path:
@@ -293,7 +293,7 @@ class SourceRecords:
                             ("source_record_summary.csv", self.summary),
                             ("source_field_mapping.csv", self.mapping)):
             path = folder / name
-            frame.to_csv(path, index=False, encoding="utf-8")
+            frame.to_csv(path, index=False, encoding="utf-8", lineterminator="\n")
             outputs[name] = _file_hash(path)
         manifest = {**self.manifest, "output_sha256": outputs}
         (folder / "source_record_manifest.json").write_text(

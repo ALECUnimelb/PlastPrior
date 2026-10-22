@@ -1,6 +1,7 @@
-# Python 3.12; tested direct dependencies for input inspection and notebooks.
+# Python 3.12; tested direct dependencies for input inspection, identity resolution and notebooks.
 pandas==3.0.2
 openpyxl==3.1.5
 xlrd==2.0.2
 jupyterlab==4.5.7
 ipykernel==7.2.0
+rdkit==2026.3.1

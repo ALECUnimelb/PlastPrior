@@ -17,6 +17,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Inspection report directory; relative paths resolve from the project root.")
     parser.add_argument("--assemble-records", action="store_true",
                         help="Also assemble source inventory records; no identity resolution or deduplication.")
+    parser.add_argument("--resolve-identities", action="store_true",
+                        help="Assemble records, resolve structures and aggregate by full InChIKey.")
     args = parser.parse_args(argv)
     print("Inspecting source files and supporting input presence...", flush=True)
     report = inspect_inputs(args.data_root)
@@ -37,12 +39,20 @@ def main(argv: list[str] | None = None) -> int:
     print("Supporting inputs: " + supporting_status)
     print(f"Inspection reports: {output_dir}")
     passed = report.passed if args.require_supporting_inputs else report.sources_passed
-    if passed and args.assemble_records:
+    if passed and (args.assemble_records or args.resolve_identities):
         records = build_source_records(args.data_root)
         records.write_reports(output_dir / "stage2")
         print("\nStage 2 preparation: source record assembly")
         print(records.summary.to_string(index=False))
         print(f"Source record reports: {output_dir / 'stage2'}")
+        if args.resolve_identities:
+            from plastprior.identity import resolve_identities
+
+            print("\nStage 2: chemical identity resolution and aggregation", flush=True)
+            identities = resolve_identities(records, args.data_root)
+            identities.write_reports(output_dir / "stage2")
+            print(identities.summary.to_string(index=False))
+            print(identities.manifest["counts"])
     return 0 if passed else 1
 
 
