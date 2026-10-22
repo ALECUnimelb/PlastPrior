@@ -124,7 +124,7 @@ class InputTests(unittest.TestCase):
         report = self.inspect()
         with patch("main.inspect_inputs", return_value=report), \
                 patch("main.build_source_records") as assemble, redirect_stdout(io.StringIO()):
-            for options in ([], ["--require-supporting-inputs"], ["--assemble-records"], ["--resolve-identities"], ["--integrate-qsar"], ["--calculate-lrtp"]):
+            for options in ([], ["--require-supporting-inputs"], ["--assemble-records"], ["--resolve-identities"], ["--integrate-qsar"], ["--calculate-lrtp"], ["--integrate-evidence"]):
                 self.assertEqual(main(["--output-dir", str(self.root / "reports"), *options]), 1)
             assemble.assert_not_called()
 

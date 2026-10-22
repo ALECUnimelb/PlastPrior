@@ -1,0 +1,622 @@
+{
+  "schema_version": 1,
+  "policy_version": "basic-evidence-frozen-v1",
+  "scope": "Stage 4A only; excludes 4B/4C and downstream scoring",
+  "historical_sources": [
+    {
+      "path": "Algorithm/step13_read_all_databases_generate_example.py",
+      "sha256": "59bdf252ef3ef16b7694b863898a0ccf0c2187ba820e12a8267fb4332b78a71d"
+    },
+    {
+      "path": "Algorithm/step14_unify_compound_record.py",
+      "sha256": "5e9b381e1c6d75e688c574c0cb90fe76090d3ecdf8f0f3f52cc3e5634122fbde"
+    },
+    {
+      "path": "Algorithm/step15_extract_concise_info.py",
+      "sha256": "9797c2647112beb940c7ed898b671882d4d37bcd6bb16921b99cd389b0429246"
+    }
+  ],
+  "matching": {
+    "order": [
+      "inchikey",
+      "cas",
+      "smiles"
+    ],
+    "comparison": "Case-insensitive exact text after trimming; no chemical structure equivalence search",
+    "selection": "First matching parsed source row; all alternatives audited",
+    "columns": {
+      "inchikey": [
+        "InChIKey",
+        "INCHIKEY",
+        "Inchikey",
+        "InChI Key",
+        "InChIKey_std",
+        "Inchikey_std",
+        "INCHIKEY_STD"
+      ],
+      "cas": [
+        "CAS",
+        "CASRN",
+        "CAS Number",
+        "CAS Number (Common Chemistry)",
+        "CAS number",
+        "CASRN",
+        "CAS Number(s)",
+        "CAS1",
+        "CASRN:"
+      ],
+      "smiles": [
+        "SMILES",
+        "Smile",
+        "SMILE",
+        "Smile_std",
+        "SMILES_std",
+        "MS_READY_SMILES",
+        "QSAR_READY_SMILES",
+        "SMILES (canonical)"
+      ]
+    }
+  },
+  "source_labels": {
+    "PlastChem": "plastchem",
+    "UNEP": "unep",
+    "Norman133": "mpleach",
+    "FCCmigex": "fccmigex",
+    "FCChumon_S1": "fcchumon_s1",
+    "FCChumon_S2": "fcchumon_s2",
+    "FCCprio": "fccprio",
+    "LitChemPlast": "litchemplast",
+    "ICCA": "icca",
+    "UCSF": "ucsf",
+    "PlasticMAP": "plasticmap"
+  },
+  "reader_policy": "Frozen historical pandas type inference and default NA tokens; original files remain unchanged. Reader conversions are documented separately from Stage 1 preservation.",
+  "field_rules": {
+    "db_priority": [
+      "PubChemLite",
+      "PlastChem",
+      "Norman133",
+      "UNEP",
+      "FCCprio",
+      "FCCmigex",
+      "LitChemPlast",
+      "ICCA",
+      "PlasticMAP",
+      "UCSF",
+      "FCChumon_S1"
+    ],
+    "identity_cols": {
+      "inchikey": {
+        "*": [
+          "InChIKey",
+          "InChI_key",
+          "InChI_Key",
+          "Inchikey",
+          "inchikey"
+        ]
+      },
+      "cas": {
+        "*": [
+          "CAS",
+          "CASRN",
+          "Cas",
+          "cas",
+          "CASRN "
+        ]
+      },
+      "smiles": {
+        "*": [
+          "SMILES",
+          "Smile",
+          "Smile_std",
+          "smiles"
+        ]
+      },
+      "name": {
+        "*": [
+          "Name",
+          "name",
+          "PreferredName",
+          "SubstanceName"
+        ]
+      },
+      "formula": {
+        "*": [
+          "Formula",
+          "Molecular_formula",
+          "molecular_formula"
+        ]
+      },
+      "monoisotopic_mass": {
+        "*": [
+          "MonoisotopicMass",
+          "monoisotopic_mass",
+          "Molecular_Mass_Isotope"
+        ]
+      }
+    },
+    "hazard_cols": {
+      "PBMT": {
+        "*": [
+          "PBMT",
+          "PBMT_score",
+          "PBMT class",
+          "PBMT_Class",
+          "PBMT_score_sum",
+          "PBMT_sum",
+          "PBMT_total"
+        ]
+      },
+      "P": {
+        "*": [
+          "Persistence_score",
+          "P_score",
+          "Persistence",
+          "P"
+        ]
+      },
+      "B": {
+        "*": [
+          "Bioaccumulation_score",
+          "B_score",
+          "Bioaccumulation",
+          "B"
+        ]
+      },
+      "M": {
+        "*": [
+          "Mobility_score",
+          "M_score",
+          "Mobility",
+          "M"
+        ]
+      },
+      "T": {
+        "*": [
+          "Toxicity_score",
+          "T_score",
+          "Toxicity",
+          "T"
+        ]
+      },
+      "hazard_score": {
+        "*": [
+          "Hazard_score_sum",
+          "Hazard_score_total",
+          "hazard_score",
+          "HazardScore",
+          "Hazard_score",
+          "Score_hazard"
+        ]
+      },
+      "evidence_score": {
+        "*": [
+          "Evidence_score",
+          "evidence_score",
+          "EvidenceScore",
+          "Evidence_score_sum",
+          "Evidence_total"
+        ]
+      }
+    },
+    "tox_label_cols": {
+      "*": [
+        "GHS",
+        "GHS_classification",
+        "GHS Classification",
+        "HazardStatements",
+        "H-statements",
+        "ECHA_C&L",
+        "ECHA C&L",
+        "C&L",
+        "CLP",
+        "CLP_classification",
+        "Carcinogenicity",
+        "Mutagenicity",
+        "Reprotox",
+        "Endocrine",
+        "CMR",
+        "SkinSens",
+        "AcuteTox",
+        "PBT",
+        "vPvB",
+        "PMT",
+        "vPvM",
+        "EDC",
+        "Endocrine_disruption"
+      ]
+    },
+    "human_cols": {
+      "monitoring_counts": {
+        "*": [
+          "human_monitoring_count",
+          "MonitoringCount",
+          "HumanMonitoringCount",
+          "BiomonitoringCount"
+        ]
+      },
+      "detection_counts": {
+        "*": [
+          "human_detection_count",
+          "DetectionCount",
+          "HumanDetectionCount"
+        ]
+      },
+      "plasma_concentration": {
+        "*": [
+          "plasma_conc",
+          "PlasmaConcentration",
+          "plasma_concentration",
+          "BloodConcentration"
+        ]
+      },
+      "urine_concentration": {
+        "*": [
+          "urine_conc",
+          "UrineConcentration",
+          "urine_concentration"
+        ]
+      }
+    },
+    "migration_cols": {
+      "migration_detection_counts": {
+        "*": [
+          "migration_detection_count",
+          "MigrationDetectionCount",
+          "migration_count"
+        ]
+      },
+      "food_contact_evidence": {
+        "*": [
+          "food_contact",
+          "FoodContact",
+          "fcc_evidence",
+          "FCC_evidence"
+        ]
+      }
+    },
+    "production_cols": {
+      "eu_volume": {
+        "*": [
+          "production_eu",
+          "EU_volume",
+          "EU tonnage",
+          "EU_Tonnage",
+          "EU_production_volume_tons",
+          "EU_production"
+        ]
+      },
+      "usa_volume": {
+        "*": [
+          "production_usa",
+          "US_volume",
+          "USA_volume",
+          "US tonnage",
+          "usa_production_volume_tons",
+          "US_production"
+        ]
+      },
+      "oecd_volume": {
+        "*": [
+          "production_oecd",
+          "OECD_volume",
+          "OECD tonnage",
+          "oecd_production_volume_tons",
+          "OECD_production"
+        ]
+      },
+      "nordic_volume": {
+        "*": [
+          "nordic_countries_spin_production_volume_tons",
+          "Nordic_production",
+          "SPIN_production"
+        ]
+      },
+      "total_volume": {
+        "*": [
+          "production_total",
+          "Total_volume",
+          "Global_volume",
+          "Global tonnage",
+          "total_production_volume_tons",
+          "Total_production"
+        ]
+      }
+    },
+    "environment_cols": {
+      "detection_counts": {
+        "*": [
+          "environment_detection_count",
+          "EnvDetectionCount",
+          "environment_count"
+        ]
+      },
+      "concentration": {
+        "*": [
+          "environment_conc",
+          "EnvConcentration",
+          "surfacewater_conc",
+          "sediment_conc"
+        ]
+      }
+    },
+    "patent_cols": {
+      "patent_count": {
+        "*": [
+          "patent_count",
+          "PatentCount",
+          "PubChemLite_patents",
+          "patents"
+        ]
+      }
+    },
+    "literature_cols": {
+      "litchemplast_count": {
+        "LitChemPlast": [
+          "count_LitChem_id"
+        ],
+        "*": [
+          "literature_count",
+          "LiteratureCount",
+          "lit_count",
+          "publication_count",
+          "citation_count"
+        ]
+      }
+    },
+    "reg_top_cols": {
+      "FCCdb_listed": {
+        "*": [
+          "FCCdb_listed",
+          "FCC_listed",
+          "FCCmigex",
+          "FCC_migex_listed"
+        ]
+      },
+      "unep_rank": {
+        "*": [
+          "Rank",
+          "UNEP_rank",
+          "unep_rank"
+        ]
+      },
+      "plastchem_lists": {
+        "*": [
+          "List",
+          "Lists",
+          "plastchem_list",
+          "PlastChem_list"
+        ]
+      }
+    },
+    "global_agreement_keys": [
+      "Minamata",
+      "Stockholm",
+      "Montreal",
+      "Basel"
+    ],
+    "regional_summary_keys": [
+      "US_summary",
+      "EU_summary",
+      "Japan_summary",
+      "Korea_summary",
+      "China_summary",
+      "Canada_summary",
+      "Australia_summary",
+      "Rotterdam_summary"
+    ],
+    "specific_reg_keys": [
+      "REACH_authorisation",
+      "REACH_restriction",
+      "REACH_SVHC",
+      "ROHS_directive",
+      "EU_toy_restricted",
+      "EU_toy_allergenic_fragrances",
+      "California_P65",
+      "TSCA",
+      "EU_PoPs",
+      "CSCL_Class1",
+      "CSCL_Class2",
+      "ISHA_permission_required",
+      "ISHA_prohibited",
+      "Korea_accidents",
+      "Korea_CMR",
+      "Korea_hazardous_chemicals",
+      "Korea_intensive_control",
+      "Rotterdam_PIC"
+    ],
+    "scope_mea_key": "MEA_list",
+    "scope_precedent_key": "Precedent_list",
+    "plastchem_function_top_classes": {
+      "Additives": [
+        "Anti-fog_additive",
+        "Antioxidant",
+        "Antistatic_agent",
+        "Biocide",
+        "Colorant",
+        "Filler",
+        "Flame_retardant",
+        "Heat_stabilizer",
+        "Light_stabilizer",
+        "Odor_Agent",
+        "Pigment",
+        "Plasticizer",
+        "Stabilizer",
+        "Ultraviolet-absorbing_agent",
+        "Unspecified_additive"
+      ],
+      "Processing aids": [
+        "Adhesive",
+        "Blowing_agent",
+        "Emulsifier",
+        "Impact_modifier",
+        "Lubricant",
+        "Other_Processing_Aids",
+        "Polymerization_aid",
+        "Solvent",
+        "Surfactant",
+        "Viscosity_modifier"
+      ],
+      "Starting substances": [
+        "Catalyst",
+        "Crosslinking_agent",
+        "Initiator",
+        "Monomer",
+        "Unspecified_raw_material",
+        "monomer"
+      ],
+      "Intermediates and NIASs": [
+        "Degradation_product",
+        "Impurity",
+        "Intermediate",
+        "NIAS"
+      ]
+    },
+    "plastchem_polymer_columns": [
+      "PE_combined",
+      "PE",
+      "HDPE",
+      "LDPE",
+      "PP",
+      "PS_combined",
+      "PS",
+      "EPS",
+      "HIPS",
+      "PVC",
+      "PET",
+      "PA",
+      "PUR",
+      "ABS",
+      "Rubber",
+      "Silicone",
+      "Cellulose-based",
+      "PBAT",
+      "PBS",
+      "PHA",
+      "PLA",
+      "Starch",
+      "Bioplastics_unspecified",
+      "Multilayer",
+      "Unspecified_plastics"
+    ],
+    "plastchem_structural_group_columns": [
+      "aromatic_amines",
+      "aralkyladehydes",
+      "alkylphenols",
+      "salicylate_esters",
+      "aromatic_ethers",
+      "bisphenols",
+      "orthophthalates",
+      "benzothiazole",
+      "benzotriazoles",
+      "organometallics",
+      "parabens",
+      "azodyes",
+      "acetophenones_benzophenones",
+      "chlorinated_paraffins",
+      "PFASs",
+      "UVCBs",
+      "polymers",
+      "mixtures",
+      "inorganic_compounds",
+      "DDT_DDE_DDD",
+      "dioxins",
+      "PBDEs",
+      "PCBs",
+      "PBDD_PBDF_PCDD_PCDF",
+      "aldehydes_simple",
+      "alkanes",
+      "alkenes",
+      "alkynes",
+      "alkane_ethers",
+      "aliphatic_ketones",
+      "aliphatic_primary_amides",
+      "alkyl_nitrates",
+      "aromatic_hydrocarbons",
+      "carboxylic_acids_salts",
+      "cyclic_acetals",
+      "cyclic_ethers",
+      "dialiphatic_ethers_excluding_unsatured",
+      "diazo_amino_hydroxyl_naphthalenedisulfonic_acid_dyes",
+      "dibenzoyl_peroxide_derivatives",
+      "dihydropurinediones",
+      "ethanediols",
+      "isophthalates_terephthalates_trimellitates",
+      "ketones_simple",
+      "organophosphates",
+      "phenolic_antioxidants",
+      "polychlorinated_naphthalenes",
+      "pyrazoles",
+      "salicyclic_acid",
+      "silanes_siloxanes_silicones"
+    ],
+    "plastchem_concern_columns": [
+      "PlastChem_lists",
+      "MEA_list",
+      "MEA_names",
+      "Precedent_list",
+      "Precedent_names",
+      "Red_list",
+      "Orange_list",
+      "Watch_list",
+      "White_list",
+      "Grey_list",
+      "Hazard_score",
+      "Hazard_score_sum",
+      "Evidence_score",
+      "Persistence_score",
+      "Bioaccumulation_score",
+      "Mobility_score",
+      "Toxicity_score",
+      "Carcinogenic",
+      "Mutagenic",
+      "Reproduction",
+      "CMR",
+      "STOT",
+      "EDC",
+      "Aquatic_toxicity",
+      "PBT",
+      "vPvB",
+      "PMT",
+      "vPvM",
+      "priority_groups",
+      "overlap_groups"
+    ],
+    "classification_cols": {
+      "chemical_group": {
+        "*": [
+          "chemical_group",
+          "Group",
+          "Class",
+          "ChemicalGroup"
+        ]
+      },
+      "use_function": {
+        "*": [
+          "use",
+          "function",
+          "use_function",
+          "Use/Function",
+          "Application"
+        ]
+      },
+      "polymer_context": {
+        "*": [
+          "polymer",
+          "polymer_context",
+          "PolymerContext",
+          "Polymer"
+        ]
+      },
+      "material_context": {
+        "*": [
+          "material",
+          "material_context",
+          "MaterialContext",
+          "Matrix"
+        ]
+      }
+    }
+  },
+  "interpretation": "Historical database selection does not independently verify chemical identity. Source-native scores and classifications are imported observations, not PlastPrior scores. QSAR identity exceptions exclude prediction evidence only."
+}

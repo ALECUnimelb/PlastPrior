@@ -6,7 +6,8 @@ inspects local inputs, assembles source inventory records, resolves chemical
 identities and aggregates records by full structure-derived InChIKey. Stage 3A
 also integrates the frozen VEGA predictions with explicit identity-review
 flags. Stage 3B reproduces historical Pov/LRTP calculations and isolates
-unverified identities from analysis outputs. Hazard, exposure and priority
+unverified identities from analysis outputs. Stage 4A assembles basic source
+evidence with explicit field mapping and selection/exclusion audits. Hazard, exposure and priority
 scores are not implemented.
 
 ## Input inspection
@@ -17,7 +18,7 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B, with seven code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A, with eight code cells. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
 identifier availability, identity-resolution outcomes, model coverage, QSAR
 identity exceptions, historical LRTP calculation coverage and analysis exclusions. Full provenance notes, references,
@@ -42,17 +43,21 @@ PlastPrior/
     identity.py
     qsar.py
     lrtp.py
+    evidence.py
+    _evidence_rules.py
     validation.py
     sources.json
     identity_baseline.json
     qsar_models.json
     lrtp_parameters.json
+    evidence_fields.json
   tests/
     test_inputs.py
     test_source_records.py
     test_identity.py
     test_qsar.py
     test_lrtp.py
+    test_evidence.py
     test_validation.py
   data/                     # Local inputs; ignored by Git
   results/                  # Generated reports; ignored by Git
@@ -66,7 +71,7 @@ The planned sequence is input validation and ingestion, chemical identity
 resolution, QSAR evidence integration, evidence assembly, hazard assessment,
 exposure assessment, and chemical prioritisation. Stages 1 and 2, frozen-report
 QSAR integration (3A), and historical Pov/LRTP calculation with identity isolation
-(3B) are implemented. Later stages will be introduced incrementally with
+(3B), and basic source evidence assembly (4A) are implemented. Later stages will be introduced incrementally with
 corresponding validation.
 
 ## Source record assembly
@@ -534,6 +539,108 @@ Run the CLI and notebook independently and compare their generated file hashes
 when verifying a release. Native Windows execution remains a separate required
 check before claiming cross-platform validation.
 
+## Stage 4A: basic source evidence
+
+`plastprior/evidence.py` assembles basic observations from the 11 inventory
+tables and attaches source provenance. The field maps, source order, matching
+aliases and frozen reader policy are declared in `evidence_fields.json`.
+`_evidence_rules.py` contains the migrated selection rules and classification
+summaries, separated from file I/O. The original implementation fingerprints
+are recorded; no code is imported from the old repository at runtime.
+
+`--integrate-evidence` runs Stages 1, 2, 3A, 3B and 4A. The notebook calls the
+same functions. No specialist LitChemPlast/FCChumon resolver, analytical
+detectability annotation, GIC integration, or downstream score is executed.
+Source-native scores such as PlastChem Hazard_score remain observations with
+source links; they are neither recalculated nor treated as PlastPrior scores.
+
+**Selection rules.** Each Stage 2 member queries its original source using
+InChIKey, then CAS, then SMILES. Comparisons use trimmed, case-insensitive exact
+text. The first matching parsed row is selected; all alternative hits are
+retained with `not_selected_first_row_policy`. The historical identity gate
+compares InChIKey/CAS matches against a source-priority identity seed. SMILES
+matches are accepted by the historical rule but explicitly labelled as text
+matches rather than identity proof. Unknown or mismatched identities are
+excluded with the original reason. This secondary evidence-selection identity
+must not overwrite the canonical full InChIKey established in Stage 2.
+
+Identity attributes use the first valid value in the declared source and
+column order. Other mapped observations retain distinct values per source,
+while the field audit preserves every observation, including duplicates.
+PlastChem polymer context and concern annotations use the last valid row;
+nonpositive concern-list annotations do not erase a previously positive entry.
+The additional classification audit records selected, superseded, missing,
+invalid and excluded values. The historical rule omits a classification block
+when all its final values are zero; these observations are retained in the audit
+with `omitted_all_zero_block_historical_rule`. This omission must not be
+interpreted as absence of source observations. These rules preserve historical behaviour for
+review and are not claims that source precedence establishes scientific quality.
+
+Stage 4A intentionally retains historical pandas type inference and default
+missing-token handling. This differs from Stage 2's preservation of textual
+reported identifiers. `evidence_source_rows.jsonl` therefore contains the full
+**reader-interpreted** row, plus original source hash, sheet, parsed/physical row
+positions, native identifier and Stage 2 `reported_fields_json`. Original file
+bytes remain unchanged. Inferred values are not a replacement for the source
+files. Field mappings report unavailable columns rather than inventing aliases
+that would silently change the frozen evidence selection.
+
+**Prediction isolation.** All 15 identity-review compounds remain in the
+inventory with their independent database observations. The analysis table
+withholds all 57 projected QSAR model fields for them and retains all 12 existing
+Pov/LRTP exclusions. `prediction_isolation_audit.csv` records 1,035 field entries,
+original upstream values, actions and identity reasons. Empty flags are never
+replaced with False or zero. `qsar_evidence_available` reflects the upstream
+identity check only; model applicability and evidence quality still require
+assessment. Historical QSAR/Pov/LRTP values, 58 source-record links and 300
+model-report links remain in the fingerprinted Stage 3 reports, referenced by
+the Stage 4A manifest. This stage does not resolve the scientific identity issue.
+
+Outputs under the ignored `results/stage4/` directory are:
+
+| Output | Purpose |
+| --- | --- |
+| `compound_evidence.csv` | Analysis inventory, seven basic evidence fields and prediction isolation |
+| `basic_evidence_historical.csv` | Full keys and seven historical basic fields; no model predictions |
+| `evidence_field_mapping.csv`, `evidence_match_mapping.csv` | Declared source fields, availability, lookup columns and selection rules |
+| `evidence_source_summary.csv` | Source fingerprints, reader policy, row counts and warnings |
+| `evidence_match_attempts.jsonl` | Every member query, search attempts, first selected row and identity-gate outcome |
+| `evidence_candidates.jsonl` | Every matched row, including unselected alternatives |
+| `evidence_source_rows.jsonl` | Complete reader-interpreted source rows and original provenance |
+| `basic_evidence_audit.jsonl` | Historical field observations/mismatches plus source and query links |
+| `classification_selection_audit.jsonl` | Last-valid-row selection, supersession and exclusion decisions |
+| `prediction_isolation_audit.csv` | Each withheld QSAR field and existing Pov/LRTP exclusion |
+| `evidence_manifest.json` | Upstream, input, mapping, implementation and output hashes, runtime and counts |
+
+**Field-level validation.** Run:
+
+```text
+python -m plastprior.validation --stage evidence --baseline "path to the frozen run" --results results/stage4 --output-dir results/validation_stage4a
+```
+
+The validator reruns the Stage 2/3A/3B comparisons and verifies frozen Stage 4
+checkpoint/artifact hashes. The archived final Stage 4 includes later enrichment,
+so it cannot be used unmodified as the 4A baseline. The validator removes only
+its three specialist JSON blocks and restores the generic LitChemPlast count
+from the frozen **basic** field audit; it does not regenerate a baseline using
+the new extraction code. GIC and analytical columns are outside this comparison.
+
+Every basic JSON value is compared recursively for all 15,125 full identities,
+including missing positions, scalar types and list order. Five classification
+summary fields require exact text equality. All 363,601 historical field events,
+including 1,493 identity mismatches, are compared with duplicate multiplicity.
+Numeric values require exact decimal equality without tolerance. Canonical
+identities and all unaffected upstream columns must remain unchanged. The
+validator separately checks the 1,035 intended prediction exclusions, membership
+coverage, source links, candidate counts and classification selections. A
+successful result means historical agreement **at the 4A boundary** and correct
+isolation, not equivalence to the full later-stage result or independent proof
+of scientific correctness. Unexplained differences fail validation.
+
+Tests cover precedence, identity exclusions, duplicate observations,
+classification overwrite/list rules, changed source hashes, missing versus
+zero/False, prediction isolation and the pre-enrichment baseline boundary.
+
 ## Installation
 
 Use 64-bit Python 3.12. From the project directory, create an isolated environment:
@@ -619,6 +726,7 @@ python main.py --assemble-records
 python main.py --resolve-identities
 python main.py --integrate-qsar
 python main.py --calculate-lrtp
+python main.py --integrate-evidence
 ```
 
 A missing source file, unreadable source table, absent required column, or empty
@@ -690,8 +798,9 @@ chunks; selected Excel worksheets are loaded one at a time.
   identifier validity check.
 - Rows may contain duplicates, unresolvable identifiers, or non-chemical entries.
   Do not sum row counts across sources or interpret them as unique chemicals.
-- Source-native values and column labels are preserved. Literal strings such as
-  `NA` are not silently converted into missing values. Descriptive output and
+- Stage 1/2 source-native values and column labels are preserved. Literal strings
+  such as `NA` are not silently converted into missing values at those stages.
+  Stage 4A separately declares its historical reader conversions above. Descriptive output and
   project documentation are in English; original source data are not translated.
 - SHA-256 identifies the inspected file bytes. A fingerprint alone does not
   establish scientific validity, licensing permission, or an independently

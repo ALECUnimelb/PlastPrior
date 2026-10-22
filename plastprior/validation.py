@@ -554,18 +554,210 @@ def compare_lrtp(baseline: str | Path, results: str | Path, output_dir: str | Pa
     return summary
 
 
+def _canonical_json_value(value):
+    """Canonical semantic values: retain types and list order, equate decimal spellings."""
+    if isinstance(value, dict):
+        return ["object", [[k, _canonical_json_value(v)] for k, v in sorted(value.items())]]
+    if isinstance(value, list): return ["array", [_canonical_json_value(v) for v in value]]
+    if isinstance(value, bool) or value is None or isinstance(value, str): return [type(value).__name__, value]
+    return ["number", str(Decimal(str(value)).normalize())]
+
+
+def _semantic_digest(value):
+    import hashlib
+    return hashlib.sha256(json.dumps(_canonical_json_value(value), separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
+def _basic_historical_projection(payload, literature):
+    """Recover the 4A boundary from archived final Stage 4 plus its pre-enrichment audit."""
+    payload = json.loads(json.dumps(payload))
+    for field in ("litchemplast_resolution", "fcchumon_resolution", "analytical_detectability"):
+        payload.pop(field, None)
+    block = payload["exposure"]["literature"]
+    block.pop("litchemplast_count", None)
+    if literature: block["litchemplast_count"] = literature
+    return payload
+
+
+def compare_basic_evidence(baseline, results, output_dir, upstream_results=None):
+    """Validate only the basic extraction boundary and prediction-isolation policy."""
+    from .evidence import DEFAULT_FIELDS, HISTORICAL_EVENT_FIELDS
+    from .lrtp import VALUE_COLUMNS
+    baseline, results, output_dir = Path(baseline), Path(results), Path(output_dir)
+    lrtp = Path(upstream_results) if upstream_results is not None else results.parent / "stage3" / "lrtp"
+    stage2 = lrtp.parent.parent / "stage2"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    differences, checks = [], []
+    def compare(old, new, fields, numeric, scope):
+        differences.extend(_compare_qsar_frame(old, new, "inchikey", fields, numeric, scope))
+        checks.append({"scope": scope, "rows": len(old), "fields": len(fields)})
+    try:
+        upstream = compare_lrtp(baseline, lrtp, output_dir / "stage3b")
+        if upstream["status"] != "passed": raise ValueError("Upstream Stage 3B regression failed.")
+        m = _read_json(results / "evidence_manifest.json")
+        _verify_hash(DEFAULT_FIELDS, m["config_sha256"])
+        _verify_hash(Path(__file__).with_name("evidence.py"), m["implementation_sha256"])
+        _verify_hash(Path(__file__).with_name("_evidence_rules.py"), m["rules_sha256"])
+        for name, folder, file in (("identity", stage2, "identity_manifest.json"), ("lrtp", lrtp, "lrtp_manifest.json"),
+                                   ("qsar", lrtp.parent, "qsar_manifest.json")):
+            _verify_hash(folder / file, m["upstream_manifests_sha256"][name])
+        for name, digest in m["output_sha256"].items(): _verify_hash(results / name, digest)
+        run = _read_json(baseline / "run_manifest.json")
+        entry = run["stages"]["4"]
+        _verify_hash(baseline / entry["checkpoint"], entry["checkpoint_sha256"])
+        cp = _read_json(baseline / entry["checkpoint"])
+        artifacts = {}
+        for item in cp["artifacts"]:
+            path = baseline / item["path"]
+            _verify_hash(path, item["sha256"]); artifacts[item["artifact_id"]] = path
+        baseline_inputs = {r["filename"]: r["sha256"] for r in _read_json(baseline / "input_manifest.json")["records"]}
+        for source in m["inputs"]:
+            if source["source_sha256"] != baseline_inputs[source["source_filename"]]: raise ValueError("Evidence source differs from frozen inputs.")
+        prior = _read_csv(lrtp / "compound_lrtp.csv")
+        analysis = _read_csv(results / "compound_evidence.csv")
+        history = _read_csv(results / "basic_evidence_historical.csv")
+        fields = ["db_extract_info", "classification_info_json", "classification_summary", "function_top_classes",
+                  "polymer_context_summary", "structural_group_summary", "concern_status"]
+        old = pd.read_csv(artifacts["compound_inventory_with_evidence_csv"], dtype=str, keep_default_na=False,
+                          encoding="utf-8", usecols=["Inchikey_std", *fields]).rename(columns={"Inchikey_std": "inchikey"})
+        plain = {c: c for c in fields if c not in {"db_extract_info", "classification_info_json"}}
+        compare(old, history, plain, set(), "classification_summary_fields")
+        expected_events, actual_events, literature = Counter(), Counter(), {}
+        old_count = mismatch_count = 0
+        with artifacts["compound_evidence_audit_jsonl"].open(encoding="utf-8") as stream:
+            for line in stream:
+                event = json.loads(line);old_count += 1;mismatch_count += event["status"] == "mismatch"
+                expected_events[_semantic_digest(event)] += 1
+                if event["status"] == "extracted" and event["field_path"] == "exposure.literature.litchemplast_count":
+                    block = literature.setdefault(event["compound_key"], {}).setdefault(event["db"], [])
+                    value = float(event["raw_value"])
+                    if value not in block: block.append(value)
+        originals = _read_csv(stage2 / "resolved_records.csv").set_index("record_id")
+        original_ids = set(originals.index)
+        actual_count = 0
+        with (results / "basic_evidence_audit.jsonl").open(encoding="utf-8") as stream:
+            for line in stream:
+                e = json.loads(line);actual_count += 1
+                event = {k: v for k, v in e.items() if k in HISTORICAL_EVENT_FIELDS}
+                actual_events[_semantic_digest(event)] += 1
+                r = originals.loc[e["source_record_id"]]
+                if e["source_sha256"] != r["source_sha256"] or int(r["source_record_number"]) != int(e["row_index"]) + 1:
+                    raise ValueError("Field audit lost its original source-row provenance.")
+                if not e["query_record_ids"] or not set(e["query_record_ids"]) <= original_ids:
+                    raise ValueError("Field audit has missing query-record provenance.")
+                if e["status"] == "mismatch" and e["selection_reason"] != "excluded_identity_mismatch":
+                    raise ValueError("Mismatch exclusion reason was not preserved.")
+        for digest in sorted(set(expected_events) | set(actual_events)):
+            if expected_events[digest] != actual_events[digest]:
+                differences.append({"scope": "basic_field_audit", "key": digest, "field": "event_multiplicity",
+                                    "expected": expected_events[digest], "actual": actual_events[digest]})
+        checks.append({"scope": "every_historical_field_audit_event_with_multiplicity", "rows": old_count, "fields": len(HISTORICAL_EVENT_FIELDS)})
+        historic = history.set_index("inchikey")
+        for row in old.to_dict("records"):
+            key = row["inchikey"]
+            expected = _basic_historical_projection(json.loads(row["db_extract_info"]), literature.get(key, {}))
+            for field, value in (("db_extract_info", expected), ("classification_info_json", json.loads(row["classification_info_json"]) if row["classification_info_json"] else None)):
+                actual = json.loads(historic.at[key, field]) if historic.at[key, field] else None
+                for diff in _compare_evidence(json.dumps(value), json.dumps(actual), key):
+                    diff.update(scope="basic_evidence_values", field=diff["field"].replace("LRTP_evidence", field, 1));differences.append(diff)
+        checks.append({"scope": "basic_JSON_values_pre_specialist_enrichment", "rows": len(old), "fields": 2})
+        compare(history, analysis, {c:c for c in fields}, set(), "basic_evidence_retained_in_analysis")
+        qsar_config = _read_json(Path(__file__).with_name("qsar_models.json"))
+        prediction_fields = [c for c in qsar_config["legacy_merge_columns"] if not c.startswith("Basic | ")]
+        expected = prior.copy();review = expected["qsar_identity_status"].eq("review_required")
+        expected.loc[review, prediction_fields] = ""
+        compare(expected, analysis, {c:c for c in prior if c != "inchikey"}, set(), "upstream_preservation_and_prediction_isolation")
+        if not analysis["qsar_evidence_available"].equals(prior["qsar_identity_verified"]):
+            raise ValueError("QSAR availability lost the upstream identity gate.")
+        for forbidden in ("litchemplast_resolution", "fcchumon_resolution", "analytical_detectability"):
+            if any(forbidden in json.loads(v) for v in history["db_extract_info"]): raise ValueError("Out-of-scope specialist evidence was generated.")
+        if any(c.startswith("GIC_") or c in {"Analytical_detectability", "LRTP_evidence"} for c in analysis):
+            raise ValueError("Out-of-scope or historical unverified evidence entered the analysis output.")
+        isolation = _read_csv(results / "prediction_isolation_audit.csv")
+        review_keys = set(prior.loc[review, "inchikey"])
+        expected_pairs = {(k,f) for k in review_keys for f in [*prediction_fields,*VALUE_COLUMNS]}
+        if len(isolation) != len(expected_pairs) or set(zip(isolation["inchikey"],isolation["field"])) != expected_pairs:
+            raise ValueError("Prediction isolation audit is incomplete or duplicated.")
+        pindex, aindex = prior.set_index("inchikey"), analysis.set_index("inchikey")
+        for e in isolation.to_dict("records"):
+            k,f = e["inchikey"],e["field"]
+            if e["upstream_value"] != pindex.at[k,f] or e["analysis_value"] != "" or aindex.at[k,f] != "" or e["exclusion_reason"] != "identity_review_required":
+                raise ValueError("Isolation values or reasons disagree with the result tables.")
+        members = _read_csv(stage2 / "compound_memberships.csv")
+        attempts, attempt_ids = [], set()
+        with (results / "evidence_match_attempts.jsonl").open(encoding="utf-8") as stream:
+            for line in stream:
+                e=json.loads(line);attempts.append(e);attempt_ids.add(e["attempt_id"])
+        if Counter((e["compound_key"],e["query_record_id"]) for e in attempts) != Counter(zip(members["inchikey"],members["record_id"])):
+            raise ValueError("Not all source-member attempts were preserved.")
+        required_rows = set(members["record_id"]);candidate_count = 0
+        candidate_pairs = Counter()
+        with (results / "evidence_candidates.jsonl").open(encoding="utf-8") as stream:
+            for line in stream:
+                e=json.loads(line);candidate_count+=1;required_rows.add(e["record_id"])
+                if e["attempt_id"] not in attempt_ids: raise ValueError("Candidate has no source-member attempt.")
+                candidate_pairs[e["attempt_id"]]+=1
+                reason = "first_matching_source_row" if e["selected_for_identity_check"] else "not_selected_first_row_policy"
+                if e["selection_reason"] != reason: raise ValueError("Candidate selection/exclusion reason is missing.")
+        if any(candidate_pairs[e["attempt_id"]] != e["hit_count"] for e in attempts): raise ValueError("Candidate multiplicities do not match search hits.")
+        source_ids=set()
+        with (results / "evidence_source_rows.jsonl").open(encoding="utf-8") as stream:
+            for line in stream:
+                e=json.loads(line);rid=e["record_id"]
+                if rid in source_ids: raise ValueError("Duplicated retained source rows.")
+                source_ids.add(rid)
+                for field in ("source_sha256","source_filename","table_id","source_record_number","source_native_id","reported_fields_json"):
+                    if e[field] != originals.at[rid,field]: raise ValueError("Retained source provenance changed.")
+                if not isinstance(e["raw_fields"],dict): raise ValueError("Missing complete raw source row.")
+        if source_ids != required_rows: raise ValueError("Retained rows do not cover all queries and candidates.")
+        decision_count = 0
+        selected_decisions = set()
+        with (results / "classification_selection_audit.jsonl").open(encoding="utf-8") as stream:
+            for line in stream:
+                e = json.loads(line); decision_count += 1
+                if e["source_record_id"] not in source_ids or e["source_sha256"] != originals.at[e["source_record_id"], "source_sha256"]:
+                    raise ValueError("Classification decision lost source provenance.")
+                if e["selected"]:
+                    pair = (e["compound_key"], e["field_path"])
+                    if pair in selected_decisions: raise ValueError("More than one last-row classification value was selected.")
+                    selected_decisions.add(pair)
+                    value = json.loads(historic.at[e["compound_key"], "db_extract_info"])
+                    for part in e["field_path"].split("."): value = value[part]
+                    if _semantic_digest(value) != _semantic_digest(e["normalized_value"]):
+                        raise ValueError("Selected classification value differs from the result.")
+                if e["selection_reason"] not in {"selected_last_valid_row", "superseded_by_later_valid_row", "excluded_identity_mismatch", "missing_source_value", "invalid_numeric_value", "not_selected_nonpositive_list_annotation", "omitted_all_zero_block_historical_rule"}:
+                    raise ValueError("Missing classification selection or exclusion reason.")
+        counts={"compounds":len(history),"source_member_attempts":len(attempts),"matched_candidates":candidate_count,
+                "retained_source_rows":len(source_ids),"historical_audit_events":actual_count,"identity_mismatch_events":mismatch_count,
+                "identity_review_compounds":len(review_keys),"isolated_prediction_fields":len(isolation),"classification_decisions":decision_count}
+        if m["counts"] != counts: raise ValueError("Evidence manifest counts differ from validated artifacts.")
+        summary={"status":"passed" if not differences else "failed","scope":"Stage 4A only; no 4B/4C or downstream scoring",
+                 "baseline_run":run["run_id"],"upstream_regression":"passed",**counts,
+                 "baseline_boundary":"Final Stage 4 with only the three specialist blocks removed and generic literature counts restored from the frozen basic audit",
+                 "numeric_comparison":"Exact decimal values and recursive JSON comparison; audit multiplicity retained",
+                 "implementation_sha256":_file_hash(Path(__file__)),"evidence_manifest_sha256":_file_hash(results/'evidence_manifest.json'),
+                 "scientific_identity_review":"pending","interpretation":"Historical basic evidence reproduction does not independently establish source correctness; prediction isolation is checked separately."}
+    except (ValueError,KeyError,OSError) as exc:
+        summary={"status":"failed","scope":"Stage 4A","error":str(exc)}
+    summary['unexplained_differences']=len(differences)
+    pd.DataFrame(differences,columns=['scope','key','field','expected','actual']).to_csv(output_dir/'evidence_validation_differences.csv',index=False,encoding='utf-8',lineterminator='\n')
+    pd.DataFrame(checks,columns=['scope','rows','fields']).to_csv(output_dir/'evidence_validation_checks.csv',index=False,encoding='utf-8',lineterminator='\n')
+    (output_dir/'evidence_validation_summary.json').write_text(json.dumps(summary,indent=2)+'\n',encoding='utf-8')
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, required=True, help="Frozen historical run directory.")
     parser.add_argument("--results", type=Path, required=True, help="Current report directory for the selected stage.")
     parser.add_argument("--output-dir", type=Path, required=True, help="Validation report directory.")
-    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp"], default="identity")
-    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP; inferred from the standard layout by default.")
+    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence"], default="identity")
+    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence; inferred from the standard layout by default.")
     args = parser.parse_args(argv)
     if args.stage == "identity":
         report = compare_identity(args.baseline, args.results, args.output_dir)
     else:
-        validator = compare_qsar if args.stage == "qsar" else compare_lrtp
+        validator = {"qsar": compare_qsar, "lrtp": compare_lrtp, "evidence": compare_basic_evidence}[args.stage]
         report = validator(args.baseline, args.results, args.output_dir, args.upstream_results)
     print(json.dumps(report, indent=2))
     return 0 if report["status"] == "passed" else 1
