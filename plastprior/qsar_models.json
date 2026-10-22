@@ -1,0 +1,1261 @@
+{
+  "schema_version": 1,
+  "policy_version": "qsar-frozen-integration-v1",
+  "scope": "Stage 3A: screening and frozen-report integration only; no Pov/LRTP or scoring.",
+  "screening": {
+    "mw_min": 100.0,
+    "mw_max": 1000.0,
+    "heavy_halogen_threshold": 4,
+    "metals": [
+      "Li",
+      "Na",
+      "K",
+      "Rb",
+      "Cs",
+      "Fr",
+      "Be",
+      "Mg",
+      "Ca",
+      "Sr",
+      "Ba",
+      "Ra",
+      "Sc",
+      "Y",
+      "Ti",
+      "Zr",
+      "Hf",
+      "V",
+      "Nb",
+      "Ta",
+      "Cr",
+      "Mo",
+      "W",
+      "Mn",
+      "Tc",
+      "Re",
+      "Fe",
+      "Ru",
+      "Os",
+      "Co",
+      "Rh",
+      "Ir",
+      "Ni",
+      "Pd",
+      "Pt",
+      "Cu",
+      "Ag",
+      "Au",
+      "Zn",
+      "Cd",
+      "Hg",
+      "Al",
+      "Ga",
+      "In",
+      "Tl",
+      "Sn",
+      "Pb",
+      "Bi"
+    ]
+  },
+  "frozen_batch": {
+    "baseline_run": "20261006T233429Z",
+    "input_smiles_sha256": "b712bc05ade08031155cf88553ff138b1940119a74fae5c2ada0a4f7a4b6663a",
+    "input_manifest_sha256": "7912afa308de48fcc44a86af09c1bfa36117ef64d4e59d2964ed15d221943d89",
+    "identity_review_rows": [
+      938,
+      951,
+      3921,
+      4389,
+      4396,
+      5200,
+      5211,
+      6542,
+      7158,
+      8420,
+      8448,
+      9214,
+      9536,
+      9695,
+      9702
+    ],
+    "review_policy": "These frozen rows may be imported for historical reproduction only; no mismatch is scientifically accepted by this declaration."
+  },
+  "models": [
+    {
+      "id": "pers_air_coral_2",
+      "filename": "report_PERS_AIR_CORAL_2.txt",
+      "sha256": "62427af0d40d0c85f01822a416bd102f7511e30f7f9994ed43395dca13078441",
+      "name": "Air Half-Life (IRFMN-CORAL)",
+      "model_metadata": "Air Half-Life (IRFMN-CORAL) (version 1.0.1)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted Air Half-Life [log(hours)]",
+        "Predicted Air Half-Life [hours]",
+        "Experimental value [hours]",
+        "Experimental",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Max error index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        16
+      ],
+      "predictions": [
+        {
+          "column": "Predicted Air Half-Life [log(hours)]",
+          "unit": "log(hours)"
+        },
+        {
+          "column": "Predicted Air Half-Life [hours]",
+          "unit": "hours"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted Air Half-Life [hours]",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted Air Half-Life [hours]",
+        "ADI"
+      ]
+    },
+    {
+      "id": "bcf_arnotgobas",
+      "filename": "report_BCF_ARNOTGOBAS.txt",
+      "sha256": "d1236d65e98b6c71c169b82cd012b92009b9e7bcc08de4870bcafd585ac86212",
+      "name": "BCF model (Arnot-Gobas)",
+      "model_metadata": "BCF model (Arnot-Gobas) (version 1.0.1)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted BCF (up) [log(L/kg)]",
+        "Predicted BCF (up) [L/kg]",
+        "Predicted BCF (low) [log(L/kg)]",
+        "Predicted BCF (low) [L/kg]",
+        "Predicted BCF (mid) [log(L/kg)]",
+        "Predicted BCF (mid) [L/kg]",
+        "Predicted LogP (Meylan/Kowwin)",
+        "Predicted LogP reliability",
+        "Predicted kM (Meylan)",
+        "Predicted kM reliability",
+        "Experimental",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Max error index",
+        "LogP reliability",
+        "ACF index",
+        "null",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        23,
+        24
+      ],
+      "predictions": [
+        {
+          "column": "Predicted BCF (up) [log(L/kg)]",
+          "unit": "log(L/kg)"
+        },
+        {
+          "column": "Predicted BCF (up) [L/kg]",
+          "unit": "L/kg"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted BCF (up) [log(L/kg)]",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted BCF (up) [log(L/kg)]",
+        "ADI"
+      ]
+    },
+    {
+      "id": "bcf_caesar",
+      "filename": "report_BCF_CAESAR.txt",
+      "sha256": "e839bf2ccc8f360b9495952b3710ae77e544d1f96e7d65bb868a9ba0099cdbd0",
+      "name": "BCF model (CAESAR)",
+      "model_metadata": "BCF model (CAESAR) (version 2.1.15)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted BCF [log(L/kg)]",
+        "Predicted BCF [L/kg]",
+        "Predicted BCF from sub-model 1 (HM) [log(L/kg)]",
+        "Predicted BCF from sub-model 2 (GA) [log(L/kg)]",
+        "Predicted LogP (MLogP)",
+        "Experimental",
+        "Structural Alerts",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Max error index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        19
+      ],
+      "predictions": [
+        {
+          "column": "Predicted BCF [log(L/kg)]",
+          "unit": "log(L/kg)"
+        },
+        {
+          "column": "Predicted BCF [L/kg]",
+          "unit": "L/kg"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted BCF [log(L/kg)]",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted BCF [log(L/kg)]",
+        "ADI"
+      ]
+    },
+    {
+      "id": "bcf_meylan",
+      "filename": "report_BCF_MEYLAN.txt",
+      "sha256": "1e927b3ad6d5da9cbbc0d8901fa5e7061d733cedf58166e3051ab905c68f7450",
+      "name": "BCF model (Meylan)",
+      "model_metadata": "BCF model (Meylan) (version 1.0.4)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted BCF [log(L/kg)]",
+        "Predicted BCF [L/kg]",
+        "Predicted LogP (Meylan/Kowwin)",
+        "Predicted LogP reliability",
+        "MW",
+        "Ionic compound",
+        "Experimental",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Max error index",
+        "LogP reliability",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        20
+      ],
+      "predictions": [
+        {
+          "column": "Predicted BCF [log(L/kg)]",
+          "unit": "log(L/kg)"
+        },
+        {
+          "column": "Predicted BCF [L/kg]",
+          "unit": "L/kg"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted BCF [log(L/kg)]",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted BCF [log(L/kg)]",
+        "ADI"
+      ]
+    },
+    {
+      "id": "carc_caesar",
+      "filename": "report_CARC_CAESAR.txt",
+      "sha256": "ed14bcd7b5d4e5c8aab67136aaa9f33513f69a44f33c701f3b780800e51e192b",
+      "name": "Carcinogenicity model (CAESAR)",
+      "model_metadata": "Carcinogenicity model (CAESAR) (version 2.1.10)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted Carcinogen activity",
+        "P(Carcinogen)",
+        "P(NON-Carcinogen)",
+        "Experimental",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Pos/Non-Pos difference",
+        "Neurons concordance",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        17
+      ],
+      "predictions": [
+        {
+          "column": "Predicted Carcinogen activity",
+          "unit": "Not declared in field label"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted Carcinogen activity",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "ADI"
+      ]
+    },
+    {
+      "id": "carc_iss",
+      "filename": "report_CARC_ISS.txt",
+      "sha256": "c975abc323e1d6abcb6af49377b086aacdcad2a7494f67958149a4602ba5620d",
+      "name": "Carcinogenicity model (ISS)",
+      "model_metadata": "Carcinogenicity model (ISS) (version 1.0.3)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted Carcinogen activity",
+        "Experimental",
+        "Structural Alerts",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        13
+      ],
+      "predictions": [
+        {
+          "column": "Predicted Carcinogen activity",
+          "unit": "Not declared in field label"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted Carcinogen activity",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "ADI"
+      ]
+    },
+    {
+      "id": "devtox_caesar",
+      "filename": "report_DEVTOX_CAESAR.txt",
+      "sha256": "9b368e7f6f347c79fc746d4c023c47c8effc749db62c37ead0132ee0ad76b7a3",
+      "name": "Developmental Toxicity model (CAESAR)",
+      "model_metadata": "Developmental Toxicity model (CAESAR) (version 2.1.8)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted developmental toxicity activity",
+        "Experimental",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        13
+      ],
+      "predictions": [
+        {
+          "column": "Predicted developmental toxicity activity",
+          "unit": "Not declared in field label"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted developmental toxicity activity",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "ADI"
+      ]
+    },
+    {
+      "id": "estrogen_cerapp_2",
+      "filename": "report_ESTROGEN_CERAPP_2.txt",
+      "sha256": "10c9d2abfdaff1942d5b8e9315de29b9ce205ae50529b00dd8f93fb2d6e9e411",
+      "name": "Estrogen Receptor-mediated effect (IRFMN-CERAPP)",
+      "model_metadata": "Estrogen Receptor-mediated effect (IRFMN-CERAPP) (version 1.0.1)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted ER-mediated effect",
+        "No. alerts for activity",
+        "No. alerts for possible activity",
+        "No. alerts for non-activity",
+        "No. alerts for possible non-activity",
+        "Experimental",
+        "Structural Alerts",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        17
+      ],
+      "predictions": [
+        {
+          "column": "Predicted ER-mediated effect",
+          "unit": "Not declared in field label"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted ER-mediated effect",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "ADI"
+      ]
+    },
+    {
+      "id": "fish_lc50_1",
+      "filename": "report_FISH_LC50_1.txt",
+      "sha256": "73564eb9dffa74718cdac58f0bc74b68c390047b6f96252a1b5ce1cfd02e5d9d",
+      "name": "Fish Acute (LC50) Toxicity model (IRFMN)",
+      "model_metadata": "Fish Acute (LC50) Toxicity model (IRFMN) (version 1.0.2)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted LC50 [a-dimensional]",
+        "Predicted LC50 [mg/l]",
+        "Molecular Weight",
+        "Experimental value [mg/l]",
+        "Experimental",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Max error index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        17
+      ],
+      "predictions": [
+        {
+          "column": "Predicted LC50 [a-dimensional]",
+          "unit": "a-dimensional"
+        },
+        {
+          "column": "Predicted LC50 [mg/l]",
+          "unit": "mg/l"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted LC50 [mg/l]",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted LC50 [mg/l]",
+        "ADI"
+      ]
+    },
+    {
+      "id": "koc_opera_2",
+      "filename": "report_KOC_OPERA_2.txt",
+      "sha256": "431ca6ab68472fc5e576296f622e7e3b945806824a2d7cf4e99779464f024ed0",
+      "name": "KOC model (OPERA)",
+      "model_metadata": "KOC model (OPERA) (version 1.0.1)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted KOC [log(L/Kg)]",
+        "Experimental",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Max error index",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        13
+      ],
+      "predictions": [
+        {
+          "column": "Predicted KOC [log(L/Kg)]",
+          "unit": "log(L/Kg)"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted KOC [log(L/Kg)]",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted KOC [log(L/Kg)]",
+        "ADI"
+      ]
+    },
+    {
+      "id": "logp_meylan",
+      "filename": "report_LOGP_MEYLAN.txt",
+      "sha256": "b227e45959d9325013da51c6871eae9fbaeb7b5c15dff7e640015492111c3f30",
+      "name": "LogP model (Meylan-Kowwin)",
+      "model_metadata": "LogP model (Meylan-Kowwin) (version 1.1.5)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted LogP",
+        "Experimental",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Max error index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        12
+      ],
+      "predictions": [
+        {
+          "column": "Predicted LogP",
+          "unit": "Not declared in field label"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted LogP",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted LogP",
+        "ADI"
+      ]
+    },
+    {
+      "id": "muta_consensus",
+      "filename": "report_MUTA_CONSENSUS.txt",
+      "sha256": "a4d71c9edb5e81903d58bc6d222aaa28bac477acd18d2bebe70dbe5905005384",
+      "name": "Mutagenicity (Ames test) CONSENSUS",
+      "model_metadata": "Mutagenicity (Ames test) CONSENSUS model (version 1.0.4)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Used models",
+        "Predicted Consensus Mutagen activity",
+        "Mutagenic Score",
+        "Non-Mutagenic Score",
+        "Model Caesar assessment",
+        "Model ISS assessment",
+        "Model SarPy assessment",
+        "Model KNN assessment",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        13,
+        14
+      ],
+      "predictions": [
+        {
+          "column": "Predicted Consensus Mutagen activity",
+          "unit": "Not declared in field label"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted Consensus Mutagen activity",
+        "Assessment"
+      ],
+      "numeric_columns": []
+    },
+    {
+      "id": "pers_sed_2",
+      "filename": "report_PERS_SED_2.txt",
+      "sha256": "025ec3acf494cc313a71c5d8bf632f09710fbdb1ed7fef186fef22abc3f07765",
+      "name": "Persistence (sediment) model (IRFMN)",
+      "model_metadata": "Persistence (sediment) model (IRFMN) (version 1.0.1)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted persistence in sediment",
+        "Molecules used for prediction",
+        "Experimental",
+        "Structural Alerts",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Structural alerts concordance",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        15
+      ],
+      "predictions": [
+        {
+          "column": "Predicted persistence in sediment",
+          "unit": "Not declared in field label"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted persistence in sediment",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "ADI"
+      ]
+    },
+    {
+      "id": "pers_soil_2",
+      "filename": "report_PERS_SOIL_2.txt",
+      "sha256": "23891376b92beb940dfd3ca47e65f95f9fad0bea3fadae7a9d12021d159d7b34",
+      "name": "Persistence (soil) model (IRFMN)",
+      "model_metadata": "Persistence (soil) model (IRFMN) (version 1.0.1)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted persistence in soil",
+        "Molecules used for prediction",
+        "Experimental",
+        "Structural Alerts",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Structural alerts concordance",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        15
+      ],
+      "predictions": [
+        {
+          "column": "Predicted persistence in soil",
+          "unit": "Not declared in field label"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted persistence in soil",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "ADI"
+      ]
+    },
+    {
+      "id": "pers_soil_quant_2",
+      "filename": "report_PERS_SOIL_QUANT_2.txt",
+      "sha256": "cce95a724e35079e0f2898eddbc076cbb5631f0ee9c260bb8353514b86957b4f",
+      "name": "Persistence (soil) quantitative model (IRFMN)",
+      "model_metadata": "Persistence (soil) quantitative model (IRFMN) (version 1.0.1)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted HL [log(days)]",
+        "Predicted HL [days]",
+        "Experimental value [days]",
+        "Experimental [log(days)]",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Max error index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        16
+      ],
+      "predictions": [
+        {
+          "column": "Predicted HL [log(days)]",
+          "unit": "log(days)"
+        },
+        {
+          "column": "Predicted HL [days]",
+          "unit": "days"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted HL [days]",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted HL [days]",
+        "ADI"
+      ]
+    },
+    {
+      "id": "pers_wat_2",
+      "filename": "report_PERS_WAT_2.txt",
+      "sha256": "73fd312f69cb64181779bbba64559ff2bcb442a1c95c7d20b12fbd04dc90d6c2",
+      "name": "Persistence (water) model (IRFMN)",
+      "model_metadata": "Persistence (water) model (IRFMN) (version 1.0.1)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted persistence in water",
+        "Molecules used for prediction",
+        "Experimental",
+        "Structural Alerts",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Structural alerts concordance",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        15
+      ],
+      "predictions": [
+        {
+          "column": "Predicted persistence in water",
+          "unit": "Not declared in field label"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted persistence in water",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "ADI"
+      ]
+    },
+    {
+      "id": "pers_water_quant_2",
+      "filename": "report_PERS_WATER_QUANT_2.txt",
+      "sha256": "6021abc542bbc06dca84f3ee1b1fdf736eb283dde0b0d57c6ef58595b42b9c84",
+      "name": "Persistence (water) quantitative model (IRFMN)",
+      "model_metadata": "Persistence (water) quantitative model (IRFMN) (version 1.0.1)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted HL [log(days)]",
+        "Predicted HL [days]",
+        "Experimental value [days]",
+        "Experimental",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Max error index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        16
+      ],
+      "predictions": [
+        {
+          "column": "Predicted HL [log(days)]",
+          "unit": "log(days)"
+        },
+        {
+          "column": "Predicted HL [days]",
+          "unit": "days"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted HL [days]",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted HL [days]",
+        "ADI"
+      ]
+    },
+    {
+      "id": "readybio_irfmn_2",
+      "filename": "report_READYBIO_IRFMN_2.txt",
+      "sha256": "9b454d909d5bff89c63e4e10377e57aae7315f17f0d8001d942bc67ab2b63b29",
+      "name": "Ready Biodegradability model (IRFMN)",
+      "model_metadata": "Ready Biodegradability model (IRFMN) (version 1.0.10)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted RB activity",
+        "No. alerts for non RB",
+        "No. alerts for possible non RB",
+        "No. alerts for RB",
+        "No. alerts for possible RB",
+        "Experimental",
+        "Structural Alerts",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        17
+      ],
+      "predictions": [
+        {
+          "column": "Predicted RB activity",
+          "unit": "Not declared in field label"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [],
+      "numeric_columns": []
+    },
+    {
+      "id": "vapour_pressure",
+      "filename": "report_VAPOUR_PRESSURE.txt",
+      "sha256": "c112131125fa9797b787ddd6d9b38e23c5053e801d83012795cd8975c56f7b7c",
+      "name": "Vapour Pressure (CONCERT/Kode)",
+      "model_metadata": "Vapour Pressure (CONCERT/Kode) (version 1.0.0)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted Vapour Pressure [log10(atm)]",
+        "Experimental",
+        "ADI",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        8,
+        14
+      ],
+      "predictions": [
+        {
+          "column": "Predicted Vapour Pressure [log10(atm)]",
+          "unit": "log10(atm)"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted Vapour Pressure [log10(atm)]",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted Vapour Pressure [log10(atm)]",
+        "ADI"
+      ]
+    },
+    {
+      "id": "ws_irfmn",
+      "filename": "report_WS_IRFMN.txt",
+      "sha256": "0d8f91dd24296714f55ca5ad73e39780fa881cd791b50cfbb97562c719573cb8",
+      "name": "Water solubility model (IRFMN)",
+      "model_metadata": "Water solubility model (IRFMN) (version 1.0.2)",
+      "calculation_metadata": "(calculation core version : 1.3.19)",
+      "encoding": "utf-8",
+      "headers": [
+        "No.",
+        "Id",
+        "SMILES",
+        "Assessment",
+        "Predicted water solubility [-log(mol/L)]",
+        "Predicted water solubility [mg/L]",
+        "Molecular Weight",
+        "Experimental value [mg/L]",
+        "Experimental",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Max error index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "allowed_row_widths": [
+        17
+      ],
+      "predictions": [
+        {
+          "column": "Predicted water solubility [-log(mol/L)]",
+          "unit": "-log(mol/L)"
+        },
+        {
+          "column": "Predicted water solubility [mg/L]",
+          "unit": "mg/L"
+        }
+      ],
+      "quality_columns": [
+        "Assessment",
+        "ADI",
+        "Similarity index",
+        "Accuracy index",
+        "Concordance index",
+        "Descriptors range check",
+        "ACF index",
+        "Remarks"
+      ],
+      "merge_columns": [
+        "Predicted water solubility [-log(mol/L)]",
+        "Predicted water solubility [mg/L]",
+        "Assessment",
+        "ADI"
+      ],
+      "numeric_columns": [
+        "Predicted water solubility [-log(mol/L)]",
+        "Predicted water solubility [mg/L]",
+        "ADI"
+      ]
+    }
+  ],
+  "legacy_merge_columns": [
+    "Basic | Inchikey14",
+    "Basic | Smile_std",
+    "BCF model (Arnot-Gobas) | Predicted BCF (up) [log(L/kg)]",
+    "BCF model (CAESAR) | Predicted BCF [log(L/kg)]",
+    "BCF model (Meylan) | Predicted BCF [log(L/kg)]",
+    "Persistence (water) model (IRFMN) | Predicted persistence in water",
+    "Persistence (soil) model (IRFMN) | Predicted persistence in soil",
+    "Persistence (sediment) model (IRFMN) | Predicted persistence in sediment",
+    "Persistence (water) quantitative model (IRFMN) | Predicted HL [days]",
+    "Persistence (soil) quantitative model (IRFMN) | Predicted HL [days]",
+    "Air Half-Life (IRFMN-CORAL) | Predicted Air Half-Life [hours]",
+    "KOC model (OPERA) | Predicted KOC [log(L/Kg)]",
+    "LogP model (Meylan-Kowwin) | Predicted LogP",
+    "Vapour Pressure (CONCERT/Kode) | Predicted Vapour Pressure [log10(atm)]",
+    "Water solubility model (IRFMN) | Predicted water solubility [-log(mol/L)]",
+    "Water solubility model (IRFMN) | Predicted water solubility [mg/L]",
+    "Fish Acute (LC50) Toxicity model (IRFMN) | Predicted LC50 [mg/l]",
+    "Mutagenicity (Ames test) CONSENSUS | Predicted Consensus Mutagen activity",
+    "Carcinogenicity model (CAESAR) | Predicted Carcinogen activity",
+    "Carcinogenicity model (ISS) | Predicted Carcinogen activity",
+    "Developmental Toxicity model (CAESAR) | Predicted developmental toxicity activity",
+    "Estrogen Receptor-mediated effect (IRFMN-CERAPP) | Predicted ER-mediated effect",
+    "BCF model (Arnot-Gobas) | Assessment",
+    "BCF model (Arnot-Gobas) | ADI",
+    "BCF model (CAESAR) | Assessment",
+    "BCF model (CAESAR) | ADI",
+    "BCF model (Meylan) | Assessment",
+    "BCF model (Meylan) | ADI",
+    "Persistence (water) model (IRFMN) | Assessment",
+    "Persistence (water) model (IRFMN) | ADI",
+    "Persistence (soil) model (IRFMN) | Assessment",
+    "Persistence (soil) model (IRFMN) | ADI",
+    "Persistence (sediment) model (IRFMN) | Assessment",
+    "Persistence (sediment) model (IRFMN) | ADI",
+    "Persistence (water) quantitative model (IRFMN) | Assessment",
+    "Persistence (water) quantitative model (IRFMN) | ADI",
+    "Persistence (soil) quantitative model (IRFMN) | Assessment",
+    "Persistence (soil) quantitative model (IRFMN) | ADI",
+    "Air Half-Life (IRFMN-CORAL) | Assessment",
+    "Air Half-Life (IRFMN-CORAL) | ADI",
+    "KOC model (OPERA) | Assessment",
+    "KOC model (OPERA) | ADI",
+    "LogP model (Meylan-Kowwin) | Assessment",
+    "LogP model (Meylan-Kowwin) | ADI",
+    "Vapour Pressure (CONCERT/Kode) | Assessment",
+    "Vapour Pressure (CONCERT/Kode) | ADI",
+    "Water solubility model (IRFMN) | Assessment",
+    "Water solubility model (IRFMN) | ADI",
+    "Fish Acute (LC50) Toxicity model (IRFMN) | Assessment",
+    "Fish Acute (LC50) Toxicity model (IRFMN) | ADI",
+    "Mutagenicity (Ames test) CONSENSUS | Assessment",
+    "Carcinogenicity model (CAESAR) | Assessment",
+    "Carcinogenicity model (CAESAR) | ADI",
+    "Carcinogenicity model (ISS) | Assessment",
+    "Carcinogenicity model (ISS) | ADI",
+    "Developmental Toxicity model (CAESAR) | Assessment",
+    "Developmental Toxicity model (CAESAR) | ADI",
+    "Estrogen Receptor-mediated effect (IRFMN-CERAPP) | Assessment",
+    "Estrogen Receptor-mediated effect (IRFMN-CERAPP) | ADI"
+  ],
+  "known_absent_columns": [
+    "Mutagenicity (Ames test) CONSENSUS | ADI"
+  ],
+  "legacy_excel_missing_tokens": [
+    "",
+    "#N/A",
+    "#N/A N/A",
+    "#NA",
+    "-1.#IND",
+    "-1.#QNAN",
+    "-NaN",
+    "-nan",
+    "1.#IND",
+    "1.#QNAN",
+    "<NA>",
+    "N/A",
+    "NA",
+    "NULL",
+    "NaN",
+    "None",
+    "n/a",
+    "nan",
+    "null"
+  ]
+}

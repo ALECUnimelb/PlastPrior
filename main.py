@@ -19,6 +19,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Also assemble source inventory records; no identity resolution or deduplication.")
     parser.add_argument("--resolve-identities", action="store_true",
                         help="Assemble records, resolve structures and aggregate by full InChIKey.")
+    parser.add_argument("--integrate-qsar", action="store_true",
+                        help="Also screen structures and integrate the frozen VEGA batch; no Pov/LRTP or scoring.")
     args = parser.parse_args(argv)
     print("Inspecting source files and supporting input presence...", flush=True)
     report = inspect_inputs(args.data_root)
@@ -39,13 +41,13 @@ def main(argv: list[str] | None = None) -> int:
     print("Supporting inputs: " + supporting_status)
     print(f"Inspection reports: {output_dir}")
     passed = report.passed if args.require_supporting_inputs else report.sources_passed
-    if passed and (args.assemble_records or args.resolve_identities):
+    if passed and (args.assemble_records or args.resolve_identities or args.integrate_qsar):
         records = build_source_records(args.data_root)
         records.write_reports(output_dir / "stage2")
         print("\nStage 2 preparation: source record assembly")
         print(records.summary.to_string(index=False))
         print(f"Source record reports: {output_dir / 'stage2'}")
-        if args.resolve_identities:
+        if args.resolve_identities or args.integrate_qsar:
             from plastprior.identity import resolve_identities
 
             print("\nStage 2: chemical identity resolution and aggregation", flush=True)
@@ -53,6 +55,14 @@ def main(argv: list[str] | None = None) -> int:
             identities.write_reports(output_dir / "stage2")
             print(identities.summary.to_string(index=False))
             print(identities.manifest["counts"])
+            if args.integrate_qsar:
+                from plastprior.qsar import integrate_qsar
+
+                print("\nStage 3A: frozen QSAR evidence integration", flush=True)
+                qsar = integrate_qsar(identities, args.data_root)
+                qsar.write_reports(output_dir / "stage3")
+                print(qsar.manifest["counts"])
+                print("Identity-review associations remain unverified; consult the audit reports.")
     return 0 if passed else 1
 
 

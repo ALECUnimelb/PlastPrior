@@ -3,8 +3,9 @@
 PlastPrior is being developed as a framework integrating hazard and exposure
 evidence to prioritise plastic-associated chemicals. The current implementation
 inspects local inputs, assembles source inventory records, resolves chemical
-identities and aggregates records by full structure-derived InChIKey. It does
-not integrate QSAR predictions or calculate hazard, exposure or priority scores.
+identities and aggregates records by full structure-derived InChIKey. Stage 3A
+also integrates the frozen VEGA predictions with explicit identity-review
+flags. Pov/LRTP calculations and hazard, exposure or priority scores are not implemented.
 
 ## Input inspection
 
@@ -14,9 +15,9 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1 and Stage 2, with five code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A, with six code cells. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
-identifier availability and identity-resolution outcomes. Full provenance notes, references,
+identifier availability, identity-resolution outcomes, model coverage and QSAR identity exceptions. Full provenance notes, references,
 and observed SHA-256 fingerprints are saved in the inspection reports.
 Versions, dates, and references are recorded provenance, not an independent
 verification against the publisher's latest release. Unrecorded metadata is
@@ -36,13 +37,16 @@ PlastPrior/
   plastprior/
     inputs.py
     identity.py
+    qsar.py
     validation.py
     sources.json
     identity_baseline.json
+    qsar_models.json
   tests/
     test_inputs.py
     test_source_records.py
     test_identity.py
+    test_qsar.py
     test_validation.py
   data/                     # Local inputs; ignored by Git
   results/                  # Generated reports; ignored by Git
@@ -54,8 +58,9 @@ their temporary fixtures do not require or alter the research collection.
 
 The planned sequence is input validation and ingestion, chemical identity
 resolution, QSAR evidence integration, evidence assembly, hazard assessment,
-exposure assessment, and chemical prioritisation. Stages 1 and 2 are implemented.
-Later stages will be introduced incrementally with corresponding validation.
+exposure assessment, and chemical prioritisation. Stages 1 and 2 and the frozen-report
+integration component of Stage 3 are implemented. Pov/LRTP and later stages will
+be introduced incrementally with corresponding validation.
 
 ## Source record assembly
 
@@ -262,6 +267,144 @@ independent certification of chemical correctness. Raw CSV bytes, explanatory
 provenance prose and schemas differ by design; later-stage results are outside
 this comparison. Native Windows execution remains to be verified separately.
 
+## Stage 3A: frozen QSAR report integration
+
+`integrate_qsar()` in `plastprior/qsar.py` uses the Stage 2 result directly. The
+CLI option `--integrate-qsar` runs source inspection, assembly, identity resolution
+and Stage 3A in order. Both interfaces use the same functions. No old-project
+runtime code, VEGA application, external service, or prebuilt Excel master is
+required. The 20 raw report files remain read-only in `data/Vega output`.
+
+`qsar_models.json` declares every model's filename, SHA-256, model/core metadata,
+encoding, exact header labels, recognised row widths, prediction fields and
+reported units, quality fields, numeric conversions and historical merge fields.
+Unrecorded units are labelled explicitly. Undeclared files, changed fingerprints,
+unexpected headers or widths, missing rows, repeated/out-of-order row numbers,
+and disagreement between model SMILES sequences stop integration. Files are
+hashed again after reading and at the end of integration.
+
+**Structure screening and batch identity.** Screening reproduces the historical
+100–1000 molecular-weight interval and exclusions for missing/invalid structures,
+multi-component structures, absence of carbon and the declared metal list.
+Heavy halogenation (at least four halogen atoms) is a warning. The inherited
+`charged_structure` flag tests the SMILES text for `+` or `-`; it is not a new
+net-charge calculation and is not an exclusion. All compounds and Stage 2 fields
+remain present. The reparsed non-isomeric representation is stored separately as
+`qsar_smiles`, including the ten previously identified pre-/post-QC differences.
+
+Input order follows the full-key inventory order, keeping the first eligible
+representative of each `qsar_inchikey`. The exported input has 10,655 rows from
+11,236 eligible full identities. The input text and external four-column row
+manifest must reproduce the frozen batch's exact SHA-256 values. These external
+column labels (`vega_row_no`, `Qsar_inchikey`, `Inchikey_std`, `Smile_std`) retain
+the historical manifest contract. A changed chemical collection cannot reuse
+these reports by row without a separately reviewed batch declaration.
+
+**Values and missingness.** `qsar_predictions.csv` retains the 169 historical
+model/quality/basic fields as raw text, before numeric conversion or legacy
+missing-token projection. Model values are joined many-to-one to the full-key
+inventory; 15,125 chemical identities remain distinct. The compound projection
+reproduces the 59 retained historical QSAR/basic fields. Ready Biodegradability
+is present in the raw model table but was not selected into that historical
+compound projection; its predictions are not silently substituted for another
+endpoint. No hazard score or common ADI cutoff is applied here.
+
+The Mutagenicity CONSENSUS report supplies Assessment but no ADI. Its ADI is
+explicitly listed as absent, never invented as zero. Numeric missing tokens,
+conversion failures and true numeric zero remain distinguishable in the raw
+values and conversion audit. The legacy Excel reader treated exact `N/A` and
+other declared NA tokens as missing. That rule applies only to the compound
+projection; `missing_value_audit.csv` records the original non-empty tokens.
+For the frozen batch, the `N/A` Assessment projection explains 2,600 compound
+cells across the water, soil and sediment persistence models. Raw predictions
+retain the literal text.
+
+**Variable-width reports.** BCF Arnot–Gobas, Mutagenicity CONSENSUS and Vapour
+Pressure contain rows whose width differs from their header or expanded layout.
+The migration retains historical left-aligned padding and extra fields before
+Remarks so selected values remain reproducible. It does not infer undocumented
+column meanings. Every such row retains file hash, physical line, row number and
+all original cells in `report_layout_audit.csv`. This also preserves short-row
+text that the legacy layout placed outside the final Remarks column.
+
+**Identity exceptions and source provenance.** The report SMILES sequence is
+identical across all 20 frozen reports. RDKit 2026.3.1 finds 15 input positions
+whose report structure does not reproduce the input key:
+
+- Fourteen yield different molecular formulae (hydrogen counts in this batch)
+  and radical-electron counts. These are observed representation differences,
+  not proof of which processing step introduced them or which representation is
+  chemically correct. Boron-cluster and radical representations require care.
+- Row 4389 cannot be sanitised because of a Kekulization failure. The original
+  input structure and the report representation are both retained, together
+  with the parser diagnostic. No structure repair is attempted.
+
+The frozen review rows are 938, 951, 3921, 4389, 4396, 5200, 5211, 6542, 7158,
+8420, 8448, 9214, 9536, 9695 and 9702. Their declaration permits historical import
+for audit, not scientific acceptance. An additional or changed exception stops
+integration; there is no percentage-based allowance for new mismatches.
+
+All 15 affected full identities retain their historical prediction values but
+have `qsar_identity_verified=False` and `qsar_identity_status=review_required`.
+Downstream code must not treat these values as identity-verified evidence.
+An exact report/input key match establishes representation agreement only; it
+does not establish model reliability or applicability-domain suitability.
+Unassociated compounds use `no_report_association`, separately from review cases.
+
+The exceptions link to 58 original inventory records and 300 model-report rows.
+Source records retain their frozen-file fingerprints, native IDs, selected
+reference identifiers, raw reported values and resolution routes. Report records
+retain model/file hashes, physical line numbers and parsed source fields. The
+shared row/key links connect these tables without duplicating each source record
+20 times. The cause assessment remains pending scientific review: archived text
+alone cannot establish whether VEGA processing or report export introduced the
+representation change. Resolving it may require the original model execution
+records or a separately authorised rerun; Stage 3A does neither.
+
+Outputs are generated under `results/stage3/` and remain ignored by Git:
+
+| Output | Purpose |
+| --- | --- |
+| `qsar_screening.csv` | Eligibility, molecular weight, warnings, exclusion reasons and separate QSAR SMILES |
+| `vega_input_smiles.txt`, `vega_input_row_manifest.csv` | Exact frozen input batch and row-to-identity contract |
+| `qsar_predictions.csv` | Raw selected predictions and quality fields for all models |
+| `compound_qsar.csv` | Full chemical inventory, historical value projection and identity-review flags |
+| `qsar_identity_audit.csv`, `identity_anomalies.csv` | All row identities and a compact exception-only view |
+| `identity_anomaly_sources.csv` | Every original source member of affected compounds |
+| `identity_anomaly_reports.csv` | Every affected model-report row and its provenance |
+| `qsar_model_summary.csv` | Versions, coverage, errors, ADI availability and layout counts |
+| `report_layout_audit.csv` | Nonstandard row widths with all raw source cells |
+| `numeric_conversion_audit.csv`, `missing_value_audit.csv` | Original missing tokens and explicit conversion outcomes |
+| `qsar_manifest.json` | Upstream, report, policy, implementation, runtime and output fingerprints |
+
+**Stage 3A regression.** Use the same frozen run as for Stage 2:
+
+```text
+python -m plastprior.validation --stage qsar --baseline "path to the frozen run" --results results/stage3 --output-dir results/validation_stage3
+```
+
+The validator first reruns Stage 2 regression (using the sibling `stage2` folder;
+`--upstream-results` can specify another location). It then verifies the old
+Stage 3 checkpoint/artifacts, all current outputs and upstream/report hashes.
+It compares every screening outcome/reason and molecular weight, input row and
+SMILES byte sequence, all 169 raw master fields, all 59 projected fields for
+every full identity, and unchanged Stage 2 identity fields. It also checks
+exception propagation, model-level counts and completeness of the 58 source
+and 300 report provenance links.
+
+Text, classifications and missing positions require exact equality. Converted
+numbers use exact decimal-value equality, so `1.20` and `1.2` are equivalent but
+a nonzero numerical difference fails; no floating-point tolerance is used in
+Stage 3A. Excel workbook formatting and metadata are outside the comparison.
+The report explicitly excludes every `LRTP_*` field and rejects a Stage 3A output
+that contains them. No claim of complete historical Stage 3 reproduction is
+made until its separate Pov/LRTP component is implemented and validated.
+
+`qsar_validation_summary.json` records historical agreement and scientific
+identity-review status separately. The accompanying checks and per-field
+differences remain reviewable. A failed prerequisite or unexplained difference
+returns a non-zero exit code; baselines are never updated automatically.
+
 ## Installation
 
 Use 64-bit Python 3.12. From the project directory, create an isolated environment:
@@ -325,14 +468,15 @@ Relative `data_root` paths resolve from the project root. An absolute path may
 be supplied for an external collection. Inputs are read without being modified;
 there is no automatic download, conversion, or repair of a missing source.
 
-The five supporting groups receive **presence checks only**. The checks require
+During Stage 1, the five supporting groups receive **presence checks only**. The checks require
 20 named VEGA reports, named GIC/patent/literature files, and the production
 manifest plus its eight source directories. They do not certify report contents,
 all nested production files, or readiness for a future scoring workflow. The
 recursive file totals include any supplementary backups present in those folders.
 Missing supporting inputs are reported separately from Stage 1 source failures.
 Each later stage must validate the auxiliary inputs it actually uses before
-performing its calculations.
+performing its calculations. Stage 3A validates the content and fingerprints of
+the 20 VEGA reports when `--integrate-qsar` is requested.
 
 ## Run
 
@@ -344,6 +488,7 @@ python main.py --data-root "path to an external data directory"
 python main.py --require-supporting-inputs
 python main.py --assemble-records
 python main.py --resolve-identities
+python main.py --integrate-qsar
 ```
 
 A missing source file, unreadable source table, absent required column, or empty

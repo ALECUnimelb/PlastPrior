@@ -1,9 +1,10 @@
-"""Compare Stage 2 outputs with a fingerprinted historical run, without executing it."""
+"""Compare identity and QSAR outputs with a fingerprinted historical run without executing it."""
 
 from __future__ import annotations
 
 import argparse
 from collections import Counter
+from decimal import Decimal, InvalidOperation
 import json
 from pathlib import Path
 
@@ -242,13 +243,172 @@ def compare_identity(baseline: str | Path, results: str | Path, output_dir: str 
     return report
 
 
+def _compare_qsar_frame(expected: pd.DataFrame, actual: pd.DataFrame, key: str, fields: dict,
+                        numeric_fields: set[str], scope: str) -> list[dict]:
+    """Compare exact text or exact decimal values, including missing-value locations."""
+    if expected[key].duplicated().any() or actual[key].duplicated().any():
+        raise ValueError(f"Duplicate comparison keys: {scope}")
+    if set(expected[key]) != set(actual[key]):
+        raise ValueError(f"Comparison key sets differ: {scope}")
+    expected = expected.set_index(key).sort_index()
+    actual = actual.set_index(key).loc[expected.index]
+    differences = []
+    for left, right in fields.items():
+        for row_key in expected.index[expected[left].ne(actual[right])]:
+            a, b = expected.at[row_key, left], actual.at[row_key, right]
+            if right in numeric_fields and a != "" and b != "":
+                try:
+                    if Decimal(a) == Decimal(b):
+                        continue
+                except InvalidOperation:
+                    pass
+            differences.append({"scope": scope, "key": row_key, "field": right, "expected": a, "actual": b})
+    return differences
+
+
+def compare_qsar(baseline: str | Path, results: str | Path, output_dir: str | Path,
+                 upstream_results: str | Path | None = None) -> dict:
+    """Validate Stage 3A against the frozen run, explicitly excluding Pov/LRTP."""
+    from .qsar import DEFAULT_MODELS
+
+    baseline, results, output_dir = Path(baseline), Path(results), Path(output_dir)
+    upstream = Path(upstream_results) if upstream_results is not None else results.parent / "stage2"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    differences, checks = [], []
+
+    def compare(old, new, key, fields, numeric, scope):
+        differences.extend(_compare_qsar_frame(old, new, key, fields, numeric, scope))
+        checks.append({"scope": scope, "rows": len(old), "fields": len(fields)})
+
+    try:
+        upstream_report = compare_identity(baseline, upstream, output_dir / "stage2")
+        if upstream_report["status"] != "passed":
+            raise ValueError("Upstream Stage 2 regression failed; inspect the nested report.")
+        run = _read_json(baseline / "run_manifest.json")
+        artifacts = {}
+        checkpoints = {}
+        for number in ("2", "3"):
+            entry = run["stages"][number]
+            path = baseline / Path(entry["checkpoint"])
+            _verify_hash(path, entry["checkpoint_sha256"])
+            cp = _read_json(path)
+            checkpoints[number] = cp
+            for item in cp["artifacts"]:
+                path = baseline / Path(item["path"])
+                _verify_hash(path, item["sha256"])
+                artifacts[item["artifact_id"]] = path
+        current_manifest = _read_json(results / "qsar_manifest.json")
+        _verify_hash(DEFAULT_MODELS, current_manifest["config_sha256"])
+        config = _read_json(DEFAULT_MODELS)
+        for name, digest in current_manifest["output_sha256"].items():
+            _verify_hash(results / name, digest)
+        for name, digest in current_manifest["upstream_sha256"].items():
+            _verify_hash(upstream / name, digest)
+        old_reports = _read_csv(artifacts["vega_report_manifest_csv"])
+        if {r["filename"]: r["sha256"] for r in current_manifest["inputs"]} != dict(zip(old_reports["source_file"], old_reports["source_sha256"])):
+            raise ValueError("Frozen report fingerprints differ from the historical batch.")
+        if current_manifest["runtime"]["rdkit"] != run["environment"]["package_versions"]["rdkit"]:
+            raise ValueError("RDKit version differs from the reference run.")
+
+        old_qc = _read_csv(artifacts["compound_inventory_by_inchikey_csv"]).rename(columns={"Inchikey_std": "inchikey"})
+        old_record_qc = _read_csv(artifacts["compound_records_qc_csv"])
+        weights = old_record_qc.loc[old_record_qc["Inchikey_std"].ne(""), ["Inchikey_std", "MW"]].drop_duplicates()
+        if weights["Inchikey_std"].duplicated().any():
+            raise ValueError("Historical compound molecular weights are inconsistent across member rows.")
+        old_qc = old_qc.merge(weights.rename(columns={"Inchikey_std": "inchikey"}), on="inchikey", validate="one_to_one")
+        screening = _read_csv(results / "qsar_screening.csv")
+        compare(old_qc, screening, "inchikey", {"Smile_std": "qsar_smiles", "Qsar_inchikey": "qsar_inchikey",
+                "keep_for_vega": "keep_for_vega", "qc_flags": "qc_flags", "MW": "molecular_weight"},
+                {"molecular_weight"}, "structure_screening")
+        old_comments = old_record_qc.loc[old_record_qc["Inchikey_std"].ne(""), ["Inchikey_std", "comment"]].drop_duplicates()
+        compare(old_comments.rename(columns={"Inchikey_std": "inchikey"}), screening, "inchikey",
+                {"comment": "exclusion_reason"}, set(), "screening_reasons")
+        old_input = _read_csv(artifacts["vega_input_row_manifest_csv"])
+        new_input = _read_csv(results / "vega_input_row_manifest.csv")
+        compare(old_input, new_input, "vega_row_no", {c: c for c in old_input.columns if c != "vega_row_no"}, set(), "input_manifest")
+        if _file_hash(results / "vega_input_smiles.txt") != _file_hash(artifacts["vega_input_smiles_txt"]):
+            raise ValueError("VEGA input SMILES bytes differ from the baseline.")
+
+        old_master = pd.read_excel(artifacts["vega_master_xlsx"], sheet_name="VEGA_DATA", dtype=str,
+                                   keep_default_na=False, engine="openpyxl").rename(columns={"Inchikey": "qsar_inchikey"})
+        predictions = _read_csv(results / "qsar_predictions.csv")
+        if set(old_master.columns) != set(predictions.columns):
+            raise ValueError("Parsed prediction/quality fields differ from the frozen master.")
+        compare(old_master, predictions, "qsar_inchikey", {c: c for c in old_master if c != "qsar_inchikey"}, set(), "raw_model_values")
+        old_merged = _read_csv(artifacts["compound_inventory_with_qsar_csv"]).rename(columns={"Inchikey_std": "inchikey"})
+        merged = _read_csv(results / "compound_qsar.csv")
+        if any(c.startswith("LRTP_") for c in merged):
+            raise ValueError("Stage 3A must not emit Pov/LRTP calculation fields.")
+        fields = config["legacy_merge_columns"]
+        numeric = {m["name"] + " | " + c for m in config["models"] for c in m["numeric_columns"]}
+        compare(old_merged, merged, "inchikey", {c: c for c in fields}, numeric, "compound_qsar_values")
+        source_compounds = _read_csv(upstream / "compound_inventory.csv")
+        compare(source_compounds, merged, "inchikey", {c: c for c in source_compounds if c != "inchikey"}, set(), "upstream_identity_preservation")
+
+        audit = _read_csv(results / "qsar_identity_audit.csv")
+        if audit["vega_row_no"].tolist() != new_input["vega_row_no"].tolist() or audit["qsar_inchikey"].tolist() != new_input["Qsar_inchikey"].tolist():
+            raise ValueError("Identity audit is not aligned with the full input manifest.")
+        exceptions = audit.loc[audit["identity_verified"].eq("False")]
+        if exceptions["vega_row_no"].astype(int).tolist() != config["frozen_batch"]["identity_review_rows"]:
+            raise ValueError("Identity-review rows differ from the frozen declaration.")
+        expected_flags = merged["qsar_inchikey"].map(audit.set_index("qsar_inchikey")["identity_verified"]).fillna("False")
+        if not expected_flags.equals(merged["qsar_identity_verified"]):
+            raise ValueError("Compound identity-verification flags do not match the input audit.")
+        expected_states = merged["qsar_inchikey"].map(audit.set_index("qsar_inchikey")["identity_status"]).fillna("no_report_association")
+        if not expected_states.equals(merged["qsar_identity_status"]):
+            raise ValueError("Compound identity-review statuses differ from the audit.")
+        model_summary = _read_csv(results / "qsar_model_summary.csv")
+        compare(old_reports, model_summary.rename(columns={"source_file": "source_file"}), "source_file",
+                {"raw_rows": "rows", "report_smiles_key_matches": "identity_verified_rows",
+                 "report_smiles_key_mismatches": "identity_review_rows"}, set(), "model_identity_counts")
+        refs = _read_csv(results / "identity_anomaly_reports.csv")
+        expected_pairs = {(str(n), m["id"]) for n in config["frozen_batch"]["identity_review_rows"] for m in config["models"]}
+        if len(refs) != len(expected_pairs) or set(zip(refs["vega_row_no"], refs["model_id"])) != expected_pairs:
+            raise ValueError("Incomplete or duplicated anomaly-to-report provenance.")
+        expected_hashes = {m["id"]: m["sha256"] for m in config["models"]}
+        if not refs["model_id"].map(expected_hashes).equals(refs["source_sha256"]):
+            raise ValueError("Anomaly report provenance has mismatched source fingerprints.")
+        links = _read_csv(results / "identity_anomaly_sources.csv")
+        members = _read_csv(upstream / "compound_memberships.csv")
+        affected_keys = set(merged.loc[merged["qsar_identity_status"].eq("review_required"), "inchikey"])
+        expected_links = members.loc[members["inchikey"].isin(affected_keys)]
+        if Counter(zip(links["inchikey"], links["record_id"])) != Counter(zip(expected_links["inchikey"], expected_links["record_id"])):
+            raise ValueError("Identity exceptions do not retain every original source member.")
+        original = _read_csv(upstream / "resolved_records.csv").set_index("record_id").loc[links["record_id"]].reset_index()
+        provenance_fields = ["source_id", "table_id", "source_filename", "source_sha256", "source_record_number",
+                             "source_native_id", "reported_fields_json", "selected_reference_id", "selected_reference_table"]
+        compare(original, links, "record_id", {c: c for c in provenance_fields}, set(), "anomaly_source_provenance")
+        summary = {"status": "passed" if not differences else "failed", "scope": "Stage 3A only; Pov/LRTP excluded",
+                   "baseline_run": run["run_id"], "baseline_run_manifest_sha256": _file_hash(baseline / "run_manifest.json"),
+                   "qsar_manifest_sha256": _file_hash(results / "qsar_manifest.json"),
+                   "implementation_sha256": _file_hash(Path(__file__)), "upstream_regression": "passed",
+                   "compounds_compared": len(merged), "input_rows_compared": len(new_input),
+                   "model_value_columns_compared": len(old_master.columns) - 1,
+                   "compound_qsar_columns_compared": len(fields), "identity_review_inputs": len(exceptions),
+                   "anomaly_report_links": len(refs), "anomaly_source_records": len(links),
+                   "scientific_identity_review": "pending", "numeric_comparison": "Exact decimal values; no floating-point tolerance",
+                   "interpretation": "Reproduces frozen associations and values; does not validate the chemical correctness of review-required mappings."}
+    except (ValueError, KeyError, OSError) as exc:
+        summary = {"status": "failed", "error": str(exc), "scope": "Stage 3A only"}
+    summary["unexplained_differences"] = len(differences)
+    pd.DataFrame(differences, columns=["scope", "key", "field", "expected", "actual"]).to_csv(
+        output_dir / "qsar_validation_differences.csv", index=False, encoding="utf-8", lineterminator="\n")
+    pd.DataFrame(checks, columns=["scope", "rows", "fields"]).to_csv(
+        output_dir / "qsar_validation_checks.csv", index=False, encoding="utf-8", lineterminator="\n")
+    (output_dir / "qsar_validation_summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, required=True, help="Frozen historical run directory.")
-    parser.add_argument("--results", type=Path, required=True, help="Current stage2 report directory.")
+    parser.add_argument("--results", type=Path, required=True, help="Current report directory for the selected stage.")
     parser.add_argument("--output-dir", type=Path, required=True, help="Validation report directory.")
+    parser.add_argument("--stage", choices=["identity", "qsar"], default="identity")
+    parser.add_argument("--upstream-results", type=Path, help="Stage 2 outputs for QSAR validation; defaults to sibling stage2.")
     args = parser.parse_args(argv)
-    report = compare_identity(args.baseline, args.results, args.output_dir)
+    report = (compare_qsar(args.baseline, args.results, args.output_dir, args.upstream_results)
+              if args.stage == "qsar" else compare_identity(args.baseline, args.results, args.output_dir))
     print(json.dumps(report, indent=2))
     return 0 if report["status"] == "passed" else 1
 
