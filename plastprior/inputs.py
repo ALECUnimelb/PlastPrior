@@ -12,6 +12,8 @@ import json
 from pathlib import Path
 from typing import Iterator
 import warnings
+import platform
+from importlib.metadata import version
 
 import pandas as pd
 
@@ -19,6 +21,7 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CATALOG = Path(__file__).with_name("sources.json")
 CSV_CHUNK_SIZE = 50_000
+REPORTED_FIELDS = ("name_reported", "cas_reported", "smiles_reported", "inchikey_reported")
 
 
 @dataclass
@@ -270,3 +273,172 @@ def inspect_inputs(
         table_frame[column] = table_frame[column].astype("Int64")
     return InputInspection(pd.DataFrame(sources), table_frame,
                            inspect_supporting_inputs(root, catalog))
+
+
+@dataclass
+class SourceRecords:
+    """Source inventory records before chemical identity resolution or deduplication."""
+
+    records: pd.DataFrame
+    summary: pd.DataFrame
+    mapping: pd.DataFrame
+    manifest: dict
+
+    def write_reports(self, output_dir: str | Path) -> None:
+        """Save all rows, including exclusions, with mappings and input fingerprints."""
+        folder = Path(output_dir)
+        folder.mkdir(parents=True, exist_ok=True)
+        outputs = {}
+        for name, frame in (("source_records.csv", self.records),
+                            ("source_record_summary.csv", self.summary),
+                            ("source_field_mapping.csv", self.mapping)):
+            path = folder / name
+            frame.to_csv(path, index=False, encoding="utf-8")
+            outputs[name] = _file_hash(path)
+        manifest = {**self.manifest, "output_sha256": outputs}
+        (folder / "source_record_manifest.json").write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def _record_mapping(table: dict) -> dict:
+    """Validate explicit candidate scope and mappings; never guess field names."""
+    mapping = table.get("record_mapping", {})
+    scope = mapping.get("scope")
+    if scope not in {"candidate_inventory", "identity_reference", "literature_links"}:
+        raise ValueError(f"Missing or invalid record scope for table {table['id']}.")
+    if scope != "candidate_inventory":
+        return mapping
+    fields = mapping.get("fields", {})
+    if set(fields) != set(REPORTED_FIELDS):
+        raise ValueError(f"Declare all four reported fields for table {table['id']}.")
+    if not any(fields.values()):
+        raise ValueError(f"At least one reported field must be mapped for table {table['id']}.")
+    for columns in fields.values():
+        if not isinstance(columns, list) or any(not isinstance(c, str) or not c for c in columns):
+            raise ValueError(f"Field mappings must be lists of source labels: {table['id']}.")
+        if len(columns) != len(set(columns)):
+            raise ValueError(f"Duplicate mapped column for table {table['id']}.")
+    native = mapping.get("native_id_column")
+    if native is not None and (not isinstance(native, str) or not native):
+        raise ValueError(f"Invalid native identifier column for table {table['id']}.")
+    required = mapping.get("required_for_inclusion", [])
+    if not isinstance(required, list) or any(field not in fields or not fields[field] for field in required):
+        raise ValueError(f"Invalid inclusion requirement for table {table['id']}.")
+    return mapping
+
+
+def _reported_text(value: object) -> str:
+    """Represent a source cell without trimming or changing identifier spelling."""
+    return "" if pd.isna(value) else str(value)
+
+
+def build_source_records(
+    data_root: str | Path = "data", *, catalog_path: str | Path = DEFAULT_CATALOG,
+) -> SourceRecords:
+    """Assemble inventory rows with frozen-file provenance and explicit inclusion rules.
+
+    Availability denotes a supplied value under the declared missing-token rule,
+    not a valid chemical identifier. Reference and literature-link tables are
+    described in the mapping report but never added to the candidate collection.
+    """
+    root = resolve_data_root(data_root)
+    catalog_hash = _file_hash(Path(catalog_path))
+    catalog = load_catalog(catalog_path)
+    policy = catalog.get("record_assembly_policy", {})
+    tokens = policy.get("missing_tokens")
+    if not policy.get("version") or not isinstance(tokens, list) or "" not in tokens or any(
+        not isinstance(token, str) for token in tokens
+    ):
+        raise ValueError("Record assembly requires a versioned policy and explicit missing tokens.")
+    missing_tokens = set(tokens)
+    declarations = {(s["id"], t["id"]): _record_mapping(t)
+                    for s in catalog["sources"] for t in s["tables"]}
+    frames, summaries, mappings, input_files = [], [], [], []
+    for source in catalog["sources"]:
+        path = root / "SourceDatabase" / source["filename"]
+        candidates = [t for t in source["tables"]
+                      if declarations[source["id"], t["id"]]["scope"] == "candidate_inventory"]
+        fingerprint = _file_hash(path) if candidates else None
+        for table in source["tables"]:
+            mapping = declarations[source["id"], table["id"]]
+            fields = mapping.get("fields", {})
+            mappings.append({
+                "source_id": source["id"], "table_id": table["id"],
+                "filename": source["filename"], "sheet": table["sheet"],
+                "header_row": table["header"] + 1, "scope": mapping["scope"],
+                "scope_reason": "candidate_inventory" if mapping["scope"] == "candidate_inventory"
+                                else f"{mapping['scope']}_not_candidate_inventory",
+                "native_id_column": mapping.get("native_id_column"),
+                **{field: json.dumps(fields.get(field, [])) for field in REPORTED_FIELDS},
+                "required_for_inclusion": json.dumps(mapping.get("required_for_inclusion", [])),
+            })
+            if mapping["scope"] != "candidate_inventory":
+                continue
+            with warnings.catch_warnings(record=True) as reader_warnings:
+                warnings.simplefilter("always")
+                frame = _read_table(path, table)
+            native_column = mapping.get("native_id_column")
+            mapped_columns = list(dict.fromkeys(
+                [c for columns in fields.values() for c in columns] + ([native_column] if native_column else [])))
+            absent = set(mapped_columns) - set(frame.columns)
+            if absent:
+                raise ValueError(f"Missing mapped columns in {table['id']}: {', '.join(sorted(absent))}")
+            if frame.empty:
+                raise ValueError(f"No source records in table {table['id']}.")
+            records = []
+            for number, values in enumerate(frame[mapped_columns].itertuples(index=False, name=None), 1):
+                raw = dict(zip(mapped_columns, map(_reported_text, values)))
+                key = json.dumps([source["id"], table["id"], fingerprint, number], separators=(",", ":"))
+                record = {
+                    "record_id": hashlib.sha256(key.encode("utf-8")).hexdigest(),
+                    "source_id": source["id"], "table_id": table["id"],
+                    "source_filename": source["filename"], "source_sha256": fingerprint,
+                    "source_sheet": table["sheet"], "source_record_number": number,
+                    "source_row_number": table["header"] + 1 + number if path.suffix.lower() != ".csv" else None,
+                    "source_native_id_column": native_column,
+                    "source_native_id": raw.get(native_column, ""),
+                    "reported_fields_json": json.dumps(raw, ensure_ascii=False),
+                }
+                for field, columns in fields.items():
+                    selected = next((c for c in columns if raw[c].strip() not in missing_tokens), None)
+                    record[field] = raw[selected] if selected is not None else ""
+                    record[f"{field}_column"] = selected
+                    record[f"{field}_available"] = selected is not None
+                missing = [field for field in mapping.get("required_for_inclusion", [])
+                           if not record[f"{field}_available"]]
+                record["included"] = not missing
+                record["exclusion_reason"] = ";".join(f"missing_required_{field}" for field in missing)
+                records.append(record)
+            assembled = pd.DataFrame(records)
+            assembled["source_row_number"] = assembled["source_row_number"].astype("Int64")
+            included = assembled.loc[assembled["included"]]
+            summaries.append({
+                "source_id": source["id"], "table_id": table["id"],
+                "parsed_records": len(assembled), "included_records": len(included),
+                "excluded_records": len(assembled) - len(included),
+                **{field.removesuffix("_reported") + "_available": int(included[f"{field}_available"].sum())
+                   for field in REPORTED_FIELDS},
+                "availability_denominator": "included_records",
+                "reader_warnings": "; ".join(dict.fromkeys(str(w.message) for w in reader_warnings)),
+            })
+            frames.append(assembled)
+        if candidates:
+            if fingerprint != _file_hash(path):
+                raise ValueError(f"Source changed during record assembly: {source['filename']}")
+            input_files.append({"source_id": source["id"], "filename": source["filename"], "sha256": fingerprint})
+    if not frames:
+        raise ValueError("No candidate inventory tables are declared.")
+    if catalog_hash != _file_hash(Path(catalog_path)):
+        raise ValueError("Source catalog changed during record assembly.")
+    records = pd.concat(frames, ignore_index=True)
+    manifest = {
+        "schema_version": 1, "policy": policy, "catalog_sha256": catalog_hash,
+        "implementation_sha256": _file_hash(Path(__file__)),
+        "runtime": {"python": platform.python_version(),
+                    **{name: version(name) for name in ("pandas", "openpyxl", "xlrd")}},
+        "input_files": input_files, "parsed_records": len(records),
+        "included_records": int(records["included"].sum()),
+        "excluded_records": int((~records["included"]).sum()),
+        "scope": "Source record assembly only; no identity resolution, deduplication or scoring.",
+    }
+    return SourceRecords(records, pd.DataFrame(summaries), pd.DataFrame(mappings), manifest)

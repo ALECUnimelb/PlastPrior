@@ -3,7 +3,7 @@
 import argparse
 from pathlib import Path
 
-from plastprior.inputs import inspect_inputs
+from plastprior.inputs import build_source_records, inspect_inputs
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -15,6 +15,8 @@ def main(argv: list[str] | None = None) -> int:
                              "this does not validate their contents.")
     parser.add_argument("--output-dir", type=Path, default=Path("results"),
                         help="Inspection report directory; relative paths resolve from the project root.")
+    parser.add_argument("--assemble-records", action="store_true",
+                        help="Also assemble source inventory records; no identity resolution or deduplication.")
     args = parser.parse_args(argv)
     print("Inspecting source files and supporting input presence...", flush=True)
     report = inspect_inputs(args.data_root)
@@ -35,6 +37,12 @@ def main(argv: list[str] | None = None) -> int:
     print("Supporting inputs: " + supporting_status)
     print(f"Inspection reports: {output_dir}")
     passed = report.passed if args.require_supporting_inputs else report.sources_passed
+    if passed and args.assemble_records:
+        records = build_source_records(args.data_root)
+        records.write_reports(output_dir / "stage2")
+        print("\nStage 2 preparation: source record assembly")
+        print(records.summary.to_string(index=False))
+        print(f"Source record reports: {output_dir / 'stage2'}")
     return 0 if passed else 1
 
 

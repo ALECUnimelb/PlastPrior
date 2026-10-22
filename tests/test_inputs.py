@@ -122,9 +122,11 @@ class InputTests(unittest.TestCase):
 
     def test_source_failure_stops_cli_with_or_without_strict_presence_checks(self):
         report = self.inspect()
-        with patch("main.inspect_inputs", return_value=report), redirect_stdout(io.StringIO()):
-            for options in ([], ["--require-supporting-inputs"]):
+        with patch("main.inspect_inputs", return_value=report), \
+                patch("main.build_source_records") as assemble, redirect_stdout(io.StringIO()):
+            for options in ([], ["--require-supporting-inputs"], ["--assemble-records"]):
                 self.assertEqual(main(["--output-dir", str(self.root / "reports"), *options]), 1)
+            assemble.assert_not_called()
 
     def test_reports_preserve_provenance_hashes_and_dimensions(self):
         (self.sources / "example.csv").write_text("id,name\n001,NA\n", encoding="utf-8")

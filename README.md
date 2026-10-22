@@ -2,8 +2,9 @@
 
 PlastPrior is being developed as a framework integrating hazard and exposure
 evidence to prioritise plastic-associated chemicals. The current implementation
-is limited to local input inspection. It does not standardise chemical
-identifiers, combine inventories, or calculate hazard, exposure, or priority scores.
+inspects local inputs and assembles source inventory records. It does
+not resolve chemical identities, standardise structures, deduplicate records, or
+calculate hazard, exposure, or priority scores.
 
 ## Input inspection
 
@@ -13,8 +14,9 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup and Stage 1. It displays file versions and dates,
-table dimensions, and inspection outcomes. Full provenance notes, references,
+The notebook contains Setup, Stage 1 and Stage 2 preparation. It displays file
+versions, table dimensions, inspection outcomes, source record counts and
+identifier availability. Full provenance notes, references,
 and observed SHA-256 fingerprints are saved in the inspection reports.
 Versions, dates, and references are recorded provenance, not an independent
 verification against the publisher's latest release. Unrecorded metadata is
@@ -36,6 +38,7 @@ PlastPrior/
     sources.json
   tests/
     test_inputs.py
+    test_source_records.py
   data/                     # Local inputs; ignored by Git
   results/                  # Generated reports; ignored by Git
 ```
@@ -46,9 +49,80 @@ their temporary fixtures do not require or alter the research collection.
 
 The planned sequence is input validation and ingestion, chemical identity
 resolution, QSAR evidence integration, evidence assembly, hazard assessment,
-exposure assessment, and chemical prioritisation. Only the source-inspection
-part of Stage 1 is implemented. Standardised source records and subsequent
-stages will be introduced incrementally with corresponding validation.
+exposure assessment, and chemical prioritisation. Source inspection and the
+record-assembly prerequisite for Stage 2 are implemented. Chemical identity
+resolution and subsequent stages will be introduced incrementally with
+corresponding validation.
+
+## Source record assembly
+
+`build_source_records()` in `plastprior/inputs.py` assembles the 11 candidate
+inventory tables using explicit `record_mapping` declarations in `sources.json`.
+PubChemLite and NORMAN SusDat remain identity references, and the LitChemPlast
+literature-link table remains a relationship table. These three tables are listed
+in the mapping report but are not read or appended by the assembly function;
+Stage 1 inspects them separately. PlastChem contributes inventory records here
+and may also supply reference evidence in a later stage.
+
+| Inventory table | Name | CAS | SMILES, in selection order | InChIKey | Native record identifier |
+| --- | --- | --- | --- | --- | --- |
+| PlastChem | `pubchem_name` | `cas` | `isomeric_smiles`, `canonical_smiles` | `inchikey` | `plastchem_ID` |
+| UNEP | `Name` | `CASRN` | `SMILES` | `InChI_key` | Not declared |
+| MPLEACH | `Compound_Name` | `CAS1` | `SMILES` | `InChIKey` | Not declared |
+| FCCmigex | `Preferred_Name` | `CAS` | `SMILES` | `InChIKey` | Not declared |
+| FCChumon S1/S2 | `Chemical name` | `CAS` | Not supplied | Not supplied | Not declared |
+| FCCprio | `Chemical Name` | `CAS Number` | `SMILES` | Not supplied | Not declared |
+| LitChemPlast | `PREFERRED_NAME` | `CASRN` | `SMILES` | `INCHIKEY` | `Chem_id` |
+| ICCA | `Name` | `CASRN` | Not supplied | `InChIKey` | Not declared |
+| UCSF | `PREFERRED_NAME` | `CASRN` | `SMILES` | `INCHIKEY` | Not declared |
+| PlasticMAP | `Name` | `CASRN` | `SMILES` | `InChI_key` | `id` |
+
+These mappings follow the historical source-selection fields. The first
+available value in a declared field list is selected. A missing declared column
+is an error, even if another fallback column is present; an empty mapping list
+explicitly means that the source does not supply that field. Additional CAS
+columns or alternative identifiers are not silently combined. Chemical
+identifiers such as CAS and DTXSID are not assumed to be unique source-row IDs.
+
+The versioned policy declares a case-sensitive missing-token list corresponding
+to conventional tabular NA markers. For selection and availability only, values
+are trimmed and compared with that list; actual null cells are also missing.
+Literal `NA`, `N/A` and the other listed placeholders therefore remain in the
+raw export but do not count as available identity values. This is separate from
+Stage 1, whose non-empty counts describe occupied cells. Identifier syntax,
+CAS checksums and chemical structures are not validated at this stage.
+
+All inventory rows are retained. The historical MPLEACH inclusion rule requires
+both reported InChIKey and SMILES; a missing required value sets `included=False`
+and a field-specific `exclusion_reason`. Other inventories have no additional
+identity-completeness gate at this stage. Included does not mean resolved or
+chemically valid. Availability counts use **included records** as the denominator;
+duplicates and excluded records remain individually traceable in the full export.
+
+Each record retains:
+
+- `record_id`: SHA-256 of the source ID, table ID, input-file SHA-256 and one-based
+  parsed record number, encoded as a compact JSON array. It is stable for the
+  same frozen file and table declaration; changes to file bytes change the IDs.
+  It is a provenance key, not a chemical identifier or a cross-release identifier.
+- `source_record_number`: position in the parsed table, assigned before filtering.
+  `source_row_number` additionally identifies the physical Excel worksheet row,
+  accounting for the declared header offset. It is absent for CSV because quoted
+  multiline cells and skipped blank lines prevent a simple physical-line mapping.
+- `source_native_id` and its column label, where explicitly declared. Native
+  IDs may be missing or repeated; they are not used for deduplication.
+- Four reported fields, their selected source columns and availability flags.
+  Selected text is not trimmed, uppercased or chemically normalised. If no value
+  is available, the selected field is empty; `reported_fields_json` retains all
+  mapped raw values, including placeholders and unselected fallbacks. Values are
+  textual representations of parsed cells, not Excel display formatting. The
+  fingerprinted original file remains the authority for all other fields.
+
+Assembly hashes each candidate source before and after reading and fails if the
+bytes change. The manifest records source, catalog, implementation and exported
+file hashes, the assembly policy and reader versions. A failed assembly does not
+write a new report set; previously generated reports may still exist and must
+not be treated as results of a failed run.
 
 ## Installation
 
@@ -126,6 +200,7 @@ Command line, on macOS or Windows:
 python main.py
 python main.py --data-root "path to an external data directory"
 python main.py --require-supporting-inputs
+python main.py --assemble-records
 ```
 
 A missing source file, unreadable source table, absent required column, or empty
@@ -149,6 +224,23 @@ from the project root. The notebook exposes `REPORT_DIR` for the same purpose.
 The API distinguishes `sources_passed` (Stage 1) from `supporting_present`
 (auxiliary presence). `passed` and `require_complete()` retain the combined
 check, while `require_sources()` enforces the Stage 1 boundary.
+
+`--assemble-records` adds record assembly after the requested inspection checks
+pass. It writes the following files under `results/stage2/` (or the specified
+output directory):
+
+| File | Contents |
+| --- | --- |
+| `source_records.csv` | All inventory records, provenance, selected fields and exclusion reasons |
+| `source_record_summary.csv` | Per-table counts, included-record availability and reader warnings |
+| `source_field_mapping.csv` | Explicit table scopes, field lists and inclusion requirements |
+| `source_record_manifest.json` | Policy, runtime, input and output fingerprints |
+
+The notebook calls the same assembly function. No RDKit dependency, reference
+lookup, chemical identity inference or deduplication is introduced. When reading
+the exported records programmatically, use `dtype=str, keep_default_na=False`
+to retain textual native IDs and literal placeholders; interpret `included`
+explicitly as the strings `True` or `False` when using this read mode.
 
 For an interactive review:
 

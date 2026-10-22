@@ -20,7 +20,10 @@
             "Norman_SusDat_ID",
             "CAS_RN"
           ],
-          "role": "identity reference"
+          "role": "identity reference",
+          "record_mapping": {
+            "scope": "identity_reference"
+          }
         }
       ]
     },
@@ -42,7 +45,10 @@
             "Identifier",
             "InChIKey"
           ],
-          "role": "identity reference"
+          "role": "identity reference",
+          "record_mapping": {
+            "scope": "identity_reference"
+          }
         }
       ]
     },
@@ -64,7 +70,27 @@
             "plastchem_ID",
             "cas"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": "plastchem_ID",
+            "fields": {
+              "name_reported": [
+                "pubchem_name"
+              ],
+              "cas_reported": [
+                "cas"
+              ],
+              "smiles_reported": [
+                "isomeric_smiles",
+                "canonical_smiles"
+              ],
+              "inchikey_reported": [
+                "inchikey"
+              ]
+            },
+            "required_for_inclusion": []
+          }
         }
       ]
     },
@@ -86,7 +112,26 @@
             "CASRN",
             "Name"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": null,
+            "fields": {
+              "name_reported": [
+                "Name"
+              ],
+              "cas_reported": [
+                "CASRN"
+              ],
+              "smiles_reported": [
+                "SMILES"
+              ],
+              "inchikey_reported": [
+                "InChI_key"
+              ]
+            },
+            "required_for_inclusion": []
+          }
         }
       ]
     },
@@ -108,7 +153,29 @@
             "Compound_Name",
             "InChIKey"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": null,
+            "fields": {
+              "name_reported": [
+                "Compound_Name"
+              ],
+              "cas_reported": [
+                "CAS1"
+              ],
+              "smiles_reported": [
+                "SMILES"
+              ],
+              "inchikey_reported": [
+                "InChIKey"
+              ]
+            },
+            "required_for_inclusion": [
+              "inchikey_reported",
+              "smiles_reported"
+            ]
+          }
         }
       ]
     },
@@ -130,7 +197,26 @@
             "Common_Name",
             "CAS"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": null,
+            "fields": {
+              "name_reported": [
+                "Preferred_Name"
+              ],
+              "cas_reported": [
+                "CAS"
+              ],
+              "smiles_reported": [
+                "SMILES"
+              ],
+              "inchikey_reported": [
+                "InChIKey"
+              ]
+            },
+            "required_for_inclusion": []
+          }
         }
       ]
     },
@@ -152,7 +238,22 @@
             "CAS",
             "Chemical name"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": null,
+            "fields": {
+              "name_reported": [
+                "Chemical name"
+              ],
+              "cas_reported": [
+                "CAS"
+              ],
+              "smiles_reported": [],
+              "inchikey_reported": []
+            },
+            "required_for_inclusion": []
+          }
         },
         {
           "id": "fcchumon_s2",
@@ -162,7 +263,22 @@
             "CAS",
             "Chemical name"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": null,
+            "fields": {
+              "name_reported": [
+                "Chemical name"
+              ],
+              "cas_reported": [
+                "CAS"
+              ],
+              "smiles_reported": [],
+              "inchikey_reported": []
+            },
+            "required_for_inclusion": []
+          }
         }
       ]
     },
@@ -184,7 +300,24 @@
             "CAS Number",
             "Chemical Name"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": null,
+            "fields": {
+              "name_reported": [
+                "Chemical Name"
+              ],
+              "cas_reported": [
+                "CAS Number"
+              ],
+              "smiles_reported": [
+                "SMILES"
+              ],
+              "inchikey_reported": []
+            },
+            "required_for_inclusion": []
+          }
         }
       ]
     },
@@ -206,7 +339,26 @@
             "Chem_id",
             "CASRN"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": "Chem_id",
+            "fields": {
+              "name_reported": [
+                "PREFERRED_NAME"
+              ],
+              "cas_reported": [
+                "CASRN"
+              ],
+              "smiles_reported": [
+                "SMILES"
+              ],
+              "inchikey_reported": [
+                "INCHIKEY"
+              ]
+            },
+            "required_for_inclusion": []
+          }
         },
         {
           "id": "litchemplast_links",
@@ -216,7 +368,10 @@
             "LitChem_id",
             "Chem_id"
           ],
-          "role": "literature-to-chemical links"
+          "role": "literature-to-chemical links",
+          "record_mapping": {
+            "scope": "literature_links"
+          }
         }
       ]
     },
@@ -238,7 +393,24 @@
             "CASRN",
             "Name"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": null,
+            "fields": {
+              "name_reported": [
+                "Name"
+              ],
+              "cas_reported": [
+                "CASRN"
+              ],
+              "smiles_reported": [],
+              "inchikey_reported": [
+                "InChIKey"
+              ]
+            },
+            "required_for_inclusion": []
+          }
         }
       ]
     },
@@ -260,7 +432,26 @@
             "INPUT",
             "INCHIKEY"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": null,
+            "fields": {
+              "name_reported": [
+                "PREFERRED_NAME"
+              ],
+              "cas_reported": [
+                "CASRN"
+              ],
+              "smiles_reported": [
+                "SMILES"
+              ],
+              "inchikey_reported": [
+                "INCHIKEY"
+              ]
+            },
+            "required_for_inclusion": []
+          }
         }
       ]
     },
@@ -282,7 +473,26 @@
             "id",
             "CASRN"
           ],
-          "role": "chemical inventory"
+          "role": "chemical inventory",
+          "record_mapping": {
+            "scope": "candidate_inventory",
+            "native_id_column": "id",
+            "fields": {
+              "name_reported": [
+                "Name"
+              ],
+              "cas_reported": [
+                "CASRN"
+              ],
+              "smiles_reported": [
+                "SMILES"
+              ],
+              "inchikey_reported": [
+                "InChI_key"
+              ]
+            },
+            "required_for_inclusion": []
+          }
         }
       ]
     }
@@ -353,5 +563,31 @@
         "08_Taiwan_Toxic_Chemicals"
       ]
     }
-  ]
+  ],
+  "record_assembly_policy": {
+    "version": "source-record-assembly-v1",
+    "missing_tokens": [
+      "",
+      "#N/A",
+      "#N/A N/A",
+      "#NA",
+      "-1.#IND",
+      "-1.#QNAN",
+      "-NaN",
+      "-nan",
+      "1.#IND",
+      "1.#QNAN",
+      "<NA>",
+      "N/A",
+      "NA",
+      "NULL",
+      "NaN",
+      "None",
+      "n/a",
+      "nan",
+      "null"
+    ],
+    "missing_value_rule": "For availability and selection only, trim whitespace and compare case-sensitively with the declared tokens; preserve source values in the record export.",
+    "inclusion_rule": "Retain all candidate inventory rows. Only MPLEACH requires both reported InChIKey and SMILES, following the historical source-selection rule. Excluded rows remain in the output."
+  }
 }
