@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "policy_version": "lrtp-frozen-reproduction-v1",
+  "scope": "Stage 3B; no downstream scoring",
+  "historical_source": {
+    "repository": "ChemicalPrio",
+    "path": "Algorithm/step12b_oecd_lrtp.py",
+    "sha256": "63851a2671129a5c770384710118fec7399012babf8c44ed262df95d0a29c01b",
+    "baseline_run": "20261006T233429Z",
+    "official_tool_version": "Not established from the archived implementation; independent validation pending"
+  },
+  "reference_lines": {
+    "POV_days": 194.662,
+    "CTD_km": 5096.73,
+    "TE_percent": 2.2476
+  },
+  "reference_comparison": "strictly greater than",
+  "warning_ranges": {
+    "logKaw": [
+      -11.0,
+      2.0
+    ],
+    "logKow": [
+      -1.0,
+      10.0
+    ],
+    "half_life_h": [
+      0.0001,
+      10000000000.0
+    ]
+  },
+  "fatal_log_partition_range": [
+    -100.0,
+    100.0
+  ],
+  "temperature_K": 298.15,
+  "gas_constant_Pa_m3_mol_K": 8.314,
+  "environmental_constants": "The frozen three-compartment kernel retains the environmental geometry, transfer coefficients and operation order of the fingerprinted historical source.",
+  "identity_policy": {
+    "required_status": "exact_key_match",
+    "excluded_status": "review_required",
+    "unassociated_status": "no_report_association",
+    "exclusion_reason": "identity_review_required"
+  },
+  "quality_policy": "Assessment and ADI are retained without introducing a new quality threshold. Availability is not independent scientific validation.",
+  "numerical_validation": "Exact decimal equality; no floating-point tolerance. JSON evidence is compared recursively, ignoring object key order.",
+  "reference_documentation": "https://www.oecd.org/en/data/tools/screening-tool-for-overall-persistence-and-long-range-transport-potential.html",
+  "input_mapping": [
+    {
+      "property": "logKow",
+      "column": "LogP model (Meylan-Kowwin) | Predicted LogP",
+      "assessment_column": "LogP model (Meylan-Kowwin) | Assessment",
+      "adi_column": "LogP model (Meylan-Kowwin) | ADI",
+      "unit": "log10 dimensionless",
+      "conversion": "identity",
+      "model_id": "logp_meylan",
+      "model_metadata": "LogP model (Meylan-Kowwin) (version 1.1.5)",
+      "report_filename": "report_LOGP_MEYLAN.txt",
+      "report_sha256": "b227e45959d9325013da51c6871eae9fbaeb7b5c15dff7e640015492111c3f30"
+    },
+    {
+      "property": "HLair",
+      "column": "Air Half-Life (IRFMN-CORAL) | Predicted Air Half-Life [hours]",
+      "assessment_column": "Air Half-Life (IRFMN-CORAL) | Assessment",
+      "adi_column": "Air Half-Life (IRFMN-CORAL) | ADI",
+      "unit": "hours",
+      "conversion": "identity",
+      "model_id": "pers_air_coral_2",
+      "model_metadata": "Air Half-Life (IRFMN-CORAL) (version 1.0.1)",
+      "report_filename": "report_PERS_AIR_CORAL_2.txt",
+      "report_sha256": "62427af0d40d0c85f01822a416bd102f7511e30f7f9994ed43395dca13078441"
+    },
+    {
+      "property": "HLwater",
+      "column": "Persistence (water) quantitative model (IRFMN) | Predicted HL [days]",
+      "assessment_column": "Persistence (water) quantitative model (IRFMN) | Assessment",
+      "adi_column": "Persistence (water) quantitative model (IRFMN) | ADI",
+      "unit": "days",
+      "conversion": "multiply by 24 to hours",
+      "model_id": "pers_water_quant_2",
+      "model_metadata": "Persistence (water) quantitative model (IRFMN) (version 1.0.1)",
+      "report_filename": "report_PERS_WATER_QUANT_2.txt",
+      "report_sha256": "6021abc542bbc06dca84f3ee1b1fdf736eb283dde0b0d57c6ef58595b42b9c84"
+    },
+    {
+      "property": "HLsoil",
+      "column": "Persistence (soil) quantitative model (IRFMN) | Predicted HL [days]",
+      "assessment_column": "Persistence (soil) quantitative model (IRFMN) | Assessment",
+      "adi_column": "Persistence (soil) quantitative model (IRFMN) | ADI",
+      "unit": "days",
+      "conversion": "multiply by 24 to hours",
+      "model_id": "pers_soil_quant_2",
+      "model_metadata": "Persistence (soil) quantitative model (IRFMN) (version 1.0.1)",
+      "report_filename": "report_PERS_SOIL_QUANT_2.txt",
+      "report_sha256": "cce95a724e35079e0f2898eddbc076cbb5631f0ee9c260bb8353514b86957b4f"
+    },
+    {
+      "property": "logVP",
+      "column": "Vapour Pressure (CONCERT/Kode) | Predicted Vapour Pressure [log10(atm)]",
+      "assessment_column": "Vapour Pressure (CONCERT/Kode) | Assessment",
+      "adi_column": "Vapour Pressure (CONCERT/Kode) | ADI",
+      "unit": "log10(atm)",
+      "conversion": "combine with pWS to derive logKaw",
+      "model_id": "vapour_pressure",
+      "model_metadata": "Vapour Pressure (CONCERT/Kode) (version 1.0.0)",
+      "report_filename": "report_VAPOUR_PRESSURE.txt",
+      "report_sha256": "c112131125fa9797b787ddd6d9b38e23c5053e801d83012795cd8975c56f7b7c"
+    },
+    {
+      "property": "water_solubility",
+      "column": "Water solubility model (IRFMN) | Predicted water solubility [-log(mol/L)]",
+      "assessment_column": "Water solubility model (IRFMN) | Assessment",
+      "adi_column": "Water solubility model (IRFMN) | ADI",
+      "unit": "-log10(mol/L)",
+      "conversion": "combine with logVP to derive logKaw",
+      "model_id": "ws_irfmn",
+      "model_metadata": "Water solubility model (IRFMN) (version 1.0.2)",
+      "report_filename": "report_WS_IRFMN.txt",
+      "report_sha256": "0d8f91dd24296714f55ca5ad73e39780fa881cd791b50cfbb97562c719573cb8"
+    }
+  ]
+}

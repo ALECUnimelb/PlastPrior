@@ -21,6 +21,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Assemble records, resolve structures and aggregate by full InChIKey.")
     parser.add_argument("--integrate-qsar", action="store_true",
                         help="Also screen structures and integrate the frozen VEGA batch; no Pov/LRTP or scoring.")
+    parser.add_argument("--calculate-lrtp", action="store_true",
+                        help="Also calculate Pov/LRTP and isolate unverified identities; no downstream scoring.")
     args = parser.parse_args(argv)
     print("Inspecting source files and supporting input presence...", flush=True)
     report = inspect_inputs(args.data_root)
@@ -41,13 +43,13 @@ def main(argv: list[str] | None = None) -> int:
     print("Supporting inputs: " + supporting_status)
     print(f"Inspection reports: {output_dir}")
     passed = report.passed if args.require_supporting_inputs else report.sources_passed
-    if passed and (args.assemble_records or args.resolve_identities or args.integrate_qsar):
+    if passed and (args.assemble_records or args.resolve_identities or args.integrate_qsar or args.calculate_lrtp):
         records = build_source_records(args.data_root)
         records.write_reports(output_dir / "stage2")
         print("\nStage 2 preparation: source record assembly")
         print(records.summary.to_string(index=False))
         print(f"Source record reports: {output_dir / 'stage2'}")
-        if args.resolve_identities or args.integrate_qsar:
+        if args.resolve_identities or args.integrate_qsar or args.calculate_lrtp:
             from plastprior.identity import resolve_identities
 
             print("\nStage 2: chemical identity resolution and aggregation", flush=True)
@@ -55,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
             identities.write_reports(output_dir / "stage2")
             print(identities.summary.to_string(index=False))
             print(identities.manifest["counts"])
-            if args.integrate_qsar:
+            if args.integrate_qsar or args.calculate_lrtp:
                 from plastprior.qsar import integrate_qsar
 
                 print("\nStage 3A: frozen QSAR evidence integration", flush=True)
@@ -63,6 +65,14 @@ def main(argv: list[str] | None = None) -> int:
                 qsar.write_reports(output_dir / "stage3")
                 print(qsar.manifest["counts"])
                 print("Identity-review associations remain unverified; consult the audit reports.")
+                if args.calculate_lrtp:
+                    from plastprior.lrtp import integrate_lrtp
+
+                    print("\nStage 3B: Pov/LRTP calculation and identity isolation", flush=True)
+                    lrtp = integrate_lrtp(output_dir / "stage3")
+                    lrtp.write_reports(output_dir / "stage3" / "lrtp")
+                    print(lrtp.manifest["counts"])
+                    print("Historical reproduction is separate from analysis availability; no scoring was performed.")
     return 0 if passed else 1
 
 

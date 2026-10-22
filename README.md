@@ -5,7 +5,9 @@ evidence to prioritise plastic-associated chemicals. The current implementation
 inspects local inputs, assembles source inventory records, resolves chemical
 identities and aggregates records by full structure-derived InChIKey. Stage 3A
 also integrates the frozen VEGA predictions with explicit identity-review
-flags. Pov/LRTP calculations and hazard, exposure or priority scores are not implemented.
+flags. Stage 3B reproduces historical Pov/LRTP calculations and isolates
+unverified identities from analysis outputs. Hazard, exposure and priority
+scores are not implemented.
 
 ## Input inspection
 
@@ -15,9 +17,10 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1, Stage 2 and Stage 3A, with six code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B, with seven code cells. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
-identifier availability, identity-resolution outcomes, model coverage and QSAR identity exceptions. Full provenance notes, references,
+identifier availability, identity-resolution outcomes, model coverage, QSAR
+identity exceptions, historical LRTP calculation coverage and analysis exclusions. Full provenance notes, references,
 and observed SHA-256 fingerprints are saved in the inspection reports.
 Versions, dates, and references are recorded provenance, not an independent
 verification against the publisher's latest release. Unrecorded metadata is
@@ -38,15 +41,18 @@ PlastPrior/
     inputs.py
     identity.py
     qsar.py
+    lrtp.py
     validation.py
     sources.json
     identity_baseline.json
     qsar_models.json
+    lrtp_parameters.json
   tests/
     test_inputs.py
     test_source_records.py
     test_identity.py
     test_qsar.py
+    test_lrtp.py
     test_validation.py
   data/                     # Local inputs; ignored by Git
   results/                  # Generated reports; ignored by Git
@@ -58,9 +64,10 @@ their temporary fixtures do not require or alter the research collection.
 
 The planned sequence is input validation and ingestion, chemical identity
 resolution, QSAR evidence integration, evidence assembly, hazard assessment,
-exposure assessment, and chemical prioritisation. Stages 1 and 2 and the frozen-report
-integration component of Stage 3 are implemented. Pov/LRTP and later stages will
-be introduced incrementally with corresponding validation.
+exposure assessment, and chemical prioritisation. Stages 1 and 2, frozen-report
+QSAR integration (3A), and historical Pov/LRTP calculation with identity isolation
+(3B) are implemented. Later stages will be introduced incrementally with
+corresponding validation.
 
 ## Source record assembly
 
@@ -398,12 +405,134 @@ a nonzero numerical difference fails; no floating-point tolerance is used in
 Stage 3A. Excel workbook formatting and metadata are outside the comparison.
 The report explicitly excludes every `LRTP_*` field and rejects a Stage 3A output
 that contains them. No claim of complete historical Stage 3 reproduction is
-made until its separate Pov/LRTP component is implemented and validated.
+made by the Stage 3A validator; the separate Stage 3B validator covers that component.
 
 `qsar_validation_summary.json` records historical agreement and scientific
 identity-review status separately. The accompanying checks and per-field
 differences remain reviewable. A failed prerequisite or unexplained difference
 returns a non-zero exit code; baselines are never updated automatically.
+
+## Stage 3B: Pov/LRTP calculation and identity isolation
+
+`plastprior/lrtp.py` reads the fingerprinted Stage 3A reports, applies the
+historical three-compartment fugacity calculation, and writes separate
+historical and analysis tables. It imports no legacy repository code at runtime,
+does not rerun VEGA, and does not calculate downstream mobility or priority
+scores. `--calculate-lrtp` runs Stages 1, 2, 3A and 3B in order; the notebook uses
+the same entrypoints. The Stage 3A artifacts remain unchanged.
+
+The numerical kernel was migrated from
+`Algorithm/step12b_oecd_lrtp.py` in ChemicalPrio. The source SHA-256 and frozen
+run are recorded in `lrtp_parameters.json`, together with the input mapping,
+report versions/hashes, units, conversion rules, numerical boundaries and
+reference lines. Environmental geometry, transfer coefficients and arithmetic
+operation order remain explicit in the kernel and are covered by its source
+fingerprint and full historical regression. The historical source describes an
+OECD-tool implementation but does not identify a validated official workbook
+release. Agreement with the archived Python outputs must not be presented as
+independent validation against the official OECD workbook.
+
+| Property | Frozen model field and conversion |
+| --- | --- |
+| logKow | Meylan-Kowwin predicted LogP; no conversion |
+| Air half-life | IRFMN-CORAL prediction in hours |
+| Water half-life | IRFMN quantitative persistence prediction in days, multiplied by 24 |
+| Soil half-life | IRFMN quantitative persistence prediction in days, multiplied by 24 |
+| Vapour pressure | CONCERT/Kode prediction in log10(atm) |
+| Water solubility | IRFMN prediction in negative log10(mol/L), not the mg/L column |
+
+The historical conversion is
+`logKaw = logVP_atm + pWS_mol_L + log10(101325 / (1000 * R * T))`,
+with `R = 8.314` and `T = 298.15 K`. The kernel preserves air, water and soil
+emission scenarios, their individual outputs, and the historical aggregation:
+maximum scenario Pov, maximum air/water characteristic travel distance, and
+maximum scenario transfer efficiency. Numerical outputs are Pov (days), CTD
+(km), TE (percent) and PhiAir (dimensionless).
+
+Historical reference lines are Pov = 194.662 days, CTD = 5096.73 km and
+TE = 2.2476 percent. Exceedance requires strictly greater values; equality is
+not exceedance. These are frozen screening reference lines, not declarations
+of regulatory status. Missing/non-finite properties, nonpositive half-lives,
+fatal partition-coefficient ranges and solver failures remain distinct audit
+conditions. Source Assessment and ADI values are retained; no new ADI cutoff,
+quality weighting, missing-value imputation or scientific-rule change is
+introduced during this migration.
+
+**Separate calculation and identity status.** A historical `ok` or `warning`
+means that the numerical input checks permit calculation. It does not establish
+chemical identity, adequate applicability-domain coverage, or scientific
+reliability. Stage 3B therefore maintains three separate fields:
+
+- `calculation_status`: the original numerical outcome, including `ok`,
+  `warning`, `missing`, `invalid` or `calculation_error`.
+- `qsar_identity_status`: the unchanged Stage 3A structure-association status.
+- `lrtp_available`: true only for a verified identity with calculation status
+  `ok` or `warning`. Quality limitations must still be assessed downstream.
+
+**Identity isolation.** All 15 review-required compounds retain their historical
+values and scenario evidence in `lrtp_historical_results.csv`, explicitly marked
+`result_role=historical_reproduction_only`, with identity diagnostics. The
+analysis table `compound_lrtp.csv` preserves every upstream compound and QSAR
+field, but withholds all 12 LRTP numeric/Boolean fields for unavailable records.
+For the 15 identity exceptions, `LRTP_input_status` and `lrtp_exclusion_reason`
+are `identity_review_required`; `calculation_status` still records the original
+`ok`. Empty indicators are never replaced with zero or False. Historical nested
+`LRTP_evidence` is omitted entirely from the analysis table to prevent scenario
+results from bypassing this exclusion. Full evidence remains in the explicitly
+historical table.
+
+The frozen baseline contains 15,125 full identities: 9,305 `ok`, 1,645 `warning`,
+3,895 `missing` and 280 `invalid`. All 15 identity exceptions were numerically
+`ok`; isolation reduces available results from 10,950 to 10,935. The historical
+reference-line counts are 1,415 Pov, 16 CTD and 1,193 TE exceedances. With identity
+isolation they become 1,412, 16 and 1,192 respectively; the exclusions are three
+Pov cases (input rows 4389, 6542 and 9702) and one TE case (row 9695). These are
+explicit policy differences, not failures of historical numerical reproduction.
+Neither the representations nor their original predictions are repaired.
+
+Outputs are written under the ignored `results/stage3/lrtp/` directory:
+
+| Output | Purpose |
+| --- | --- |
+| `lrtp_historical_results.csv` | All original LRTP fields, full scenario evidence and identity diagnostics; historical audit only |
+| `compound_lrtp.csv` | Full upstream inventory plus LRTP values subject to identity isolation; no downstream scores |
+| `lrtp_input_audit.csv` | Six raw properties, five converted inputs including invalid/missing cases, source quality, calculation and identity status |
+| `identity_isolation_audit.csv` | 180 field-level exclusions: 12 fields for each of the 15 review identities, with original values and reasons |
+| `identity_anomaly_sources.csv` | All 58 original source records and added LRTP exclusion/identity reasons |
+| `identity_anomaly_reports.csv` | All 300 report links with original fingerprints/locations and added exclusion/identity reasons |
+| `lrtp_manifest.json` | Upstream, parameter, implementation and output hashes, runtime, scope and counts |
+
+**Validation.** Use the fingerprinted reference run:
+
+```text
+python -m plastprior.validation --stage lrtp --baseline "path to the frozen run" --results results/stage3/lrtp --output-dir results/validation_stage3b
+```
+
+The validator first runs Stage 3A and Stage 2 regression. It then compares every
+historical LRTP field for all 15,125 full keys against the frozen result table,
+merged inventory and input audit. Evidence JSON is compared recursively,
+including conversion constants, source quality, input values, warnings,
+reference lines and every emission scenario. Object key order is ignored;
+list order, scalar types, missing locations and exact decimal values are checked.
+No floating-point tolerance is used. Changed classifications or unexplained
+numerical differences fail validation rather than updating the baseline.
+
+Analysis isolation is validated separately: all upstream fields must remain
+unchanged, all withheld fields must be empty, every exclusion reason must match,
+all 180 field-level audit entries must be complete, and all 58 source records
+and 300 report links must retain their original contents. A successful report
+means both historical reproduction and the intentional isolation policy passed;
+it does not mean the analysis projection is identical to the old unfiltered
+results. The validator reports independent official-tool validation and scientific
+identity review as outstanding.
+
+Tests include a frozen numerical example, unit/sign conversion, missing versus
+zero/False, non-finite and nonpositive inputs, warning/fatal boundaries, strict
+reference-line comparisons, pivoting/singular systems, solver failures,
+provenance preservation, fingerprint failures and identity-isolation safeguards.
+Run the CLI and notebook independently and compare their generated file hashes
+when verifying a release. Native Windows execution remains a separate required
+check before claiming cross-platform validation.
 
 ## Installation
 
@@ -489,6 +618,7 @@ python main.py --require-supporting-inputs
 python main.py --assemble-records
 python main.py --resolve-identities
 python main.py --integrate-qsar
+python main.py --calculate-lrtp
 ```
 
 A missing source file, unreadable source table, absent required column, or empty

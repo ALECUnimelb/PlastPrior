@@ -399,16 +399,174 @@ def compare_qsar(baseline: str | Path, results: str | Path, output_dir: str | Pa
     return summary
 
 
+def _compare_evidence(expected: str, actual: str, key: str) -> list[dict]:
+    """Compare nested evidence, retaining types, list order and exact decimal numbers."""
+    left = json.loads(expected, parse_float=Decimal, parse_int=Decimal)
+    right = json.loads(actual, parse_float=Decimal, parse_int=Decimal)
+    differences = []
+
+    def visit(a, b, field):
+        if isinstance(a, dict) and isinstance(b, dict):
+            for name in sorted(set(a) | set(b)):
+                if name not in a or name not in b:
+                    differences.append({"scope": "historical_evidence", "key": key, "field": field + "." + name,
+                                        "expected": repr(a.get(name, "<absent>")), "actual": repr(b.get(name, "<absent>"))})
+                else:
+                    visit(a[name], b[name], field + "." + name)
+        elif isinstance(a, list) and isinstance(b, list) and len(a) == len(b):
+            for i, (x, y) in enumerate(zip(a, b)):
+                visit(x, y, f"{field}[{i}]")
+        elif type(a) is not type(b) or a != b:
+            differences.append({"scope": "historical_evidence", "key": key, "field": field,
+                                "expected": repr(a), "actual": repr(b)})
+    visit(left, right, "LRTP_evidence")
+    return differences
+
+
+def compare_lrtp(baseline: str | Path, results: str | Path, output_dir: str | Path,
+                 upstream_results: str | Path | None = None) -> dict:
+    """Check all historical LRTP fields and the separate identity-isolation contract."""
+    from .lrtp import DEFAULT_PARAMETERS, LRTP_OUTPUT_COLUMNS, VALUE_COLUMNS, LRTP_REQUIRED_PREDICTION_COLUMNS
+    baseline, results, output_dir = Path(baseline), Path(results), Path(output_dir)
+    upstream = Path(upstream_results) if upstream_results is not None else results.parent
+    output_dir.mkdir(parents=True, exist_ok=True)
+    differences, checks = [], []
+
+    def compare(old, new, key, fields, numeric, scope):
+        differences.extend(_compare_qsar_frame(old, new, key, fields, numeric, scope))
+        checks.append({"scope": scope, "rows": len(old), "fields": len(fields)})
+
+    try:
+        prior = compare_qsar(baseline, upstream, output_dir / "stage3a")
+        if prior["status"] != "passed":
+            raise ValueError("Stage 3A regression failed; inspect the nested report.")
+        manifest = _read_json(results / "lrtp_manifest.json")
+        _verify_hash(DEFAULT_PARAMETERS, manifest["parameters_sha256"])
+        _verify_hash(Path(__file__).with_name("lrtp.py"), manifest["implementation_sha256"])
+        _verify_hash(upstream / "qsar_manifest.json", manifest["upstream_qsar_manifest_sha256"])
+        qsar_manifest = _read_json(upstream / "qsar_manifest.json")
+        if manifest["upstream_output_sha256"] != qsar_manifest["output_sha256"]:
+            raise ValueError("Stage 3B fingerprints do not describe the validated Stage 3A outputs.")
+        for name, digest in manifest["output_sha256"].items():
+            _verify_hash(results / name, digest)
+        run = _read_json(baseline / "run_manifest.json")
+        entry = run["stages"]["3"]
+        _verify_hash(baseline / entry["checkpoint"], entry["checkpoint_sha256"])
+        checkpoint = _read_json(baseline / entry["checkpoint"])
+        artifacts = {}
+        for item in checkpoint["artifacts"]:
+            path = baseline / item["path"]
+            _verify_hash(path, item["sha256"])
+            artifacts[item["artifact_id"]] = path
+        old = _read_csv(artifacts["lrtp_results_csv"]).rename(columns={"Inchikey_std": "inchikey"})
+        history = _read_csv(results / "lrtp_historical_results.csv")
+        source = _read_csv(upstream / "compound_qsar.csv")
+        analysis = _read_csv(results / "compound_lrtp.csv")
+        numeric = set(LRTP_OUTPUT_COLUMNS[:9])
+        fields = {c: c for c in LRTP_OUTPUT_COLUMNS if c != "LRTP_evidence"}
+        compare(old, history, "inchikey", fields, numeric, "historical_lrtp_values")
+        old_merged = _read_csv(artifacts["compound_inventory_with_qsar_csv"]).rename(columns={"Inchikey_std": "inchikey"})
+        compare(old_merged, history, "inchikey", fields, numeric, "historical_merged_values")
+        old_audit = _read_csv(artifacts["lrtp_input_audit_csv"]).rename(columns={"Inchikey_std": "inchikey"})
+        audit_fields = [c for c in old_audit if c.startswith("LRTP_")]
+        compare(old_audit, history, "inchikey", {c: c for c in audit_fields}, numeric, "historical_input_audit")
+        old_index, history_index = old.set_index("inchikey"), history.set_index("inchikey")
+        for key in old_index.index:
+            differences.extend(_compare_evidence(old_index.at[key, "LRTP_evidence"], history_index.at[key, "LRTP_evidence"], key))
+        checks.append({"scope": "historical_evidence_including_emission_scenarios", "rows": len(old), "fields": 1})
+        compare(source, history, "inchikey", {c: c for c in ("qsar_inchikey", "vega_row_no", "qsar_identity_status",
+                "qsar_identity_verified", "qsar_identity_reason")}, set(), "historical_identity_provenance")
+        if not history["result_role"].eq("historical_reproduction_only").all():
+            raise ValueError("Historical outputs must explicitly identify their audit-only role.")
+        compare(source, analysis, "inchikey", {c: c for c in source if c != "inchikey"}, set(), "upstream_qsar_preservation")
+        if "LRTP_evidence" in analysis or any("score" in c.lower() for c in analysis if c not in source):
+            raise ValueError("Analysis output contains historical nested results or downstream scores.")
+        aligned = analysis.set_index("inchikey").loc[history_index.index]
+        expected_available = (aligned["qsar_identity_verified"].eq("True") & history_index["LRTP_input_status"].isin(["ok", "warning"]))
+        if not aligned["lrtp_available"].eq(expected_available.map(str)).all():
+            raise ValueError("Analysis availability does not enforce both identity and calculation status.")
+        if not aligned["calculation_status"].equals(history_index["LRTP_input_status"]):
+            raise ValueError("Historical calculation status was changed in the analysis projection.")
+        review = aligned["qsar_identity_status"].eq("review_required")
+        verified = aligned["qsar_identity_verified"].eq("True")
+        expected_reason = pd.Series("", index=aligned.index)
+        expected_reason.loc[~history_index["LRTP_input_status"].isin(["ok", "warning"])] = "calculation_" + history_index["LRTP_input_status"]
+        expected_reason.loc[~verified] = "no_verified_report_association"
+        expected_reason.loc[review] = "identity_review_required"
+        if not expected_reason.equals(aligned["lrtp_exclusion_reason"]):
+            raise ValueError("Analysis exclusion reasons differ from the declared policy.")
+        expected = history_index.drop(columns="LRTP_evidence").copy()
+        expected.loc[~expected_available, VALUE_COLUMNS] = ""
+        expected.loc[review, "LRTP_input_status"] = "identity_review_required"
+        compare(expected.reset_index(), analysis, "inchikey", fields, numeric, "analysis_identity_isolation")
+        isolation = _read_csv(results / "identity_isolation_audit.csv")
+        expected_pairs = {(k, f) for k in aligned.index[review] for f in VALUE_COLUMNS}
+        if len(isolation) != len(expected_pairs) or set(zip(isolation["inchikey"], isolation["field"])) != expected_pairs:
+            raise ValueError("Isolation audit does not enumerate every withheld field for every review identity.")
+        for row in isolation.to_dict("records"):
+            key, field = row["inchikey"], row["field"]
+            if (row["historical_value"] != history_index.at[key, field] or row["analysis_value"] != "" or
+                    row["exclusion_reason"] != "identity_review_required" or
+                    row["identity_reason"] != aligned.at[key, "qsar_identity_reason"]):
+                raise ValueError("Isolation audit values or reasons do not match the result tables.")
+        input_audit = _read_csv(results / "lrtp_input_audit.csv")
+        compare(analysis, input_audit, "inchikey", {c: c for c in ("calculation_status", "qsar_identity_status",
+                "qsar_identity_reason", "lrtp_available", "lrtp_exclusion_reason")}, set(), "input_audit_statuses")
+        compare(source, input_audit, "inchikey", {c: c for c in LRTP_REQUIRED_PREDICTION_COLUMNS}, set(), "raw_input_properties")
+        input_fields = {"log_kaw": "log_kaw", "log_kow": "log_kow", "hl_air_h": "hl_air_h", "hl_water_h": "hl_water_h", "hl_soil_h": "hl_soil_h"}
+        expected_inputs = []
+        for row in old.to_dict("records"):
+            evidence = json.loads(row["LRTP_evidence"])
+            expected_inputs.append({"inchikey": row["inchikey"], **{k: "" if v is None else str(v) for k,v in evidence["inputs"].items()}})
+        compare(pd.DataFrame(expected_inputs), input_audit, "inchikey", input_fields, set(input_fields), "converted_inputs_including_unavailable_rows")
+        for name, key in (("identity_anomaly_sources.csv", "record_id"), ("identity_anomaly_reports.csv", "link_id")):
+            before, after = _read_csv(upstream / name), _read_csv(results / name)
+            if key == "link_id":
+                for frame in (before, after):
+                    frame[key] = frame["model_id"] + ":" + frame["vega_row_no"]
+            compare(before, after, key, {c: c for c in before if c != key}, set(), name)
+            if not after["lrtp_exclusion_reason"].eq("identity_review_required").all():
+                raise ValueError("Anomaly provenance lost its LRTP exclusion reason.")
+            lookup_key = "inchikey" if key == "record_id" else "qsar_inchikey"
+            reasons = source.drop_duplicates(lookup_key).set_index(lookup_key)["qsar_identity_reason"]
+            if not after[lookup_key].map(reasons).equals(after["identity_reason"]):
+                raise ValueError("Anomaly provenance lost its chemical identity diagnostic.")
+        counts = {"compounds": len(history), "historically_calculable": int(history["LRTP_input_status"].isin(["ok", "warning"]).sum()),
+                  "available_after_identity_check": int(expected_available.sum()), "identity_excluded_compounds": int(review.sum()),
+                  "identity_source_records": len(_read_csv(results / "identity_anomaly_sources.csv")),
+                  "identity_report_links": len(_read_csv(results / "identity_anomaly_reports.csv"))}
+        if manifest["counts"] != counts:
+            raise ValueError("Manifest counts differ from validated outputs.")
+        summary = {"status": "passed" if not differences else "failed", "scope": "Stage 3B; no downstream scoring",
+                   "baseline_run": run["run_id"], "upstream_regression": "passed", **counts,
+                   "historical_fields_compared": len(LRTP_OUTPUT_COLUMNS), "isolation_fields_audited": len(isolation),
+                   "historical_status_counts": history["LRTP_input_status"].value_counts().to_dict(),
+                   "numeric_comparison": "Exact decimal equality; no floating-point tolerance; recursive JSON evidence comparison",
+                   "implementation_sha256": _file_hash(Path(__file__)), "lrtp_manifest_sha256": _file_hash(results / "lrtp_manifest.json"),
+                   "scientific_identity_review": "pending", "independent_official_tool_validation": "not performed",
+                   "interpretation": "Historical numerical agreement and intentional identity isolation are validated separately."}
+    except (ValueError, KeyError, OSError) as exc:
+        summary = {"status": "failed", "scope": "Stage 3B", "error": str(exc)}
+    summary["unexplained_differences"] = len(differences)
+    pd.DataFrame(differences, columns=["scope", "key", "field", "expected", "actual"]).to_csv(output_dir / "lrtp_validation_differences.csv", index=False, encoding="utf-8", lineterminator="\n")
+    pd.DataFrame(checks, columns=["scope", "rows", "fields"]).to_csv(output_dir / "lrtp_validation_checks.csv", index=False, encoding="utf-8", lineterminator="\n")
+    (output_dir / "lrtp_validation_summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, required=True, help="Frozen historical run directory.")
     parser.add_argument("--results", type=Path, required=True, help="Current report directory for the selected stage.")
     parser.add_argument("--output-dir", type=Path, required=True, help="Validation report directory.")
-    parser.add_argument("--stage", choices=["identity", "qsar"], default="identity")
-    parser.add_argument("--upstream-results", type=Path, help="Stage 2 outputs for QSAR validation; defaults to sibling stage2.")
+    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp"], default="identity")
+    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP; inferred from the standard layout by default.")
     args = parser.parse_args(argv)
-    report = (compare_qsar(args.baseline, args.results, args.output_dir, args.upstream_results)
-              if args.stage == "qsar" else compare_identity(args.baseline, args.results, args.output_dir))
+    if args.stage == "identity":
+        report = compare_identity(args.baseline, args.results, args.output_dir)
+    else:
+        validator = compare_qsar if args.stage == "qsar" else compare_lrtp
+        report = validator(args.baseline, args.results, args.output_dir, args.upstream_results)
     print(json.dumps(report, indent=2))
     return 0 if report["status"] == "passed" else 1
 
