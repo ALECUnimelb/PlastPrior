@@ -1,6 +1,8 @@
 """Input-reader tests using small synthetic files, without research data."""
 
 import json
+import io
+from contextlib import redirect_stdout
 from pathlib import Path
 import tempfile
 import unittest
@@ -9,6 +11,7 @@ from unittest.mock import patch
 import pandas as pd
 
 from plastprior.inputs import inspect_inputs, load_catalog, read_source_table, resolve_data_root
+from main import main
 
 
 class InputTests(unittest.TestCase):
@@ -51,10 +54,14 @@ class InputTests(unittest.TestCase):
     def test_missing_file_is_not_reported_as_zero_records(self):
         report = self.inspect()
         self.assertFalse(report.passed)
+        self.assertFalse(report.sources_passed)
+        self.assertTrue(report.supporting_present)
         self.assertEqual(report.sources.iloc[0]["status"], "MISSING")
         self.assertTrue(pd.isna(report.tables.iloc[0]["parsed_rows"]))
         with self.assertRaisesRegex(ValueError, "inspection failed"):
             report.require_complete()
+        with self.assertRaisesRegex(ValueError, "Source inspection failed"):
+            report.require_sources()
 
     def test_wrong_schema_fails_instead_of_counting_wrong_table(self):
         (self.sources / "example.csv").write_text("unrelated\nvalue\n", encoding="utf-8")
@@ -94,9 +101,43 @@ class InputTests(unittest.TestCase):
         (self.root / "Evidence" / "unrelated.txt").write_text("test", encoding="utf-8")
         report = self.inspect()
         self.assertFalse(report.passed)
+        self.assertTrue(report.sources_passed)
+        self.assertFalse(report.supporting_present)
+        report.require_sources()
+        with self.assertRaisesRegex(ValueError, "inspection failed"):
+            report.require_complete()
         self.assertEqual(report.supporting.iloc[0]["status"], "MISSING")
+
+        output_dir = self.root / "reports"
+        with patch("main.inspect_inputs", return_value=report), redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(main(["--output-dir", str(output_dir)]), 0)
+            self.assertEqual(main(["--output-dir", str(output_dir), "--require-supporting-inputs"]), 1)
+        self.assertIn("Stage 1 source inspection: Passed", output.getvalue())
+        self.assertIn("Supporting inputs: Incomplete", output.getvalue())
+        saved = pd.read_csv(output_dir / "supporting_inputs.csv", keep_default_na=False)
+        self.assertEqual(saved.iloc[0]["status"], "MISSING")
+
         (self.root / "Evidence" / "required.txt").write_text("test", encoding="utf-8")
         self.assertTrue(self.inspect().passed)
+
+    def test_source_failure_stops_cli_with_or_without_strict_presence_checks(self):
+        report = self.inspect()
+        with patch("main.inspect_inputs", return_value=report), redirect_stdout(io.StringIO()):
+            for options in ([], ["--require-supporting-inputs"]):
+                self.assertEqual(main(["--output-dir", str(self.root / "reports"), *options]), 1)
+
+    def test_reports_preserve_provenance_hashes_and_dimensions(self):
+        (self.sources / "example.csv").write_text("id,name\n001,NA\n", encoding="utf-8")
+        self.spec["sources"][0]["notes"] = "Source note with a comma, and a second line.\nRetained."
+        report = self.inspect()
+        output_dir = self.root / "inspection reports"
+        report.write_reports(output_dir)
+        saved = pd.read_csv(output_dir / "source_inventory.csv", keep_default_na=False)
+        self.assertEqual(saved.iloc[0]["sha256"], report.sources.iloc[0]["sha256"])
+        self.assertEqual(saved.iloc[0]["provenance_note"], self.spec["sources"][0]["notes"])
+        tables = pd.read_csv(output_dir / "table_dimensions.csv")
+        self.assertEqual(tables.iloc[0]["parsed_rows"], 1)
+        self.assertTrue(pd.read_csv(output_dir / "supporting_inputs.csv").empty)
 
     def test_duplicate_identifiers_are_rejected(self):
         self.spec["sources"].append(self.spec["sources"][0].copy())

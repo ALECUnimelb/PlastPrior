@@ -13,8 +13,9 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook explains the scope, displays file versions and dates, reports table
-dimensions, and lists the SHA-256 fingerprints of the observed source files.
+The notebook contains Setup and Stage 1. It displays file versions and dates,
+table dimensions, and inspection outcomes. Full provenance notes, references,
+and observed SHA-256 fingerprints are saved in the inspection reports.
 Versions, dates, and references are recorded provenance, not an independent
 verification against the publisher's latest release. Unrecorded metadata is
 shown as **Not recorded**. File modification times are not treated as source dates.
@@ -23,6 +24,31 @@ The initial file declarations, provenance notes, and worksheet/header selections
 were carried forward from the ChemicalPrio input registry and readers. They were
 checked against the local frozen input collection. No legacy runtime code or
 scoring implementation is imported.
+
+## Project structure
+
+```text
+PlastPrior/
+  main.py
+  PlastPrior.ipynb
+  plastprior/
+    inputs.py
+    sources.json
+  tests/
+    test_inputs.py
+  data/                     # Local inputs; ignored by Git
+  results/                  # Generated reports; ignored by Git
+```
+
+The `plastprior` package holds the scientific implementation. The command line
+and root-level notebook use the same functions. Tests are versioned source code;
+their temporary fixtures do not require or alter the research collection.
+
+The planned sequence is input validation and ingestion, chemical identity
+resolution, QSAR evidence integration, evidence assembly, hazard assessment,
+exposure assessment, and chemical prioritisation. Only the source-inspection
+part of Stage 1 is implemented. Standardised source records and subsequent
+stages will be introduced incrementally with corresponding validation.
 
 ## Installation
 
@@ -88,6 +114,9 @@ The five supporting groups receive **presence checks only**. The checks require
 manifest plus its eight source directories. They do not certify report contents,
 all nested production files, or readiness for a future scoring workflow. The
 recursive file totals include any supplementary backups present in those folders.
+Missing supporting inputs are reported separately from Stage 1 source failures.
+Each later stage must validate the auxiliary inputs it actually uses before
+performing its calculations.
 
 ## Run
 
@@ -96,11 +125,30 @@ Command line, on macOS or Windows:
 ```text
 python main.py
 python main.py --data-root "path to an external data directory"
+python main.py --require-supporting-inputs
 ```
 
-A missing file, unreadable table, absent required column, empty selected table,
-or missing required supporting item produces a non-zero exit status. Version
-metadata gaps are reported, but are not treated as unreadable data.
+A missing source file, unreadable source table, absent required column, or empty
+selected table produces a non-zero exit status. By default, missing auxiliary
+items remain visible but do not fail Stage 1. Add `--require-supporting-inputs`
+to also return a non-zero exit status for failed auxiliary presence checks;
+this option does not validate auxiliary contents. Version metadata gaps are
+reported but are not treated as unreadable data.
+
+Both interfaces save the full inspection reports, including failure details:
+
+| File | Contents |
+| --- | --- |
+| `results/source_inventory.csv` | Source metadata, references, observed hashes and file status |
+| `results/table_dimensions.csv` | Selected sheets, header rows, dimensions, warnings and table status |
+| `results/supporting_inputs.csv` | Auxiliary item presence, local file totals and missing-item details |
+
+Reports are UTF-8 CSV files and are replaced on each run. The command line accepts
+`--output-dir` to retain reports in a separate directory; relative paths resolve
+from the project root. The notebook exposes `REPORT_DIR` for the same purpose.
+The API distinguishes `sources_passed` (Stage 1) from `supporting_present`
+(auxiliary presence). `passed` and `require_complete()` retain the combined
+check, while `require_sources()` enforces the Stage 1 boundary.
 
 For an interactive review:
 
@@ -151,6 +199,14 @@ python -m unittest discover -s tests -v
 ```
 
 Direct dependencies are pinned in `requirements.txt`; transitive dependencies
-are not fully locked. Runtime versions are displayed in the notebook. Native
-Windows execution must be verified separately before claiming cross-platform
-validation.
+are not fully locked. Native Windows execution must be verified separately
+before claiming cross-platform validation.
+
+For publication, archive the selected input fingerprints, exact environment,
+code revision, executed notebook and corresponding results as a fixed release.
+The ignored `results` folder is a local working directory, not a publication
+archive. Source versions and acquisition instructions still require review;
+unknown historical metadata must remain explicitly unrecorded until supported
+by evidence. Structural migration and changes to scientific rules should be
+reviewed separately, with stage-level comparisons against a documented
+reference input/result pair.

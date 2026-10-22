@@ -30,14 +30,42 @@ class InputInspection:
     supporting: pd.DataFrame
 
     @property
-    def passed(self) -> bool:
+    def sources_passed(self) -> bool:
+        """Whether the declared source files and tables pass Stage 1 checks."""
         return all(frame["status"].eq("OK").all() for frame in
-                   (self.sources, self.tables, self.supporting))
+                   (self.sources, self.tables))
+
+    @property
+    def supporting_present(self) -> bool:
+        """Whether all declared auxiliary items are present, without content validation."""
+        return bool(self.supporting["status"].eq("OK").all())
+
+    @property
+    def passed(self) -> bool:
+        """Whether source checks and auxiliary presence checks both pass."""
+        return self.sources_passed and self.supporting_present
+
+    def require_sources(self) -> None:
+        """Stop Stage 1 when a declared source file or table fails inspection."""
+        if not self.sources_passed:
+            raise ValueError("Source inspection failed. Review the source and table reports.")
 
     def require_complete(self) -> None:
-        """Stop downstream work when an input is missing or unreadable."""
+        """Require source checks and all auxiliary presence checks to pass.
+
+        This does not certify auxiliary contents or readiness for scoring.
+        """
         if not self.passed:
             raise ValueError("Input inspection failed. Review the status and detail columns.")
+
+    def write_reports(self, output_dir: str | Path) -> None:
+        """Save full inspection tables, including provenance and observed hashes."""
+        folder = Path(output_dir)
+        folder.mkdir(parents=True, exist_ok=True)
+        for filename, frame in (("source_inventory.csv", self.sources),
+                                ("table_dimensions.csv", self.tables),
+                                ("supporting_inputs.csv", self.supporting)):
+            frame.to_csv(folder / filename, index=False, encoding="utf-8")
 
 
 def resolve_data_root(data_root: str | Path = "data") -> Path:
