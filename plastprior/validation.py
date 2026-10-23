@@ -6,6 +6,8 @@ import argparse
 from collections import Counter, defaultdict
 from decimal import Decimal, InvalidOperation
 import json
+import io
+import tempfile
 from pathlib import Path
 
 import pandas as pd
@@ -1188,18 +1190,158 @@ def compare_annotations(baseline, results, output_dir, upstream_results=None):
     return summary
 
 
+def compare_pm_hazard(baseline, results, output_dir, upstream_results=None):
+    """Validate P/M reproduction, isolation and provenance against the pinned run."""
+    from .hazard import DEFAULT_POLICY, INPUT_FIELDS, OUTPUT_COLUMNS, SCORE_COLUMNS, integrate_pm_hazard, score_pm
+    from .evidence_specialists import require_prediction_isolation
+    from .lrtp import _verify_outputs
+
+    baseline, results, output_dir = Path(baseline), Path(results), Path(output_dir)
+    upstream = Path(upstream_results) if upstream_results is not None else results.parent / 'stage4' / '4c'
+    output_dir.mkdir(parents=True, exist_ok=True)
+    differences, checks, counts = [], [], {}
+
+    def jsonl(path):
+        with path.open(encoding='utf-8') as stream:
+            return [json.loads(line) for line in stream]
+
+    def compare_json(a, b, key, scope):
+        for diff in _compare_evidence(json.dumps(a), json.dumps(b), key):
+            diff.update(scope=scope, field=diff['field'].replace('LRTP_evidence', scope, 1))
+            differences.append(diff)
+
+    def compare_frame(a, b, fields, scope, numeric=()):
+        plain = [c for c in fields if c != 'inchikey' and not c.endswith('_evidence')]
+        differences.extend(_compare_qsar_frame(a, b, 'inchikey', {c: c for c in plain}, set(numeric), scope))
+        left, right = a.set_index('inchikey'), b.set_index('inchikey')
+        for key in left.index.intersection(right.index):
+            for field in fields:
+                if field.endswith('_evidence'):
+                    compare_json(json.loads(left.at[key, field]), json.loads(right.at[key, field]), key, scope + '.' + field)
+        checks.append({'scope': scope, 'rows': len(a), 'fields': len(fields)})
+
+    try:
+        previous = compare_annotations(baseline, upstream, output_dir / 'stage4c')
+        if previous['status'] != 'passed':
+            raise ValueError('Upstream Stage 4C regression failed.')
+        manifest = _read_json(results / 'hazard_manifest.json')
+        _verify_outputs(results, manifest)
+        _verify_hash(DEFAULT_POLICY, manifest['policy_sha256'])
+        _verify_hash(Path(__file__).with_name('hazard.py'), manifest['implementation_sha256'])
+        _verify_hash(Path(__file__).with_name('qsar_models.json'), manifest['qsar_model_mapping_sha256'])
+        if manifest['scoring_input_columns'] != INPUT_FIELDS or manifest['scoring_evidence_paths'] != ['hazard.P', 'hazard.M']:
+            raise ValueError('The P/M input allowlist changed.')
+        run = _read_json(baseline / 'run_manifest.json')
+        checkpoint = baseline / run['stages']['5']['checkpoint']
+        _verify_hash(checkpoint, run['stages']['5']['checkpoint_sha256'])
+        metadata = _read_json(checkpoint)
+        artifacts = {}
+        for record in metadata['artifacts']:
+            if record['artifact_id'] in ['compound_inventory_with_pbmt_hazard_csv', 'persistence_audit_json', 'mobility_audit_json']:
+                path = baseline / record['path']
+                _verify_hash(path, record['sha256'])
+                artifacts[record['artifact_id']] = path
+        old = _read_csv(artifacts['compound_inventory_with_pbmt_hazard_csv']).rename(columns={'Inchikey_std': 'inchikey'})
+        prior = _read_csv(upstream / 'compound_annotated_evidence.csv')
+        actual = _read_csv(results / 'compound_pm_hazard.csv')
+        historical = _read_csv(results / 'pm_historical.csv')
+        compare_frame(old, historical, OUTPUT_COLUMNS, 'historical_PM_fields', SCORE_COLUMNS)
+        compare_frame(prior, actual, list(prior.columns), 'unchanged_stage4c_fields')
+        require_prediction_isolation(actual)
+        review = actual['qsar_identity_status'].eq('review_required')
+        keys = set(actual.loc[review, 'inchikey'])
+        clean = actual.loc[~review]
+        compare_frame(old.loc[old['inchikey'].isin(clean['inchikey'])], clean, OUTPUT_COLUMNS, 'nonreview_PM_fields', SCORE_COLUMNS)
+        if not actual.loc[review, SCORE_COLUMNS].eq('').all().all():
+            raise ValueError('Current identity-review cohort unexpectedly has usable P/M scores; inspect curated fallback before updating this baseline.')
+        if not actual.loc[review, ['persistence_available', 'mobility_available']].eq('False').all().all():
+            raise ValueError('Identity-review P/M availability is incorrect.')
+        for field in ['persistence_unavailable_reason', 'mobility_unavailable_reason']:
+            if not actual.loc[review, field].eq('identity_review_required_no_curated_fallback').all():
+                raise ValueError('Identity-review exclusion reason is missing.')
+        if not historical['result_role'].eq('historical_reproduction_only').all() or not actual['pm_result_role'].eq('analysis_after_identity_isolation').all():
+            raise ValueError('Historical and analysis roles are not explicit.')
+        allowed = set(prior.columns) | set(OUTPUT_COLUMNS) | {'persistence_available', 'mobility_available', 'persistence_unavailable_reason', 'mobility_unavailable_reason', 'pm_result_role'}
+        if set(actual.columns) != allowed:
+            raise ValueError('Unexpected scoring fields outside Stage 5A.')
+        for dimension in ['persistence', 'mobility']:
+            expected = _read_json(artifacts[dimension + '_audit_json'])
+            observed = jsonl(results / (dimension + '_historical_audit.jsonl'))
+            analysis_audit = jsonl(results / (dimension + '_analysis_audit.jsonl'))
+            for rows, label in [(expected, 'baseline'), (observed, 'historical'), (analysis_audit, 'analysis')]:
+                if len(rows) != len(actual) or {r['compound_key'] for r in rows} != set(actual['inchikey']):
+                    raise ValueError('Incomplete or duplicate ' + label + ' P/M audit keys.')
+            old_map = {r['compound_key']: r for r in expected}
+            for row in observed:
+                compare_json(old_map[row['compound_key']], row, row['compound_key'], dimension + '_historical_audit')
+            for row in analysis_audit:
+                if row['compound_key'] not in keys:
+                    compare_json(old_map[row['compound_key']], row, row['compound_key'], dimension + '_nonreview_audit')
+            checks.append({'scope': dimension + '_audit', 'historical_rows': len(observed), 'nonreview_rows': len(clean)})
+        # Recompute from current hashed inputs, never from historical Stage 5 scores.
+        replay = integrate_pm_hazard(upstream)
+        with tempfile.TemporaryDirectory(prefix='PlastPrior PM validation ') as directory:
+            replay.write_reports(directory)
+            rebuilt = _read_json(Path(directory) / 'hazard_manifest.json')
+            if rebuilt != manifest:
+                raise ValueError('P/M outputs or manifest differ from deterministic reconstruction.')
+        checks.append({'scope': 'deterministic_reconstruction', 'files': len(manifest['output_sha256']) + 1})
+        curated = [r for r in jsonl(upstream.parent / 'basic_evidence_audit.jsonl') if r.get('field_path') in ['hazard.P', 'hazard.M']]
+        for filename, expected in [('pm_curated_source_links.jsonl', curated),
+                                   ('identity_review_source_links.jsonl', jsonl(upstream / 'identity_review_source_links.jsonl'))]:
+            if Counter(_semantic_digest(x) for x in expected) != Counter(_semantic_digest(x) for x in jsonl(results / filename)):
+                raise ValueError('P/M source lineage changed: ' + filename)
+        # Perturb annotation values and flags on every compound; P/M must remain invariant.
+        altered = prior.copy()
+        for column in altered.columns:
+            if column.lower().startswith(('gic_', 'norman_')):
+                altered[column] = 'annotation_invariance_probe'
+        payloads = []
+        for text in altered['db_extract_info']:
+            value = json.loads(text)
+            value['analytical_detectability'] = {'probe': 999}
+            value['regulatory'] = {'GIC': {'probe': 999}}
+            payloads.append(json.dumps(value))
+        altered['db_extract_info'] = payloads
+        probe, _ = score_pm(altered)
+        # Compare CSV representations to retain the same missing/numeric conventions.
+        probe = pd.read_csv(io.StringIO(probe.to_csv(index=False)), dtype=str, keep_default_na=False)
+        compare_frame(actual, probe, OUTPUT_COLUMNS, 'GIC_NORMAN_scoring_invariance', SCORE_COLUMNS)
+        impact = _read_csv(results / 'identity_review_pm_impacts.csv')
+        expected_pairs = {(key, field) for key in keys for field in OUTPUT_COLUMNS}
+        if len(impact) != len(expected_pairs) or set(zip(impact['inchikey'], impact['field'])) != expected_pairs:
+            raise ValueError('Identity-review field impacts are incomplete or duplicated.')
+        counts = {'compounds': len(actual), 'identity_review_compounds': len(keys), 'unaffected_compounds': len(clean),
+                  'identity_review_source_links': len(jsonl(results / 'identity_review_source_links.jsonl')),
+                  'curated_source_links': len(curated), 'field_impact_rows': len(impact),
+                  'gic_name_review_required': int(actual['gic_name_review_required'].eq('True').sum()),
+                  'gic_tag_expansion_review_required': int(actual['gic_shared_identifier_tag_expansion'].eq('True').sum())}
+        for field in SCORE_COLUMNS:
+            counts[field] = {'historical_available': int(historical[field].ne('').sum()),
+                             'analysis_available': int(actual[field].ne('').sum()),
+                             'excluded_review_values': int(historical.loc[historical['inchikey'].isin(keys), field].ne('').sum())}
+    except (ValueError, KeyError, OSError, TypeError) as exc:
+        differences.append({'scope': 'validation', 'key': '', 'field': 'precondition', 'expected': 'valid pinned inputs and outputs', 'actual': str(exc)})
+    summary = {'status': 'passed' if not differences else 'failed', 'stage': '5A', 'counts': counts,
+               'difference_count': len(differences), 'checks': checks,
+               'comparison': 'Exact numeric values, basis strings and recursive evidence/audit JSON by full InChIKey. Identity-isolation differences are reported separately.'}
+    pd.DataFrame(differences, columns=['scope', 'key', 'field', 'expected', 'actual']).to_csv(output_dir / 'pm_differences.csv', index=False, encoding='utf-8', lineterminator='\n')
+    (output_dir / 'pm_validation_summary.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, required=True, help="Frozen historical run directory.")
     parser.add_argument("--results", type=Path, required=True, help="Current report directory for the selected stage.")
     parser.add_argument("--output-dir", type=Path, required=True, help="Validation report directory.")
-    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists", "annotations"], default="identity")
-    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence, Stage 4A for specialists, Stage 4B for annotations; inferred from the standard layout by default.")
+    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists", "annotations", "hazard-pm"], default="identity")
+    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence, Stage 4A for specialists, Stage 4B for annotations, Stage 4C for hazard-pm; inferred from the standard layout by default.")
     args = parser.parse_args(argv)
     if args.stage == "identity":
         report = compare_identity(args.baseline, args.results, args.output_dir)
     else:
-        validator = {"qsar": compare_qsar, "lrtp": compare_lrtp, "evidence": compare_basic_evidence, "specialists": compare_specialist_evidence, "annotations": compare_annotations}[args.stage]
+        validator = {"qsar": compare_qsar, "lrtp": compare_lrtp, "evidence": compare_basic_evidence, "specialists": compare_specialist_evidence, "annotations": compare_annotations, "hazard-pm": compare_pm_hazard}[args.stage]
         report = validator(args.baseline, args.results, args.output_dir, args.upstream_results)
     print(json.dumps(report, indent=2))
     return 0 if report["status"] == "passed" else 1

@@ -29,7 +29,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="Also integrate LitChemPlast and FCChumon evidence (4B); no 4C or scoring.")
     parser.add_argument("--integrate-annotations", action="store_true",
                         help="Also attach NORMAN and GIC annotations (4C); no downstream scoring.")
+    parser.add_argument("--assess-pm", action="store_true",
+                        help="Also assess persistence and mobility (5A); no B/T, exposure or prioritisation.")
     args = parser.parse_args(argv)
+    if args.assess_pm:
+        args.integrate_annotations = True
     if args.integrate_annotations:
         args.integrate_specialists = True
     if args.integrate_specialists:
@@ -107,6 +111,14 @@ def main(argv: list[str] | None = None) -> int:
                                 annotations.write_reports(output_dir / "stage4" / "4c")
                                 print(annotations.manifest["counts"])
                                 print("Name associations require review; model exclusions remain in effect. No scoring performed.")
+    if passed and args.assess_pm:
+        from plastprior.hazard import integrate_pm_hazard
+
+        print("\nStage 5A: persistence and mobility with identity isolation", flush=True)
+        hazard = integrate_pm_hazard(output_dir / "stage4" / "4c")
+        hazard.write_reports(output_dir / "stage5")
+        print(hazard.summary.to_string(index=False))
+        print("Historical reproduction is separate from eligible analysis. GIC annotations do not enter scoring.")
     return 0 if passed else 1
 
 

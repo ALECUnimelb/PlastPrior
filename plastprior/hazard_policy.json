@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "scope": "Stage 5A: persistence and mobility only; excludes B, T, exposure and priority scoring",
+  "adi_threshold": 0.5,
+  "constants": {
+    "HAZARD_SOURCE_SELECTION_POLICY_VERSION": "independent-computation-first-curated-fallback-v1",
+    "HAZARD_SOURCE_SELECTION_RULE": "Select a usable independent computational or structural score first; use curated database evidence only when no usable independent score is available.",
+    "PERSISTENCE_VEGA_COLUMNS": {
+      "water": [
+        "Persistence (water) model (IRFMN) | Assessment",
+        "Persistence (water) model (IRFMN) | ADI"
+      ],
+      "soil": [
+        "Persistence (soil) model (IRFMN) | Assessment",
+        "Persistence (soil) model (IRFMN) | ADI"
+      ],
+      "sediment": [
+        "Persistence (sediment) model (IRFMN) | Assessment",
+        "Persistence (sediment) model (IRFMN) | ADI"
+      ]
+    },
+    "OPERA_KOC_COLUMNS": {
+      "logkoc": "KOC model (OPERA) | Predicted KOC [log(L/Kg)]",
+      "adi": "KOC model (OPERA) | ADI",
+      "assessment": "KOC model (OPERA) | Assessment"
+    },
+    "LRTP_COLUMNS": {
+      "ctd": "LRTP_CTD_km",
+      "te": "LRTP_TE_percent",
+      "status": "LRTP_input_status",
+      "warning_flags": "LRTP_warning_flags"
+    },
+    "LRTP_VALID_STATUSES": [
+      "ok",
+      "warning"
+    ],
+    "LRTP_CTD_LIMIT_KM": 5096.73,
+    "LRTP_TE_LIMIT_PERCENT": 2.2476
+  },
+  "persistence_labels": {
+    "nP": 0.0,
+    "nP/P": 0.5,
+    "P/vP": 1.0,
+    "vP": 2.0
+  },
+  "aquatic_bins": [
+    {
+      "upper_exclusive": 2,
+      "score": 2.0
+    },
+    {
+      "upper_exclusive": 3,
+      "score": 1.0
+    },
+    {
+      "upper_exclusive": 4,
+      "score": 0.5
+    }
+  ],
+  "lrtp_bins": [
+    {
+      "lower_inclusive": 1.0,
+      "score": 2.0
+    },
+    {
+      "lower_inclusive": 0.5,
+      "score": 1.0
+    },
+    {
+      "lower_inclusive": 0.25,
+      "score": 0.5
+    }
+  ],
+  "units": {
+    "OPERA_logKoc": "log10(L/kg)",
+    "LRTP_CTD_km": "km",
+    "LRTP_TE_percent": "percent; not fraction",
+    "ADI": "dimensionless"
+  },
+  "output_columns": [
+    "Persistence_score",
+    "Persistence_score_basis",
+    "Persistence_evidence",
+    "Aquatic_M_score",
+    "LRTP_M_score",
+    "Mobility_score",
+    "Mobility_score_basis",
+    "Mobility_evidence"
+  ],
+  "rules": {
+    "persistence": "Maximum usable IRFMN assessment score; ADI >= 0.5; source compartment order breaks ties",
+    "mobility": "Maximum usable OPERA and LRTP score; preserve both bases on ties",
+    "lrtp": "Require both CTD and TE, and ok/warning status; ratio=max(CTD/5096.73,TE/2.2476)",
+    "curated": "Independent-first including zero; otherwise PlastChem then alphabetical database order; first numeric candidate, with persistence label fallback. Preserve source values including 0.25.",
+    "isolation": "Analysis checks availability flags and rejects leaked identity-review inputs. No model-derived P/M evidence for unresolved identities; independent curated fallback remains eligible.",
+    "historical": "Reconstructed only from this project's Stage 3 historical outputs and Stage 4C evidence. Historical values are not eligible analysis inputs.",
+    "annotations": "GIC and NORMAN platform fields are preserved but absent from the scoring input allowlist.",
+    "missing": "Unavailable evidence is not a zero score; scoring bins are historical screening conventions, not a new regulatory classification."
+  },
+  "historical_sources": [
+    {
+      "path": "Algorithm/hazard_scoring_policy.py",
+      "sha256": "18687989c3c605cf88db20cbb138df8406eab57cd55b04d16f105f6567a91c35"
+    },
+    {
+      "path": "Algorithm/step16_persistence.py",
+      "sha256": "96b3bdbb015badb05fd77036bcd15a889513eb79cf58c2c3b517b76811bafe24"
+    },
+    {
+      "path": "Algorithm/step17_mobility.py",
+      "sha256": "05e012f0190a42bf60f6e73dbb5706ea478065ac1291751533b5003fd9aa607c"
+    }
+  ]
+}

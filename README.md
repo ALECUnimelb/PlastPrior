@@ -9,8 +9,8 @@ flags. Stage 3B reproduces historical Pov/LRTP calculations and isolates
 unverified identities from analysis outputs. Stage 4A assembles basic source
 evidence with explicit field mapping and selection/exclusion audits. Stage 4B
 adds LitChemPlast associations and FCChumon human-detection evidence. Stage 4C adds
-NORMAN analytical-platform predictions and GIC regulatory-list associations. Hazard, exposure and priority
-scores are not implemented.
+NORMAN analytical-platform predictions and GIC regulatory-list associations. Stage 5A evaluates persistence and mobility with separate historical and isolated analysis outputs.
+Bioaccumulation, toxicity, exposure and priority scores are not implemented.
 
 ## Input inspection
 
@@ -20,10 +20,10 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C, with ten code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A, with eleven code cells. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
 identifier availability, identity-resolution outcomes, model coverage, QSAR
-identity exceptions, historical LRTP calculation coverage and analysis exclusions. Full provenance notes, references,
+identity exceptions, historical LRTP calculation coverage, analysis exclusions and P/M availability. Full provenance notes, references,
 and observed SHA-256 fingerprints are saved in the inspection reports.
 Versions, dates, and references are recorded provenance, not an independent
 verification against the publisher's latest release. Unrecorded metadata is
@@ -49,6 +49,7 @@ PlastPrior/
     _evidence_rules.py
     evidence_specialists.py
     evidence_annotations.py
+    hazard.py
     validation.py
     sources.json
     identity_baseline.json
@@ -57,6 +58,7 @@ PlastPrior/
     evidence_fields.json
     evidence_specialists.json
     evidence_annotations.json
+    hazard_policy.json
   tests/
     test_inputs.py
     test_source_records.py
@@ -66,6 +68,7 @@ PlastPrior/
     test_evidence.py
     test_specialist_evidence.py
     test_annotations.py
+    test_hazard.py
     test_validation.py
   data/                     # Local inputs; ignored by Git
   results/                  # Generated reports; ignored by Git
@@ -80,7 +83,7 @@ resolution, QSAR evidence integration, evidence assembly, hazard assessment,
 exposure assessment, and chemical prioritisation. Stages 1 and 2, frozen-report
 QSAR integration (3A), and historical Pov/LRTP calculation with identity isolation
 (3B), basic source evidence assembly (4A), and specialist literature/human-detection
-evidence (4B), and analytical/regulatory annotations (4C) are implemented. Later stages will be introduced incrementally with
+evidence (4B), analytical/regulatory annotations (4C), and persistence/mobility assessment (5A) are implemented. Later stages will be introduced incrementally with
 corresponding validation.
 
 ## Source record assembly
@@ -1057,6 +1060,90 @@ python -m jupyter nbconvert --to html --output-dir results results/PlastPrior.ip
 
 Large inputs can take several minutes to inspect. CSV tables are processed in
 chunks; selected Excel worksheets are loaded one at a time.
+
+## Persistence and mobility assessment (Stage 5A)
+
+`plastprior/hazard.py` evaluates P and M only. `hazard_policy.json` declares the
+input columns, units, decision thresholds, source precedence and fingerprints of
+the historical implementations examined during migration. Runtime execution does
+not import the old project or read its Stage 5 scores. The historical results are
+recomputed from this project's verified Stage 3 historical predictions and Stage
+4C evidence. The validator alone reads the frozen Stage 5 outputs as a reference.
+
+Run the complete workflow through Stage 5A:
+
+```text
+python main.py --assess-pm
+```
+
+The P/M rules preserve the historical screening conventions:
+
+- P: IRFMN water, soil and sediment assessments map `nP`, `nP/P`, `P/vP`, `vP`
+  to 0, 0.5, 1 and 2. ADI must be present and at least 0.5. Use the maximum;
+  ties select the first compartment in water, soil, sediment order.
+- Aquatic M: OPERA log10 Koc in L/kg, with ADI at least 0.5; values below 2,
+  below 3, below 4 and at least 4 map to 2, 1, 0.5 and 0, respectively.
+- LRTP M: both CTD (km) and TE (percent, not fraction) must be available, with
+  status `ok` or `warning`. Use `max(CTD / 5096.73, TE / 2.2476)`; ratios at
+  least 1, 0.5 and 0.25 map to 2, 1 and 0.5, respectively, otherwise 0.
+  This inclusive scoring boundary is distinct from the strict exceedance flags
+  retained in Stage 3B.
+- M: maximum usable aquatic/LRTP score; retain both bases on ties. For either
+  P or M, usable independent evidence, including zero, precedes curated fallback.
+  Curated selection uses PlastChem first, then alphabetical database order,
+  retaining the first numeric value (or a recognised P label if no numeric value
+  is available). Historical curated values such as 0.25 remain unchanged.
+
+These are inherited screening rules, not a newly validated regulatory
+classification. Historical agreement establishes migration fidelity, not model
+accuracy or scientific validation of the thresholds.
+
+`compound_pm_hazard.csv` is the eligible analysis table. All Stage 4C columns,
+including GIC review flags, are preserved. `pm_historical.csv` has an explicit
+`historical_reproduction_only` role and must not feed subsequent analysis.
+Analysis checks availability and rejects model inputs leaked into the 15
+identity-review rows. Those compounds may still use independently supported
+curated P/M evidence; no such fallback exists in the current cohort. Consequently,
+9 previously available P values and 15 M values become unavailable, not zero.
+Aquatic and LRTP subscore availability decreases by 10 and 15, respectively.
+The other 15,110 compounds must retain all eight P/M fields exactly.
+
+GIC name matches (1,132 compounds) and the shared-identifier tag expansion
+(one compound) remain flagged and unresolved. Neither GIC fields nor NORMAN
+analytical-platform predictions are in the scoring input allowlist. The validator
+perturbs these annotations for every compound and checks that P/M results and
+evidence remain unchanged.
+
+Outputs under `results/stage5/` include:
+
+| File | Purpose |
+| --- | --- |
+| `compound_pm_hazard.csv` | Stage 4C evidence plus isolated P/M analysis and availability reasons |
+| `pm_historical.csv` | Recomputed historical P/M values, bases and evidence; comparison only |
+| `pm_summary.csv` | Availability, missingness and zero counts for both views |
+| `identity_review_pm_impacts.csv` | Eight before/after fields for each of the 15 compounds, with reasons |
+| `persistence_*_audit.jsonl`, `mobility_*_audit.jsonl` | Separate historical and analysis evidence audits |
+| `pm_curated_source_links.jsonl` | Stage 4A P/M observations, original source IDs and selection/exclusion reasons |
+| `pm_decisions.jsonl` | Compound/dimension selection, availability, VEGA row and upstream manifest links |
+| `identity_review_source_links.jsonl` | The 58 original source memberships of the review cohort |
+| `hazard_manifest.json` | Policy, implementation, model mapping, input/output hashes and counts |
+
+Validate against the pinned run, supplying its local directory:
+
+```text
+python -m plastprior.validation --stage hazard-pm --baseline PATH_TO_FROZEN_RUN --results results/stage5 --output-dir results/validation_stage5a
+```
+
+Validation recursively checks Stages 1–4C and verifies the frozen Stage 5
+checkpoint/artifacts. It compares all 15,125 historical rows for four numeric
+scores, two basis fields and two recursively compared evidence JSON objects,
+plus both full audit lists. Numeric values use exact decimal comparison, without
+a tolerance; JSON key ordering and numeric spelling are immaterial. Nonreview
+analysis rows must match the historical reference; review changes are recorded
+separately in 120 field-level impact rows. Hash-verified deterministic replay
+checks every Stage 5A artifact, while upstream-field and source-lineage checks
+ensure that no records or review flags have been lost. No B/T, exposure or
+aggregate priority scoring is added by this stage.
 
 ## Interpretation and verification
 
