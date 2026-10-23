@@ -5,6 +5,11 @@ and [machine-readable inventory](docs/publication_inventory.json). Local scienti
 validation has passed; exact-input access, licensing, environment portability and
 final publication packaging still require review.
 
+The [data access and provenance review](docs/data_access_review.md) and
+[source register](docs/data_access_register.json) document official access routes,
+licence observations and unresolved differences between frozen inputs and
+candidate official files.
+
 PlastPrior is being developed as a framework integrating hazard and exposure
 evidence to prioritise plastic-associated chemicals. The current implementation
 inspects local inputs, assembles source inventory records, resolves chemical

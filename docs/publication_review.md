@@ -16,6 +16,11 @@ to committed bytes at the baseline above, excluding these new review documents
 and their README link. Future release preparation must regenerate the inventory
 against the final selected revision; this document is not a permanent lock file.
 
+Follow-up: the [data access and provenance review](data_access_review.md) records
+subsequent external-source checks, including four differences between local
+workbooks and candidate official archives. The findings below describe the
+initial local review; the follow-up does not replace its frozen inventory.
+
 ## Evidence available now
 
 | Item | Locally confirmed evidence | Limit of the claim |

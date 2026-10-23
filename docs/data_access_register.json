@@ -1,0 +1,1910 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-10-23",
+  "timezone": "Australia/Melbourne",
+  "code_and_review_baseline_commit": "17ad5e10bcc1969062c6a46450afd93083d76eb4",
+  "scientific_baseline_commit": "9e211e8bf3f71506629ca6f4c5f42428816e7aa3",
+  "status": "first_pass_complete_release_decisions_pending",
+  "scope": "Source-access and rights evidence register; no scientific policy changes, data replacements, public upload or legal clearance.",
+  "date_semantics": "checked_on is this review date. Historical retrieval, publisher publication, filename-derived snapshot and local filesystem times are separate concepts.",
+  "status_semantics": {
+    "retrieval_failed": "The tool did not obtain usable content; this does not prove that the source is unavailable or that reuse is prohibited.",
+    "candidate_archive_checksum_mismatch": "The local bytes differ from a plausible official version. Cause and scientific effect are unresolved; no silent replacement is permitted."
+  },
+  "entries": [
+    {
+      "id": "NORMAN_SusDat",
+      "kind": "primary_source",
+      "label": "NORMAN SusDat",
+      "provider_or_creator": "NORMAN Network and contributing list providers",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/susdat_2025-06-03-092022 (1).xlsx",
+          "bytes": 63142067,
+          "sha256": "263fdb920c7ebd9b72dad42bf189e10cac81746c3b62730afed53b849f2b135c"
+        }
+      ],
+      "local_declared_version": "2025-06-03 export",
+      "local_declared_snapshot_date": "2025-06-03",
+      "historical_retrieved_at": null,
+      "citation_reference": "https://www.norman-network.com/nds/susdat/",
+      "observations": [
+        {
+          "url": "https://www.norman-network.com/nds/susdat/",
+          "checked_on": "2026-10-23",
+          "status": "retrieval_failed",
+          "finding": "The catalog endpoint did not return usable content in this review. Recover the exact 2025-06-03 export route and applicable list-level terms."
+        }
+      ],
+      "candidate_license": null,
+      "license_scope": "Not established for the exact local file.",
+      "exact_snapshot_status": "unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "The catalog endpoint did not return usable content in this review. Recover the exact 2025-06-03 export route and applicable list-level terms."
+    },
+    {
+      "id": "PubChemLite",
+      "kind": "primary_source",
+      "label": "PubChemLite",
+      "provider_or_creator": "PubChemLite team, University of Luxembourg",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/PubChemLite.csv",
+          "bytes": 264047727,
+          "sha256": "c3f512b4d326a9f479cb0bb6e395d43f7c3c89b218955bd9f633d71ae5f74678"
+        }
+      ],
+      "local_declared_version": null,
+      "local_declared_snapshot_date": null,
+      "historical_retrieved_at": null,
+      "citation_reference": "https://pubchemlite.lcsb.uni.lu/",
+      "observations": [
+        {
+          "url": "https://pubchemlite.lcsb.uni.lu/",
+          "checked_on": "2026-10-23",
+          "status": "landing_page_reviewed",
+          "finding": "The website links a current Zenodo release and citations; the local undated CSV has not been matched to a version-specific archive. Do not substitute the current release."
+        }
+      ],
+      "candidate_license": null,
+      "license_scope": "Not established for the exact local file.",
+      "exact_snapshot_status": "unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "The website links a current Zenodo release and citations; the local undated CSV has not been matched to a version-specific archive. Do not substitute the current release."
+    },
+    {
+      "id": "PlastChem",
+      "kind": "primary_source",
+      "label": "PlastChem",
+      "provider_or_creator": "PlastChem dataset creators listed in the Zenodo record",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/plastchem_db_v1.01.xlsx",
+          "bytes": 10394208,
+          "sha256": "fec2d84ddd69c1b863a6f68e6716429ddcc0bd51b1dfb0ec99e5e177318cb05c"
+        }
+      ],
+      "local_declared_version": "1.01",
+      "local_declared_snapshot_date": null,
+      "historical_retrieved_at": null,
+      "citation_reference": "https://doi.org/10.5281/zenodo.15397723",
+      "observations": [
+        {
+          "url": "https://zenodo.org/records/15397723",
+          "checked_on": "2026-10-23",
+          "status": "record_metadata_reviewed",
+          "finding": "Candidate version 1.01 identified; local file checksum differs from the record. Header publication date and descriptive release date differ; neither is a local retrieval date."
+        },
+        {
+          "url": "https://zenodo.org/api/records/15397723",
+          "checked_on": "2026-10-23",
+          "status": "api_metadata_reviewed",
+          "finding": "Version, creators, file checksum and record-level licence read from the official API; no local version metadata overwritten."
+        }
+      ],
+      "candidate_license": "cc-by-nc-4.0",
+      "license_scope": "Observed on the candidate Zenodo record; applicability to the local modified or alternate file remains unresolved.",
+      "exact_snapshot_status": "candidate_archive_checksum_mismatch",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "Candidate version 1.01 identified; local file checksum differs from the record. Header publication date and descriptive release date differ; neither is a local retrieval date.",
+      "candidate_record": {
+        "doi": "10.5281/zenodo.15397723",
+        "record_url": "https://zenodo.org/records/15397723",
+        "api_url": "https://zenodo.org/api/records/15397723",
+        "title": "State of the science on plastic chemicals - Identifying and addressing chemicals and polymers of concern",
+        "creators": [
+          "Wagner, Martin",
+          "Monclús, Laura",
+          "Arp, Hans Peter H.",
+          "Groh, Ksenia J.",
+          "Løseth, Mari E.",
+          "Muncke, Jane",
+          "Wang, Zhanyun",
+          "Wolf, Raoul",
+          "Zimmermann, Lisa"
+        ],
+        "version": "1.01",
+        "publication_date": "2025-04-14",
+        "filename": "plastchem_db_v1.01.xlsx",
+        "bytes": 10402921,
+        "download_url": "https://zenodo.org/api/records/15397723/files/plastchem_db_v1.01.xlsx/content",
+        "published_checksum": "md5:06a9e1f3cea375ffcef93780bfce4414"
+      },
+      "checksum_comparison": {
+        "algorithm": "md5",
+        "local_value": "a23f4972fa7e3ee7d94a697c0feef3fe",
+        "published_value": "06a9e1f3cea375ffcef93780bfce4414",
+        "matches": false
+      },
+      "official_download_comparison": {
+        "record_id": 15397723,
+        "version": "1.01",
+        "license_id": "cc-by-nc-4.0",
+        "official_filename": "plastchem_db_v1.01.xlsx",
+        "url": "https://zenodo.org/api/records/15397723/files/plastchem_db_v1.01.xlsx/content",
+        "published_checksum": "md5:06a9e1f3cea375ffcef93780bfce4414",
+        "local_path": "data/SourceDatabase/plastchem_db_v1.01.xlsx",
+        "local_md5": "a23f4972fa7e3ee7d94a697c0feef3fe",
+        "local_sha256": "fec2d84ddd69c1b863a6f68e6716429ddcc0bd51b1dfb0ec99e5e177318cb05c",
+        "local_bytes": 10394208,
+        "downloaded_bytes": 10402921,
+        "downloaded_md5": "06a9e1f3cea375ffcef93780bfce4414",
+        "downloaded_sha256": "b0430b42e47f1213c58918add13c69552fac8d70afbb90cc963612a605f0f49d",
+        "download_matches_published_checksum": true,
+        "local_matches_download_sha256": false
+      }
+    },
+    {
+      "id": "UNEP",
+      "kind": "primary_source",
+      "label": "UNEP",
+      "provider_or_creator": "United Nations Environment Programme and contributing authors",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/UNEP 2023.xlsx",
+          "bytes": 9073176,
+          "sha256": "630df294c0921577dde0d60fd8a73f028e5ecbbca4b8c111a01c393b408dc587"
+        }
+      ],
+      "local_declared_version": "2023",
+      "local_declared_snapshot_date": null,
+      "historical_retrieved_at": null,
+      "citation_reference": "https://www.unep.org/resources/report/chemicals-plastics-technical-report",
+      "observations": [
+        {
+          "url": "https://www.unep.org/resources/report/chemicals-plastics-technical-report",
+          "checked_on": "2026-10-23",
+          "status": "retrieval_failed",
+          "finding": "The report link redirected to a PDF that could not be retrieved by the web tool. Establish the workbook supplement and its terms separately from the report."
+        }
+      ],
+      "candidate_license": null,
+      "license_scope": "Not established for the exact local file.",
+      "exact_snapshot_status": "unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "The report link redirected to a PDF that could not be retrieved by the web tool. Establish the workbook supplement and its terms separately from the report."
+    },
+    {
+      "id": "NORMAN_MPLEACH",
+      "kind": "primary_source",
+      "label": "MPLEACH",
+      "provider_or_creator": "NORMAN SLE MPLEACH contributors",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/MPLEACH.xlsx",
+          "bytes": 209771,
+          "sha256": "6f6348f24987a4eab44cf31e3e36817c30079275533f721267377340b78f27b0"
+        }
+      ],
+      "local_declared_version": "S133",
+      "local_declared_snapshot_date": null,
+      "historical_retrieved_at": null,
+      "citation_reference": "https://www.norman-network.com/apex/susdat/susdatSearchShow.php",
+      "observations": [
+        {
+          "url": "https://zenodo.org/records/18157912",
+          "checked_on": "2026-10-23",
+          "status": "record_metadata_reviewed",
+          "finding": "Candidate S133 version record identified; local workbook checksum differs. S133 identifies a list, not the exact acquisition date."
+        },
+        {
+          "url": "https://zenodo.org/api/records/18157912",
+          "checked_on": "2026-10-23",
+          "status": "api_metadata_reviewed",
+          "finding": "Version, creators, file checksum and record-level licence read from the official API; no local version metadata overwritten."
+        }
+      ],
+      "candidate_license": "cc-by-4.0",
+      "license_scope": "Observed on the candidate Zenodo record; applicability to the local modified or alternate file remains unresolved.",
+      "exact_snapshot_status": "candidate_archive_checksum_mismatch",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "Candidate S133 version record identified; local workbook checksum differs. S133 identifies a list, not the exact acquisition date.",
+      "candidate_record": {
+        "doi": "10.5281/zenodo.18157912",
+        "record_url": "https://zenodo.org/records/18157912",
+        "api_url": "https://zenodo.org/api/records/18157912",
+        "title": "S133 | MPLEACH | Chemicals Leaching from Microplastics",
+        "creators": [
+          "Alygizakis, Nikiforos",
+          "Roosma, Jorg",
+          "Brunner, Andrea Mizzi",
+          "Slobodnik, Jaroslav"
+        ],
+        "version": "NORMAN-SLE-S133.0.1.0",
+        "publication_date": "2026-01-05",
+        "filename": "MPLEACH.xlsx",
+        "bytes": 208922,
+        "download_url": "https://zenodo.org/api/records/18157912/files/MPLEACH.xlsx/content",
+        "published_checksum": "md5:5bb740534f0d8086832e8dade1f810d0"
+      },
+      "checksum_comparison": {
+        "algorithm": "md5",
+        "local_value": "8a10732169ab1b7d1014124f41a652d9",
+        "published_value": "5bb740534f0d8086832e8dade1f810d0",
+        "matches": false
+      },
+      "official_download_comparison": {
+        "record_id": 18157912,
+        "version": "NORMAN-SLE-S133.0.1.0",
+        "license_id": "cc-by-4.0",
+        "official_filename": "MPLEACH.xlsx",
+        "url": "https://zenodo.org/api/records/18157912/files/MPLEACH.xlsx/content",
+        "published_checksum": "md5:5bb740534f0d8086832e8dade1f810d0",
+        "local_path": "data/SourceDatabase/MPLEACH.xlsx",
+        "local_md5": "8a10732169ab1b7d1014124f41a652d9",
+        "local_sha256": "6f6348f24987a4eab44cf31e3e36817c30079275533f721267377340b78f27b0",
+        "local_bytes": 209771,
+        "downloaded_bytes": 208922,
+        "downloaded_md5": "5bb740534f0d8086832e8dade1f810d0",
+        "downloaded_sha256": "6044fabe3c2183bad8ca41cb6836e6dd0d4a6bbd98a9d2a2e6f65f55f9fa8ea8",
+        "download_matches_published_checksum": true,
+        "local_matches_download_sha256": false
+      }
+    },
+    {
+      "id": "FCCmigex",
+      "kind": "primary_source",
+      "label": "FCCmigex",
+      "provider_or_creator": "Food Packaging Forum and collaborating researchers",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/FCCmigex.xlsx",
+          "bytes": 896252,
+          "sha256": "8bd877181cb764c366ac2df5df46cde8d0b638c86718be8f8ea378627c8345ec"
+        }
+      ],
+      "local_declared_version": null,
+      "local_declared_snapshot_date": null,
+      "historical_retrieved_at": null,
+      "citation_reference": "https://foodpackagingforum.org/resources/databases/fccmigex",
+      "observations": [
+        {
+          "url": "https://foodpackagingforum.org/resources/databases/fccmigex",
+          "checked_on": "2026-10-23",
+          "status": "landing_page_reviewed",
+          "finding": "The official page links the S112 NORMAN chemical list. The local S112_FCCMIGEX sheet is not proof of a particular release or of database-wide redistribution terms."
+        }
+      ],
+      "candidate_license": null,
+      "license_scope": "Not established for the exact local file.",
+      "exact_snapshot_status": "unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "The official page links the S112 NORMAN chemical list. The local S112_FCCMIGEX sheet is not proof of a particular release or of database-wide redistribution terms."
+    },
+    {
+      "id": "FCChumon",
+      "kind": "primary_source",
+      "label": "FCChumon",
+      "provider_or_creator": "Food Packaging Forum and collaborating researchers",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/FCChumon.xlsx",
+          "bytes": 63878,
+          "sha256": "ca9f9db9769e908a28c7df8e878f3d8ebacf45c5c6afb041a67469726c889fb5"
+        }
+      ],
+      "local_declared_version": null,
+      "local_declared_snapshot_date": null,
+      "historical_retrieved_at": null,
+      "citation_reference": "https://foodpackagingforum.org/resources/databases/fcchumon",
+      "observations": [
+        {
+          "url": "https://foodpackagingforum.org/resources/databases/fcchumon",
+          "checked_on": "2026-10-23",
+          "status": "landing_page_reviewed",
+          "finding": "The official page links the 2024 article (10.1038/s41370-024-00718-2). The publisher page could not be retrieved; exact workbook supplement and terms remain unresolved."
+        }
+      ],
+      "candidate_license": null,
+      "license_scope": "Not established for the exact local file.",
+      "exact_snapshot_status": "unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "The official page links the 2024 article (10.1038/s41370-024-00718-2). The publisher page could not be retrieved; exact workbook supplement and terms remain unresolved."
+    },
+    {
+      "id": "FCCprio",
+      "kind": "primary_source",
+      "label": "FCCprio",
+      "provider_or_creator": "Food Packaging Forum / FCCprio dataset creators",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/FCCprio-List-v0-2-Zenodo-20260115.xlsx",
+          "bytes": 790768,
+          "sha256": "65062fcccf1081dea7d75c2e009b364b553fe02568ee3d02582ed4980baa26ce"
+        }
+      ],
+      "local_declared_version": "0.2",
+      "local_declared_snapshot_date": "2026-01-15",
+      "historical_retrieved_at": null,
+      "citation_reference": "https://doi.org/10.5281/zenodo.14881617",
+      "observations": [
+        {
+          "url": "https://zenodo.org/records/17199870",
+          "checked_on": "2026-10-23",
+          "status": "record_metadata_reviewed",
+          "finding": "The catalog concept DOI resolves to a newer release. Version 0.2 is record 17199870; its workbook checksum differs from the local file."
+        },
+        {
+          "url": "https://zenodo.org/api/records/17199870",
+          "checked_on": "2026-10-23",
+          "status": "api_metadata_reviewed",
+          "finding": "Version, creators, file checksum and record-level licence read from the official API; no local version metadata overwritten."
+        }
+      ],
+      "candidate_license": "cc-by-4.0",
+      "license_scope": "Observed on the candidate Zenodo record; applicability to the local modified or alternate file remains unresolved.",
+      "exact_snapshot_status": "candidate_archive_checksum_mismatch",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "The catalog concept DOI resolves to a newer release. Version 0.2 is record 17199870; its workbook checksum differs from the local file.",
+      "candidate_record": {
+        "doi": "10.5281/zenodo.17199870",
+        "record_url": "https://zenodo.org/records/17199870",
+        "api_url": "https://zenodo.org/api/records/17199870",
+        "title": "Food Contact Chemicals Priority (FCCprio) List",
+        "creators": [
+          "Wiesinger, Helene",
+          "Parkinson, Lindsey V.",
+          "Geueke, Birgit",
+          "Anguera Sempere, Albert",
+          "Boucher, Justin M.",
+          "Cabane, Etienne",
+          "Scheringer, Martin",
+          "Muncke, Jane"
+        ],
+        "version": "0.2",
+        "publication_date": "2026-01-15",
+        "filename": "FCCprio-List-v0-2-Zenodo-20260115.xlsx",
+        "bytes": 787336,
+        "download_url": "https://zenodo.org/api/records/17199870/files/FCCprio-List-v0-2-Zenodo-20260115.xlsx/content",
+        "published_checksum": "md5:705f0d6c74f9a6e3115e5f4b34095ad6"
+      },
+      "checksum_comparison": {
+        "algorithm": "md5",
+        "local_value": "eff7665a884d9593ea054fe1712a45fe",
+        "published_value": "705f0d6c74f9a6e3115e5f4b34095ad6",
+        "matches": false
+      },
+      "official_download_comparison": {
+        "record_id": 17199870,
+        "version": "0.2",
+        "license_id": "cc-by-4.0",
+        "official_filename": "FCCprio-List-v0-2-Zenodo-20260115.xlsx",
+        "url": "https://zenodo.org/api/records/17199870/files/FCCprio-List-v0-2-Zenodo-20260115.xlsx/content",
+        "published_checksum": "md5:705f0d6c74f9a6e3115e5f4b34095ad6",
+        "local_path": "data/SourceDatabase/FCCprio-List-v0-2-Zenodo-20260115.xlsx",
+        "local_md5": "eff7665a884d9593ea054fe1712a45fe",
+        "local_sha256": "65062fcccf1081dea7d75c2e009b364b553fe02568ee3d02582ed4980baa26ce",
+        "local_bytes": 790768,
+        "downloaded_bytes": 787336,
+        "downloaded_md5": "705f0d6c74f9a6e3115e5f4b34095ad6",
+        "downloaded_sha256": "e6dd26b51e9b910ee4824a98897d963e23e1ba47a03927865a06f0472989c8e0",
+        "download_matches_published_checksum": true,
+        "local_matches_download_sha256": false
+      }
+    },
+    {
+      "id": "LitChemPlast",
+      "kind": "primary_source",
+      "label": "LitChemPlast",
+      "provider_or_creator": "LitChemPlast dataset creators listed in the Zenodo record",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/LitChemPlast.xls",
+          "bytes": 60782592,
+          "sha256": "262bc473dc026eaede15fe77ecea2ecf4e36bee90916efd7f4f7f4a5fd1f76b4"
+        }
+      ],
+      "local_declared_version": null,
+      "local_declared_snapshot_date": null,
+      "historical_retrieved_at": null,
+      "citation_reference": "https://doi.org/10.1021/acs.estlett.4c00355",
+      "observations": [
+        {
+          "url": "https://zenodo.org/records/13271346",
+          "checked_on": "2026-10-23",
+          "status": "record_metadata_reviewed",
+          "finding": "The article identifies a versioned database archive, v20240809. The local renamed XLS differs in checksum; the candidate version must not be silently assigned to the local input."
+        },
+        {
+          "url": "https://zenodo.org/api/records/13271346",
+          "checked_on": "2026-10-23",
+          "status": "api_metadata_reviewed",
+          "finding": "Version, creators, file checksum and record-level licence read from the official API; no local version metadata overwritten."
+        }
+      ],
+      "candidate_license": "cc-by-4.0",
+      "license_scope": "Observed on the candidate Zenodo record; applicability to the local modified or alternate file remains unresolved.",
+      "exact_snapshot_status": "candidate_archive_checksum_mismatch",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "The article identifies a versioned database archive, v20240809. The local renamed XLS differs in checksum; the candidate version must not be silently assigned to the local input.",
+      "candidate_record": {
+        "doi": "10.5281/zenodo.13271346",
+        "record_url": "https://zenodo.org/records/13271346",
+        "api_url": "https://zenodo.org/api/records/13271346",
+        "title": "LitChemPlast database",
+        "creators": [
+          "Wiesinger, Helene",
+          "Shalin, Anna",
+          "Huang, Xinmei",
+          "Siegrist, Armin",
+          "Plinke, Nils",
+          "Hellweg, Stefanie",
+          "Wang, Zhanyun"
+        ],
+        "version": "v20240809",
+        "publication_date": "2024-08-09",
+        "filename": "LitChemPlast_v20240809.xls",
+        "bytes": 60782592,
+        "download_url": "https://zenodo.org/api/records/13271346/files/LitChemPlast_v20240809.xls/content",
+        "published_checksum": "md5:e5e6444c18fdd3f9ca462fe92891b8cc"
+      },
+      "checksum_comparison": {
+        "algorithm": "md5",
+        "local_value": "2e655be64026a0cd06608fec6ab64364",
+        "published_value": "e5e6444c18fdd3f9ca462fe92891b8cc",
+        "matches": false
+      },
+      "official_download_comparison": {
+        "record_id": 13271346,
+        "version": "v20240809",
+        "license_id": "cc-by-4.0",
+        "official_filename": "LitChemPlast_v20240809.xls",
+        "url": "https://zenodo.org/api/records/13271346/files/LitChemPlast_v20240809.xls/content",
+        "published_checksum": "md5:e5e6444c18fdd3f9ca462fe92891b8cc",
+        "local_path": "data/SourceDatabase/LitChemPlast.xls",
+        "local_md5": "2e655be64026a0cd06608fec6ab64364",
+        "local_sha256": "262bc473dc026eaede15fe77ecea2ecf4e36bee90916efd7f4f7f4a5fd1f76b4",
+        "local_bytes": 60782592,
+        "downloaded_bytes": 60782592,
+        "downloaded_md5": "e5e6444c18fdd3f9ca462fe92891b8cc",
+        "downloaded_sha256": "2f129231f45f822f08350cfc15fab1b15e1f793e5d58ce332e42bef6f636ce51",
+        "download_matches_published_checksum": true,
+        "local_matches_download_sha256": false
+      }
+    },
+    {
+      "id": "ICCA",
+      "kind": "primary_source",
+      "label": "ICCA",
+      "provider_or_creator": "International Council of Chemical Associations and contributing providers",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/icca_chemicals.csv",
+          "bytes": 283918,
+          "sha256": "211b900bdcb58a280f27a86cf99fe8a06b7fc923fd9a0d68de7a6ca0745f5200"
+        }
+      ],
+      "local_declared_version": null,
+      "local_declared_snapshot_date": null,
+      "historical_retrieved_at": null,
+      "citation_reference": "https://plasticscircularity.org/additives/",
+      "observations": [
+        {
+          "url": "https://plasticscircularity.org/additives/",
+          "checked_on": "2026-10-23",
+          "status": "landing_page_reviewed",
+          "finding": "The official description lists several upstream sources. The local CSV export method, date and exact redistribution scope have not been established."
+        }
+      ],
+      "candidate_license": null,
+      "license_scope": "Not established for the exact local file.",
+      "exact_snapshot_status": "unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "The official description lists several upstream sources. The local CSV export method, date and exact redistribution scope have not been established."
+    },
+    {
+      "id": "UCSF",
+      "kind": "primary_source",
+      "label": "UCSF",
+      "provider_or_creator": "Authors of the study identified by DOI 10.1021/envhealth.5c00197",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/UCSF paper database.xlsx",
+          "bytes": 6538415,
+          "sha256": "ec69f4694413650bb19a34421121fb5f42991863cbb46ab26702eef8666e3fe8"
+        }
+      ],
+      "local_declared_version": null,
+      "local_declared_snapshot_date": null,
+      "historical_retrieved_at": null,
+      "citation_reference": "https://doi.org/10.1021/envhealth.5c00197",
+      "observations": [
+        {
+          "url": "https://doi.org/10.1021/envhealth.5c00197",
+          "checked_on": "2026-10-23",
+          "status": "retrieval_failed",
+          "finding": "Publisher and DOI endpoints did not return usable content. The local workbook-to-supplement association, citation details and terms need evidence."
+        }
+      ],
+      "candidate_license": null,
+      "license_scope": "Not established for the exact local file.",
+      "exact_snapshot_status": "unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "Publisher and DOI endpoints did not return usable content. The local workbook-to-supplement association, citation details and terms need evidence."
+    },
+    {
+      "id": "PlasticMAP",
+      "kind": "primary_source",
+      "label": "PlasticMAP",
+      "provider_or_creator": "Authors of the study identified by DOI 10.1021/acs.est.1c00976",
+      "local_files": [
+        {
+          "path": "data/SourceDatabase/PlasticMAP_S1_210611.xlsx",
+          "bytes": 8037960,
+          "sha256": "a36a9e9bef96ec15ef00b0487ddfef8208a1f858d24965c8481e421f5f4459c9"
+        }
+      ],
+      "local_declared_version": "S1",
+      "local_declared_snapshot_date": "2021-06-11",
+      "historical_retrieved_at": null,
+      "citation_reference": "https://doi.org/10.1021/acs.est.1c00976",
+      "observations": [
+        {
+          "url": "https://doi.org/10.1021/acs.est.1c00976",
+          "checked_on": "2026-10-23",
+          "status": "retrieval_failed",
+          "finding": "Publisher access returned HTTP 403. The filename-derived date is not an authenticated release or retrieval date; identify the exact supplement and terms."
+        }
+      ],
+      "candidate_license": null,
+      "license_scope": "Not established for the exact local file.",
+      "exact_snapshot_status": "unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
+      "required_action": "Publisher access returned HTTP 403. The filename-derived date is not an authenticated release or retrieval date; identify the exact supplement and terms."
+    },
+    {
+      "id": "VEGA",
+      "kind": "supporting_source",
+      "label": "Frozen VEGA reports",
+      "provider_or_creator": "VEGA platform and individual model providers",
+      "local_files": [
+        {
+          "path": "data/Vega output/report_BCF_ARNOTGOBAS.txt",
+          "bytes": 1844109,
+          "sha256": "d1236d65e98b6c71c169b82cd012b92009b9e7bcc08de4870bcafd585ac86212"
+        },
+        {
+          "path": "data/Vega output/report_BCF_CAESAR.txt",
+          "bytes": 1977916,
+          "sha256": "e839bf2ccc8f360b9495952b3710ae77e544d1f96e7d65bb868a9ba0099cdbd0"
+        },
+        {
+          "path": "data/Vega output/report_BCF_MEYLAN.txt",
+          "bytes": 1679861,
+          "sha256": "1e927b3ad6d5da9cbbc0d8901fa5e7061d733cedf58166e3051ab905c68f7450"
+        },
+        {
+          "path": "data/Vega output/report_CARC_CAESAR.txt",
+          "bytes": 1568238,
+          "sha256": "ed14bcd7b5d4e5c8aab67136aaa9f33513f69a44f33c701f3b780800e51e192b"
+        },
+        {
+          "path": "data/Vega output/report_CARC_ISS.txt",
+          "bytes": 1464246,
+          "sha256": "c975abc323e1d6abcb6af49377b086aacdcad2a7494f67958149a4602ba5620d"
+        },
+        {
+          "path": "data/Vega output/report_DEVTOX_CAESAR.txt",
+          "bytes": 1281471,
+          "sha256": "9b368e7f6f347c79fc746d4c023c47c8effc749db62c37ead0132ee0ad76b7a3"
+        },
+        {
+          "path": "data/Vega output/report_ESTROGEN_CERAPP_2.txt",
+          "bytes": 2051957,
+          "sha256": "10c9d2abfdaff1942d5b8e9315de29b9ce205ae50529b00dd8f93fb2d6e9e411"
+        },
+        {
+          "path": "data/Vega output/report_FISH_LC50_1.txt",
+          "bytes": 1519487,
+          "sha256": "73564eb9dffa74718cdac58f0bc74b68c390047b6f96252a1b5ce1cfd02e5d9d"
+        },
+        {
+          "path": "data/Vega output/report_KOC_OPERA_2.txt",
+          "bytes": 1387414,
+          "sha256": "431ca6ab68472fc5e576296f622e7e3b945806824a2d7cf4e99779464f024ed0"
+        },
+        {
+          "path": "data/Vega output/report_LOGP_MEYLAN.txt",
+          "bytes": 1204599,
+          "sha256": "b227e45959d9325013da51c6871eae9fbaeb7b5c15dff7e640015492111c3f30"
+        },
+        {
+          "path": "data/Vega output/report_MUTA_CONSENSUS.txt",
+          "bytes": 2655786,
+          "sha256": "a4d71c9edb5e81903d58bc6d222aaa28bac477acd18d2bebe70dbe5905005384"
+        },
+        {
+          "path": "data/Vega output/report_PERS_AIR_CORAL_2.txt",
+          "bytes": 1432503,
+          "sha256": "62427af0d40d0c85f01822a416bd102f7511e30f7f9994ed43395dca13078441"
+        },
+        {
+          "path": "data/Vega output/report_PERS_SED_2.txt",
+          "bytes": 1614571,
+          "sha256": "025ec3acf494cc313a71c5d8bf632f09710fbdb1ed7fef186fef22abc3f07765"
+        },
+        {
+          "path": "data/Vega output/report_PERS_SOIL_2.txt",
+          "bytes": 1426371,
+          "sha256": "23891376b92beb940dfd3ca47e65f95f9fad0bea3fadae7a9d12021d159d7b34"
+        },
+        {
+          "path": "data/Vega output/report_PERS_SOIL_QUANT_2.txt",
+          "bytes": 1351269,
+          "sha256": "cce95a724e35079e0f2898eddbc076cbb5631f0ee9c260bb8353514b86957b4f"
+        },
+        {
+          "path": "data/Vega output/report_PERS_WATER_QUANT_2.txt",
+          "bytes": 1358408,
+          "sha256": "6021abc542bbc06dca84f3ee1b1fdf736eb283dde0b0d57c6ef58595b42b9c84"
+        },
+        {
+          "path": "data/Vega output/report_PERS_WAT_2.txt",
+          "bytes": 1886901,
+          "sha256": "73fd312f69cb64181779bbba64559ff2bcb442a1c95c7d20b12fbd04dc90d6c2"
+        },
+        {
+          "path": "data/Vega output/report_READYBIO_IRFMN_2.txt",
+          "bytes": 3292986,
+          "sha256": "9b454d909d5bff89c63e4e10377e57aae7315f17f0d8001d942bc67ab2b63b29"
+        },
+        {
+          "path": "data/Vega output/report_VAPOUR_PRESSURE.txt",
+          "bytes": 1339922,
+          "sha256": "c112131125fa9797b787ddd6d9b38e23c5053e801d83012795cd8975c56f7b7c"
+        },
+        {
+          "path": "data/Vega output/report_WS_IRFMN.txt",
+          "bytes": 1528462,
+          "sha256": "0d8f91dd24296714f55ca5ad73e39780fa881cd791b50cfbb97562c719573cb8"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "citation_reference": "https://www.vega-qsar.eu/",
+      "observations": [
+        {
+          "url": "https://www.vega-qsar.eu/",
+          "checked_on": "2026-10-23",
+          "status": "retrieval_failed",
+          "finding": "Recover exact application/model versions, input structures and report-generation provenance. Website retrieval timed out; software access alone does not document output redistribution terms."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_frozen_bytes_identified_external_route_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen output archive with provenance, or a validated deterministic reconstruction; pending.",
+      "required_action": "Recover exact application/model versions, input structures and report-generation provenance. Website retrieval timed out; software access alone does not document output redistribution terms."
+    },
+    {
+      "id": "GIC",
+      "kind": "supporting_source",
+      "label": "GIC inventory",
+      "provider_or_creator": "Global Inventory Compiler and upstream list providers",
+      "local_files": [
+        {
+          "path": "data/GIC Regulatory Inventory/inventory_20260330.jsonl",
+          "bytes": 67221453,
+          "sha256": "143f23320f609188d2cbedb5a6a655b1191d91564516b6cf1a5417f3b5df8f95"
+        },
+        {
+          "path": "data/GIC Regulatory Inventory/gic_list_tag_metadata.csv",
+          "bytes": 4745,
+          "sha256": "55164e5cc5a4026d46fa956a6e709280814b6cbb86aec14c1be53c40178e6270"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "citation_reference": "https://github.com/envris/global-inventory-compiler-public",
+      "observations": [
+        {
+          "url": "https://github.com/envris/global-inventory-compiler-public",
+          "checked_on": "2026-10-23",
+          "status": "pinned_software_license_reviewed",
+          "finding": "The pinned code LICENSE is BSD-3-Clause. This observation is not permission for every compiled upstream list or the local metadata table. Preserve source-level terms, missing metadata provenance and all existing identity/linkage flags."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_frozen_bytes_identified_external_route_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen output archive with provenance, or a validated deterministic reconstruction; pending.",
+      "required_action": "The pinned code LICENSE is BSD-3-Clause. This observation is not permission for every compiled upstream list or the local metadata table. Preserve source-level terms, missing metadata provenance and all existing identity/linkage flags.",
+      "software_license_evidence": {
+        "license": "BSD-3-Clause",
+        "url": "https://raw.githubusercontent.com/envris/global-inventory-compiler-public/9487e9395ee51f7cce304ff65a041854d908211d/LICENSE",
+        "scope": "Pinned software only; not an upstream-data rights decision."
+      }
+    },
+    {
+      "id": "Patent_queries",
+      "kind": "supporting_source",
+      "label": "Patent query evidence",
+      "provider_or_creator": "Project query outputs using NCBI PubChem and upstream contributors",
+      "local_files": [
+        {
+          "path": "data/Patent data/pubchem_zero_patent_check_final.csv",
+          "bytes": 2198495,
+          "sha256": "7e2cde226a66e48dafdabbeeb66145205fd41607b4cd0eec7db49128085b2d66"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "citation_reference": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+      "observations": [
+        {
+          "url": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+          "checked_on": "2026-10-23",
+          "status": "policy_page_reviewed",
+          "finding": "NCBI identifies contributed content, including PubChem, with possible third-party terms. Recover query date/parameters, coverage, errors and provenance for the exact output; do not rerun live queries as frozen substitutes."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_frozen_bytes_identified_external_route_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen output archive with provenance, or a validated deterministic reconstruction; pending.",
+      "required_action": "NCBI identifies contributed content, including PubChem, with possible third-party terms. Recover query date/parameters, coverage, errors and provenance for the exact output; do not rerun live queries as frozen substitutes."
+    },
+    {
+      "id": "PubMed_queries",
+      "kind": "supporting_source",
+      "label": "Literature query evidence",
+      "provider_or_creator": "Project query outputs using NCBI PubMed",
+      "local_files": [
+        {
+          "path": "data/Literature data/pubmed_title_abstract_counts_final.csv",
+          "bytes": 11440075,
+          "sha256": "6bfd5cc3973946e863d2dd956ae5640f5018dcc80455375deb5aa1a3d194a5c2"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "citation_reference": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+      "observations": [
+        {
+          "url": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+          "checked_on": "2026-10-23",
+          "status": "policy_page_reviewed",
+          "finding": "Document the exact count-query output and attribution, separately from abstracts/full text. Preserve failed queries, missing counts and valid zeros; live counts may change."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_frozen_bytes_identified_external_route_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen output archive with provenance, or a validated deterministic reconstruction; pending.",
+      "required_action": "Document the exact count-query output and attribution, separately from abstracts/full text. Preserve failed queries, missing counts and valid zeros; live counts may change."
+    },
+    {
+      "id": "us_epa_cdr",
+      "kind": "production_market_source",
+      "label": "US EPA Chemical Data Reporting",
+      "provider_or_creator": "US EPA Chemical Data Reporting",
+      "local_root": "data/Official_Production_Volume_Data/01_US_EPA_CDR",
+      "local_inventory_summary": {
+        "file_count": 16,
+        "bytes": 81304195,
+        "role_counts": {
+          "audit_or_documentation": 1,
+          "derived_or_unclassified": 4,
+          "raw_response_or_archive_candidate": 11
+        }
+      },
+      "audit_documents": [
+        {
+          "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/derived/iur_national_production_1985_2005.audit.json",
+          "bytes": 1318,
+          "sha256": "3f486fb7dcfb24e8d4798441169fb07d565e00df921c160543a4a82cbe4aeb0c"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "retrieval_provenance": "Per-file or per-request dates occur in local audit documents; no single date assigned to this whole source.",
+      "citation_reference": "https://www.epa.gov/chemical-data-reporting/access-cdr-data",
+      "observations": [
+        {
+          "url": "https://www.epa.gov/chemical-data-reporting/access-cdr-data",
+          "checked_on": "2026-10-23",
+          "status": "landing_page_reviewed",
+          "finding": "Checked the source route where retrievable; current website access does not prove availability of every historical response or permission for the full local directory."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_inventory_complete_external_exact_access_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
+      "scientific_scope_limit": "Not a global total; reporting thresholds, exemptions and confidentiality apply.",
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+    },
+    {
+      "id": "echa_reach",
+      "kind": "production_market_source",
+      "label": "ECHA CHEM REACH registered substances",
+      "provider_or_creator": "ECHA CHEM REACH registered substances",
+      "local_root": "data/Official_Production_Volume_Data/02_ECHA_REACH",
+      "local_inventory_summary": {
+        "file_count": 4789,
+        "bytes": 152038500,
+        "role_counts": {
+          "audit_or_documentation": 3,
+          "derived_or_unclassified": 2,
+          "raw_response_or_archive_candidate": 4784
+        }
+      },
+      "audit_documents": [
+        {
+          "path": "data/Official_Production_Volume_Data/02_ECHA_REACH/README.md",
+          "bytes": 674,
+          "sha256": "c5430f168dca4662c6053e01c31447cb757c4d7feaf0fb5a669227e8a8d428e0"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/02_ECHA_REACH/collected_tonnage/echa_reach_api_audit.csv",
+          "bytes": 2198215,
+          "sha256": "c550c698e3946d1748f4931c1a43d3b06c637b11fd0097a58e954e7854a6b06c"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "retrieval_provenance": "Per-file or per-request dates occur in local audit documents; no single date assigned to this whole source.",
+      "citation_reference": "https://chem.echa.europa.eu/",
+      "observations": [
+        {
+          "url": "https://chem.echa.europa.eu/",
+          "checked_on": "2026-10-23",
+          "status": "terms_page_retrieval_failed",
+          "finding": "Checked the source route where retrievable; current website access does not prove availability of every historical response or permission for the full local directory."
+        },
+        {
+          "url": "https://echa.europa.eu/legal-notice",
+          "checked_on": "2026-10-23",
+          "status": "retrieval_failed",
+          "finding": "HTTP 403; terms were not read and no rights conclusion is made."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_inventory_complete_external_exact_access_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
+      "scientific_scope_limit": "Registration bands are not independent measurements by ECHA.",
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+    },
+    {
+      "id": "nordic_spin",
+      "kind": "production_market_source",
+      "label": "Nordic SPIN",
+      "provider_or_creator": "Nordic SPIN",
+      "local_root": "data/Official_Production_Volume_Data/03_Nordic_SPIN",
+      "local_inventory_summary": {
+        "file_count": 14219,
+        "bytes": 271835374,
+        "role_counts": {
+          "audit_or_documentation": 5,
+          "derived_or_unclassified": 3,
+          "operational_log": 1,
+          "raw_response_or_archive_candidate": 14210
+        }
+      },
+      "audit_documents": [
+        {
+          "path": "data/Official_Production_Volume_Data/03_Nordic_SPIN/README.md",
+          "bytes": 1956,
+          "sha256": "12d335d88342f5e8a55ac1f6863007c777ff0ccab67bcca0c9fd937da77f0199"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/03_Nordic_SPIN/full_collection/SHA256SUMS.txt",
+          "bytes": 1383746,
+          "sha256": "b0340b84c8bacdd784d9758b41a4efd39ae0392959bb4aee9eb3f4da09f8767f"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/03_Nordic_SPIN/full_collection/nordic_spin_query_audit.csv",
+          "bytes": 3531138,
+          "sha256": "a340f10d46ea9c5530051aacd34ad9d270f4b83d1ee81d8eb94ba113c5f0ea0d"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "retrieval_provenance": "Per-file or per-request dates occur in local audit documents; no single date assigned to this whole source.",
+      "citation_reference": "http://www.spin2000.net/spinmyphp/",
+      "observations": [
+        {
+          "url": "http://www.spin2000.net/spinmyphp/",
+          "checked_on": "2026-10-23",
+          "status": "retrieval_failed",
+          "finding": "Checked the source route where retrievable; current website access does not prove availability of every historical response or permission for the full local directory."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_inventory_complete_external_exact_access_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
+      "scientific_scope_limit": "Total Use is market-use evidence, not manufacture/import production volume.",
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+    },
+    {
+      "id": "japan_meti_cscl",
+      "kind": "production_market_source",
+      "label": "Japan METI/NITE CSCL",
+      "provider_or_creator": "Japan METI/NITE CSCL",
+      "local_root": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL",
+      "local_inventory_summary": {
+        "file_count": 22822,
+        "bytes": 624445563,
+        "role_counts": {
+          "audit_or_documentation": 10,
+          "derived_or_unclassified": 11,
+          "operational_log": 1,
+          "raw_response_or_archive_candidate": 22800
+        }
+      },
+      "audit_documents": [
+        {
+          "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/README.md",
+          "bytes": 1172,
+          "sha256": "60b1be441f4d58617ad7829a1488238f972c79af5589a5bb47775a66526d5ccd"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/SHA256SUMS.txt",
+          "bytes": 8833,
+          "sha256": "6e3a8eb1f7b6ba2c403544c5ecccc07c98bc879bf3758969bd4704d70c3d3a89"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/demo/meti_cscl_demo_request_audit.csv",
+          "bytes": 27641,
+          "sha256": "87c6dbf2b1f539d8a248d772fd84f23167cd6577ebef09199a259ecec1307e4b"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/demo/meti_cscl_official_source_manifest.csv",
+          "bytes": 1164,
+          "sha256": "d96a120d2180ce83a981882686d774da26b20010c13acca7613c017bcb32d2af"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/full_collection/SHA256SUMS.txt",
+          "bytes": 673,
+          "sha256": "f238ecc8d7ca4d7aa558c0049c16f5195842d6f16a4de031530b33cb1a4e7674"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/full_collection/launcher_audit.json",
+          "bytes": 827,
+          "sha256": "7cb41fc12a65c4b55102f16909578f61436b90e190ca8d58934a18bc75ed0f0d"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/full_collection/meti_cscl_full_request_audit.csv",
+          "bytes": 7036519,
+          "sha256": "ac6238712e915c05500384e09d8e94d4d3e394eb06db77f133905b6f656f7b7a"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "retrieval_provenance": "Per-file or per-request dates occur in local audit documents; no single date assigned to this whole source.",
+      "citation_reference": "https://www.nite.go.jp/chem/jcheck/top.action?request_locale=en",
+      "observations": [
+        {
+          "url": "https://www.nite.go.jp/chem/jcheck/top.action?request_locale=en",
+          "checked_on": "2026-10-23",
+          "status": "landing_page_reviewed",
+          "finding": "Checked the source route where retrievable; current website access does not prove availability of every historical response or permission for the full local directory."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_inventory_complete_external_exact_access_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
+      "scientific_scope_limit": "One CAS may map to multiple MITI numbers; records are not automatically additive.",
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+    },
+    {
+      "id": "korea_chemical_statistics",
+      "kind": "production_market_source",
+      "label": "Korea Chemical Statistics Survey",
+      "provider_or_creator": "Korea Chemical Statistics Survey",
+      "local_root": "data/Official_Production_Volume_Data/05_South_Korea_Chemical_Statistics",
+      "local_inventory_summary": {
+        "file_count": 39,
+        "bytes": 661137,
+        "role_counts": {
+          "audit_or_documentation": 3,
+          "derived_or_unclassified": 2,
+          "raw_response_or_archive_candidate": 34
+        }
+      },
+      "audit_documents": [
+        {
+          "path": "data/Official_Production_Volume_Data/05_South_Korea_Chemical_Statistics/demo/README.md",
+          "bytes": 2808,
+          "sha256": "d1ff220251a85bb578785e5796925b5f7665852352a999f341500d3bb65a36c8"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/05_South_Korea_Chemical_Statistics/demo/korea_chemical_statistics_request_audit.csv",
+          "bytes": 20556,
+          "sha256": "08d9d78c2800f8b556399c60f90c850998e15fc213e6044bb6c573da8ceca542"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "retrieval_provenance": "Per-file or per-request dates occur in local audit documents; no single date assigned to this whole source.",
+      "citation_reference": "https://icis.mcee.go.kr/search/searchType6.do?pageType=tabC",
+      "observations": [
+        {
+          "url": "https://icis.mcee.go.kr/search/searchType6.do?pageType=tabC",
+          "checked_on": "2026-10-23",
+          "status": "landing_page_reviewed",
+          "finding": "Checked the source route where retrievable; current website access does not prove availability of every historical response or permission for the full local directory."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_inventory_complete_external_exact_access_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
+      "scientific_scope_limit": "Verified public endpoints do not expose CAS-specific manufacture/import quantities.",
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+    },
+    {
+      "id": "canada_cepa_s71",
+      "kind": "production_market_source",
+      "label": "Canada CEPA Section 71",
+      "provider_or_creator": "Canada CEPA Section 71",
+      "local_root": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71",
+      "local_inventory_summary": {
+        "file_count": 105,
+        "bytes": 7682120,
+        "role_counts": {
+          "audit_or_documentation": 10,
+          "derived_or_unclassified": 4,
+          "raw_response_or_archive_candidate": 90,
+          "operational_log": 1
+        }
+      },
+      "audit_documents": [
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/demo/README.md",
+          "bytes": 2182,
+          "sha256": "4d8b3ce467ecc66e905ec0c6bf924fe8b2562bf27d1f9c7f0163e62597a4978a"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/demo/SHA256SUMS.txt",
+          "bytes": 1083,
+          "sha256": "78d8bc4e0ac61bd7e5fe21db532ec020dcf9b2cc7efd26d762f577dfec3a2743"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/demo/canada_cepa_section71_request_audit.csv",
+          "bytes": 3468,
+          "sha256": "227ac260f023eafde0f4005c94b5fa1e3905d272a7392ced5171ea6c29388f30"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/README.md",
+          "bytes": 1401,
+          "sha256": "c2a9c5271ed0220e959c5e4901ba7a846d0c94942516d894d946dfde1c63d55f"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/SHA256SUMS.txt",
+          "bytes": 10297,
+          "sha256": "5546020776197862ab5a26e55be0f67434a6d8c3172aa311f036bced90239b3d"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/parse_audit.csv",
+          "bytes": 23054,
+          "sha256": "09c3622437d11d11fdcf359fec3553966fa29e5b33c5e1fb616b677f57ae8556"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_azo_2011/README.md",
+          "bytes": 512,
+          "sha256": "20c45d80a8c8af5b358ca9d5b8c5b27dedf09c40098df10b23896a0f193b6007"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_benpat/README.md",
+          "bytes": 468,
+          "sha256": "9cd115a4a5d07237ec158f70a4eeb090e390fd0e4e11e02d5bc752d239ccdfc5"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_bpa/README.md",
+          "bytes": 531,
+          "sha256": "2d1dd720c5c44643e35b6ceb529914f5956c240ee333dc2f6f1229eb51bbaa38"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_coal_tars/README.md",
+          "bytes": 504,
+          "sha256": "f3a15be09bbbb87651b9d6aea1ceda7d380f4ac02121937ada20b882edb4387c"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_cobalt_2012/README.md",
+          "bytes": 500,
+          "sha256": "578d342c33dd508099d99509b20c7455ab06298077ec3405f6c53688cd6d7e0f"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_mdi_mda/README.md",
+          "bytes": 544,
+          "sha256": "cd25e17599bd70f71d99108a47901db3b0cc5bcf44e0d91c5ad1d7a78c20e092"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_ofr_2013/README.md",
+          "bytes": 501,
+          "sha256": "275f408c2271086baa05e83b1de0a5cfba29c3239429d18bc1e5d83273ca3db1"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_phthalates_2013/README.md",
+          "bytes": 504,
+          "sha256": "3431ab3a4d820a44f15b2049a4b15fae45082231de5879df9dcedb98c94b7eb7"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_qac_p1/README.md",
+          "bytes": 466,
+          "sha256": "e1a692d550f411b1c96520c1d5aedcf76bf77ad3bc9c65165ad5d57778f0b466"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_sdpa_2012/README.md",
+          "bytes": 514,
+          "sha256": "c01b693403f541c231a7c55cb6b4493f9ed3a11cc4257f0b27dd192c3c8a7d20"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/initiative_selenium_2013/README.md",
+          "bytes": 512,
+          "sha256": "85ba8ee03bef917c7a11d9ec18070c3b7ef96698f7981d52235ad07de8b62182"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/raw_data/inventory_update_2017/README.md",
+          "bytes": 481,
+          "sha256": "426588ddb00877e9ab4ca1dda6a0ac75d9f37f6a34cda3d69d7cffa2aa31070d"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/request_audit.csv",
+          "bytes": 40160,
+          "sha256": "b0c27989de443cedef0d21f5e09d20e976d17da73646c789a40f397f7f9c4ef2"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/source_file_index.csv",
+          "bytes": 153491,
+          "sha256": "8caf4666f37cd29f8b794c11e2e10200d6e0620fa06aa99630eb70c4e13752f9"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "retrieval_provenance": "Per-file or per-request dates occur in local audit documents; no single date assigned to this whole source.",
+      "citation_reference": "https://data-donnees.ec.gc.ca/data/substances/outreach/data-gathered-under-section-71-of-the-canadian-environmental-protection-act-cepa-1999?lang=en",
+      "observations": [
+        {
+          "url": "https://data-donnees.ec.gc.ca/data/substances/outreach/data-gathered-under-section-71-of-the-canadian-environmental-protection-act-cepa-1999?lang=en",
+          "checked_on": "2026-10-23",
+          "status": "retrieval_failed",
+          "finding": "Checked the source route where retrievable; current website access does not prove availability of every historical response or permission for the full local directory."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_inventory_complete_external_exact_access_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
+      "scientific_scope_limit": "Contextual evidence rows are not additive; evidence_scope must be retained.",
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+    },
+    {
+      "id": "korea_new_chemicals",
+      "kind": "production_market_source",
+      "label": "South Korea MOEL new-chemical notices",
+      "provider_or_creator": "South Korea MOEL new-chemical notices",
+      "local_root": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals",
+      "local_inventory_summary": {
+        "file_count": 52,
+        "bytes": 12083133,
+        "role_counts": {
+          "audit_or_documentation": 9,
+          "derived_or_unclassified": 2,
+          "raw_response_or_archive_candidate": 41
+        }
+      },
+      "audit_documents": [
+        {
+          "path": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals/demo/README.md",
+          "bytes": 2454,
+          "sha256": "5045a6822a71a3ae3eb9539fdc4e94b2d8c3f029da2d4091ab5562363134593e"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals/demo/korea_new_chemicals_request_audit.csv",
+          "bytes": 1509,
+          "sha256": "58156545fc91748e4f8f00f9862c7ce7411e48b52462c983d5a9efaf38eb934f"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals/full_collection/README.md",
+          "bytes": 1323,
+          "sha256": "4b578a244a207807c8e02dc3f097bc5a9bb024d0ee830b87db0a80b13a7775b3"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals/full_collection/SHA256SUMS.txt",
+          "bytes": 4068,
+          "sha256": "38bfd5e8091634b17848d436e4d2c1c7669923d6d323f762a474e84069bf7b9d"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals/full_collection/korea_new_chemicals_request_audit.csv",
+          "bytes": 29897,
+          "sha256": "11c90c141d708aab1081cc04a360ed0b58f0edf08cc66bbcefbd139105ac8143"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals/full_collection/korea_new_chemicals_source_manifest.csv",
+          "bytes": 8700,
+          "sha256": "d97f46bbd69726181da10c7afbcbac55b69a7e8ffb505de9cb75f6b5fd18150c"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "retrieval_provenance": "Per-file or per-request dates occur in local audit documents; no single date assigned to this whole source.",
+      "citation_reference": "https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20240100056",
+      "observations": [
+        {
+          "url": "https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20240100056",
+          "checked_on": "2026-10-23",
+          "status": "landing_page_reviewed",
+          "finding": "Checked the source route where retrievable; current website access does not prove availability of every historical response or permission for the full local directory."
+        }
+      ],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_inventory_complete_external_exact_access_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
+      "scientific_scope_limit": "Manufacture and import cannot be separated; notification rows are not national totals.",
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+    },
+    {
+      "id": "taiwan_toxic_chemicals",
+      "kind": "production_market_source",
+      "label": "Taiwan MOENV toxic chemicals",
+      "provider_or_creator": "Taiwan MOENV toxic chemicals",
+      "local_root": "data/Official_Production_Volume_Data/08_Taiwan_Toxic_Chemicals",
+      "local_inventory_summary": {
+        "file_count": 21,
+        "bytes": 6206817,
+        "role_counts": {
+          "audit_or_documentation": 7,
+          "raw_response_or_archive_candidate": 8,
+          "derived_or_unclassified": 6
+        }
+      },
+      "audit_documents": [
+        {
+          "path": "data/Official_Production_Volume_Data/08_Taiwan_Toxic_Chemicals/demo/README.md",
+          "bytes": 1269,
+          "sha256": "5bdc2f2f50de10a456f6217c5293b3db4b1dc47f27ab87019bd2178f4fe7d3e9"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/08_Taiwan_Toxic_Chemicals/demo/download_audit.csv",
+          "bytes": 731,
+          "sha256": "d253ee9c616dabc0cf4c89af0bc7e84c60934089c29f32135b690ba41a71fa19"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/08_Taiwan_Toxic_Chemicals/full_collection/README.md",
+          "bytes": 1480,
+          "sha256": "3d0e058e388ca19ca8fb9c8afb61090c69502b8217e8a46731be772730d3e646"
+        },
+        {
+          "path": "data/Official_Production_Volume_Data/08_Taiwan_Toxic_Chemicals/full_collection/download_audit.csv",
+          "bytes": 896,
+          "sha256": "4eb7e4d6b383ce49607bed786345d5dcc6f95e702f815188a6a35ebd77deab0a"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "retrieval_provenance": "Per-file or per-request dates occur in local audit documents; no single date assigned to this whole source.",
+      "citation_reference": "https://data.moenv.gov.tw/dataset/detail/TOXIC_P_19",
+      "observations": [
+        {
+          "url": "https://data.moenv.gov.tw/dataset/detail/TOXIC_P_19",
+          "checked_on": "2026-10-23",
+          "status": "dataset_terms_link_reviewed",
+          "finding": "Checked the source route where retrievable; current website access does not prove availability of every historical response or permission for the full local directory."
+        },
+        {
+          "url": "https://data.moenv.gov.tw/dataset/detail/TOXIC_P_23",
+          "checked_on": "2026-10-23",
+          "status": "dataset_terms_link_reviewed",
+          "finding": "The CAS-mapping dataset links the same government licence."
+        },
+        {
+          "url": "https://data.gov.tw/license",
+          "checked_on": "2026-10-23",
+          "status": "license_page_reviewed",
+          "finding": "Version 1.0 provides reuse terms and an attribution requirement; this is recorded evidence, not a completed package decision."
+        }
+      ],
+      "candidate_license": "Open Government Data License, version 1.0",
+      "exact_snapshot_status": "local_inventory_complete_external_exact_access_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
+      "scientific_scope_limit": "No reporting year is published; multi-CAS controlled-group totals are not CAS allocations.",
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations.",
+      "license_scope": "Current TOXIC_P_19 and TOXIC_P_23 pages link this licence; verify exact frozen archive mapping and attribution before release."
+    },
+    {
+      "id": "Frozen_exposure_reference",
+      "kind": "derived_reference_bundle",
+      "label": "Frozen exposure reference and provenance",
+      "provider_or_creator": "Project transformations over the registered upstream sources",
+      "local_files": [
+        {
+          "path": "data/ExposureReference/20261006T233429Z/market_presence_evidence.csv",
+          "bytes": 285459219,
+          "sha256": "c93f680da72d1f2a542553944ea638d8900c8a4cbec7bb4f6a041c9eec3ce583",
+          "role": "frozen_derived_input_not_rebuilt"
+        },
+        {
+          "path": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+          "bytes": 5335,
+          "sha256": "01fdc4bb8a0c675ab40f658151fb3f4b4da4fc0de42cb24ea5030ff932a26315",
+          "role": "frozen_derived_input_not_rebuilt"
+        },
+        {
+          "path": "data/ExposureReference/20261006T233429Z/source_registry.csv",
+          "bytes": 3948,
+          "sha256": "c03a5745b8fc381121b0b07ea74c5f5430d51f05c94f9b37dd490627c0da027a",
+          "role": "frozen_derived_input_not_rebuilt"
+        },
+        {
+          "path": "data/ExposureReference/20261006T233429Z/production_volume_evidence.csv",
+          "bytes": 123483195,
+          "sha256": "94dc2fadfedda39490dcde9ade04db8adbf42f33bb2c47b1fd8c46ef34f58ad7",
+          "role": "frozen_derived_input_not_rebuilt"
+        },
+        {
+          "path": "data/ExposureReference/20261006T233429Z/run_manifest.json",
+          "bytes": 8413,
+          "sha256": "37409fa3ec043f837efa2b64b265a6018dd6d58e3c56f364de9aff6dfe845f59",
+          "role": "frozen_provenance"
+        },
+        {
+          "path": "data/ExposureReference/20261006T233429Z/input_manifest.json",
+          "bytes": 27549,
+          "sha256": "e019d5c28de60fab1a85bab64ba357894af128fb562fe35d42b1adee688055bc",
+          "role": "frozen_provenance"
+        },
+        {
+          "path": "data/ExposureReference/20261006T233429Z/stage6_checkpoint.json",
+          "bytes": 46191,
+          "sha256": "96940c1ff878870620d7d5fe5a02debf7f9c1f4783976ed1155b1ec4e6cfe9bc",
+          "role": "frozen_provenance"
+        },
+        {
+          "path": "data/ExposureReference/20261006T233429Z/official_us_epa_production_by_cas.csv",
+          "bytes": 34276423,
+          "sha256": "bc41aebc8c8f53330752675058db1c6c91cc5b0e178f31f8d74a95806be621e1",
+          "role": "frozen_derived_input_not_rebuilt"
+        }
+      ],
+      "historical_retrieved_at": null,
+      "citation_reference": null,
+      "observations": [],
+      "candidate_license": null,
+      "exact_snapshot_status": "local_policy_hashes_match_external_distribution_unresolved",
+      "distribution_decision": "unresolved_do_not_package_yet",
+      "proposed_access_route": "Approved external frozen bundle retaining all eight files and upstream provenance.",
+      "required_action": "Resolve upstream terms and exact access; separate frozen-derived reproduction from independent raw-source reconstruction. Inspect local paths and metadata before packaging."
+    }
+  ],
+  "expanded_production_inventory": {
+    "root": "data/Official_Production_Volume_Data",
+    "file_count": 42157,
+    "bytes": 1164226573,
+    "groups": {
+      "01_US_EPA_CDR": {
+        "file_count": 16,
+        "bytes": 81304195,
+        "role_counts": {
+          "audit_or_documentation": 1,
+          "derived_or_unclassified": 4,
+          "raw_response_or_archive_candidate": 11
+        }
+      },
+      "02_ECHA_REACH": {
+        "file_count": 4789,
+        "bytes": 152038500,
+        "role_counts": {
+          "audit_or_documentation": 3,
+          "derived_or_unclassified": 2,
+          "raw_response_or_archive_candidate": 4784
+        }
+      },
+      "03_Nordic_SPIN": {
+        "file_count": 14219,
+        "bytes": 271835374,
+        "role_counts": {
+          "audit_or_documentation": 5,
+          "derived_or_unclassified": 3,
+          "operational_log": 1,
+          "raw_response_or_archive_candidate": 14210
+        }
+      },
+      "04_Japan_METI_CSCL": {
+        "file_count": 22822,
+        "bytes": 624445563,
+        "role_counts": {
+          "audit_or_documentation": 10,
+          "derived_or_unclassified": 11,
+          "operational_log": 1,
+          "raw_response_or_archive_candidate": 22800
+        }
+      },
+      "05_South_Korea_Chemical_Statistics": {
+        "file_count": 39,
+        "bytes": 661137,
+        "role_counts": {
+          "audit_or_documentation": 3,
+          "derived_or_unclassified": 2,
+          "raw_response_or_archive_candidate": 34
+        }
+      },
+      "06_Canada_CEPA_Section71": {
+        "file_count": 105,
+        "bytes": 7682120,
+        "role_counts": {
+          "audit_or_documentation": 10,
+          "derived_or_unclassified": 4,
+          "raw_response_or_archive_candidate": 90,
+          "operational_log": 1
+        }
+      },
+      "06_Canada_CEPA_Section71_backup_pre_shorten": {
+        "file_count": 93,
+        "bytes": 7962499,
+        "role_counts": {
+          "backup": 93
+        }
+      },
+      "07_South_Korea_New_Chemicals": {
+        "file_count": 52,
+        "bytes": 12083133,
+        "role_counts": {
+          "audit_or_documentation": 9,
+          "derived_or_unclassified": 2,
+          "raw_response_or_archive_candidate": 41
+        }
+      },
+      "08_Taiwan_Toxic_Chemicals": {
+        "file_count": 21,
+        "bytes": 6206817,
+        "role_counts": {
+          "audit_or_documentation": 7,
+          "raw_response_or_archive_candidate": 8,
+          "derived_or_unclassified": 6
+        }
+      },
+      "_root": {
+        "file_count": 1,
+        "bytes": 7235,
+        "role_counts": {
+          "audit_or_documentation": 1
+        }
+      }
+    },
+    "local_detail_path": "results/publication_review/supporting_file_inventory.json",
+    "local_detail_sha256": "d3a66e0cc4e981018aea478f00562006c840174e8dc5d815f13986672b9a47e5",
+    "manifest_checks": [
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/1986_2006_IUR_Public_Database.zip",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "8e353a4d8c7bb14f55c8c78ecc90da432b4b27c24939e2d2fd048e08bdc096c8",
+        "actual_sha256": "8e353a4d8c7bb14f55c8c78ecc90da432b4b27c24939e2d2fd048e08bdc096c8",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2006_IUR_Public_Database.zip",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "aab43664c2d40b614855e6aac17d5255bb462d687dea981c93430c7342813204",
+        "actual_sha256": "aab43664c2d40b614855e6aac17d5255bb462d687dea981c93430c7342813204",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2012_CDR_Public_Database.zip",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "ed80ada94026128a4a89984bb0f9941f81e5d16aa85017b48934c2744914f0be",
+        "actual_sha256": "ed80ada94026128a4a89984bb0f9941f81e5d16aa85017b48934c2744914f0be",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2016_CDR_Public_CSV_Data.zip",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "5ad52d1ae0a21fc40e36444d4378f25b6b9d8982bdd69169506b4d71fb432d86",
+        "actual_sha256": "5ad52d1ae0a21fc40e36444d4378f25b6b9d8982bdd69169506b4d71fb432d86",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2016_CDR_Public_Database_Dictionary.pdf",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "719edd01ef4f5dc1d90fcbac6ad07128d066b76a96f2eb5637f121ea1bf2fd9f",
+        "actual_sha256": "719edd01ef4f5dc1d90fcbac6ad07128d066b76a96f2eb5637f121ea1bf2fd9f",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2020_CDR_Public_CSV_Data.zip",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "930e4552ccdb45367057bf486acbb4aa73c3f2f6ad5cad7b35754cbd0618b164",
+        "actual_sha256": "930e4552ccdb45367057bf486acbb4aa73c3f2f6ad5cad7b35754cbd0618b164",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2020_CDR_Public_Database_Dictionary.pdf",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "0049414fed833c081efd21ad74b614fe9cc6aa062660aee133bb78a0ea4ea3d9",
+        "actual_sha256": "0049414fed833c081efd21ad74b614fe9cc6aa062660aee133bb78a0ea4ea3d9",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2024_CDR_Public_CSV_Data.zip",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "6a7479102ef22ea2a8f082baf51c03614077fd31a2ecdb00336c084490b084ab",
+        "actual_sha256": "6a7479102ef22ea2a8f082baf51c03614077fd31a2ecdb00336c084490b084ab",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2024_CDR_Public_Database_Dictionary.pdf",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "fce384c463163f7665b4a74b97c43f63b3a3f60b221d5450a053590752ae7894",
+        "actual_sha256": "fce384c463163f7665b4a74b97c43f63b3a3f60b221d5450a053590752ae7894",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/production_volume_tables/2016 CDR National Aggregate Production Volume (May 2020).csv",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "1bbd9f82d17e0abd6a448fc02dff8d40eeecb9587db02d876d14bc517fae3cee",
+        "actual_sha256": "1bbd9f82d17e0abd6a448fc02dff8d40eeecb9587db02d876d14bc517fae3cee",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/production_volume_tables/2020 CDR Nationally Aggregated Production Volumes.csv",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "36a2417ef73051d028c016ac03a2e13956a287d52845b7155a252a81aa34afce",
+        "actual_sha256": "36a2417ef73051d028c016ac03a2e13956a287d52845b7155a252a81aa34afce",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/production_volume_tables/2024 CDR Nationally Aggregated Production Volumes.csv",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "34a09d0e90101c639d9b6453e078d1c1d4197e2430191db439ab9ee65f59c139",
+        "actual_sha256": "34a09d0e90101c639d9b6453e078d1c1d4197e2430191db439ab9ee65f59c139",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/02_ECHA_REACH/raw/reach_registrations.xlsx",
+        "manifest_origin": "data/Official_Production_Volume_Data/source_manifest.json",
+        "expected_sha256": "bf42dc18cc425990ae96c9b02e7e8f7fa4587899d82e165e0550e169d239d854",
+        "actual_sha256": "bf42dc18cc425990ae96c9b02e7e8f7fa4587899d82e165e0550e169d239d854",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2016_CDR_Public_CSV_Data.zip",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "5ad52d1ae0a21fc40e36444d4378f25b6b9d8982bdd69169506b4d71fb432d86",
+        "actual_sha256": "5ad52d1ae0a21fc40e36444d4378f25b6b9d8982bdd69169506b4d71fb432d86",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2020_CDR_Public_CSV_Data.zip",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "930e4552ccdb45367057bf486acbb4aa73c3f2f6ad5cad7b35754cbd0618b164",
+        "actual_sha256": "930e4552ccdb45367057bf486acbb4aa73c3f2f6ad5cad7b35754cbd0618b164",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/2024_CDR_Public_CSV_Data.zip",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "6a7479102ef22ea2a8f082baf51c03614077fd31a2ecdb00336c084490b084ab",
+        "actual_sha256": "6a7479102ef22ea2a8f082baf51c03614077fd31a2ecdb00336c084490b084ab",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/source_manifest.json",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "c537e184da71c76c68eb5afd5635f88c28b8038dca46cec1b07da8d3200852ba",
+        "actual_sha256": "c537e184da71c76c68eb5afd5635f88c28b8038dca46cec1b07da8d3200852ba",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/1986_2006_IUR_Public_Database.zip",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "8e353a4d8c7bb14f55c8c78ecc90da432b4b27c24939e2d2fd048e08bdc096c8",
+        "actual_sha256": "8e353a4d8c7bb14f55c8c78ecc90da432b4b27c24939e2d2fd048e08bdc096c8",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/derived/iur_national_production_1985_2005.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "ad0eaa2ef20d738d42ddf9038880f1faea827d6d858ad223c25066f83f531b62",
+        "actual_sha256": "ad0eaa2ef20d738d42ddf9038880f1faea827d6d858ad223c25066f83f531b62",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/derived/iur_national_production_1985_2005.audit.json",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "3f486fb7dcfb24e8d4798441169fb07d565e00df921c160543a4a82cbe4aeb0c",
+        "actual_sha256": "3f486fb7dcfb24e8d4798441169fb07d565e00df921c160543a4a82cbe4aeb0c",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/01_US_EPA_CDR/raw/chemview_cdr_summary/1163_19_5__89299__cdrsummary.json",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "30701a6c9d1f82f6a872134cb8b1d29180850adc6af147b3da9d05e800a52c34",
+        "actual_sha256": "30701a6c9d1f82f6a872134cb8b1d29180850adc6af147b3da9d05e800a52c34",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/02_ECHA_REACH/collected_tonnage/echa_reach_tonnage_bands.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "a5a2376143e92fe6e974f6d969998e44b40325cf39c2969305f8c9b72fc26fae",
+        "actual_sha256": "a5a2376143e92fe6e974f6d969998e44b40325cf39c2969305f8c9b72fc26fae",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/02_ECHA_REACH/collected_tonnage/echa_reach_api_audit.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "c550c698e3946d1748f4931c1a43d3b06c637b11fd0097a58e954e7854a6b06c",
+        "actual_sha256": "c550c698e3946d1748f4931c1a43d3b06c637b11fd0097a58e954e7854a6b06c",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/03_Nordic_SPIN/full_collection/nordic_spin_total_use.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "cc8ccc4bd1ead9be74c53da08a187e2b8056861c1357018e1999733259769a4f",
+        "actual_sha256": "cc8ccc4bd1ead9be74c53da08a187e2b8056861c1357018e1999733259769a4f",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/03_Nordic_SPIN/full_collection/nordic_spin_substance_index.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "6bfe59076775f3918b884881a2b3934747e4dbcd825f3b274ac244f3c1a411f6",
+        "actual_sha256": "6bfe59076775f3918b884881a2b3934747e4dbcd825f3b274ac244f3c1a411f6",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/03_Nordic_SPIN/full_collection/nordic_spin_query_audit.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "a340f10d46ea9c5530051aacd34ad9d270f4b83d1ee81d8eb94ba113c5f0ea0d",
+        "actual_sha256": "a340f10d46ea9c5530051aacd34ad9d270f4b83d1ee81d8eb94ba113c5f0ea0d",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/03_Nordic_SPIN/full_collection/SHA256SUMS.txt",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "b0340b84c8bacdd784d9758b41a4efd39ae0392959bb4aee9eb3f4da09f8767f",
+        "actual_sha256": "b0340b84c8bacdd784d9758b41a4efd39ae0392959bb4aee9eb3f4da09f8767f",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/full_collection/meti_cscl_full_tonnage_history.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "eb4fa03e8999da6d3367a5d11379aa685f216c6aa167e276a6b1c1a6eaa1949c",
+        "actual_sha256": "eb4fa03e8999da6d3367a5d11379aa685f216c6aa167e276a6b1c1a6eaa1949c",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/full_collection/meti_cscl_full_cas_membership.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "38c57e694968bced83d8c74d44f71d4bab7db950b7d8aa38bdd409b99aa058de",
+        "actual_sha256": "38c57e694968bced83d8c74d44f71d4bab7db950b7d8aa38bdd409b99aa058de",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/full_collection/meti_cscl_full_request_audit.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "ac6238712e915c05500384e09d8e94d4d3e394eb06db77f133905b6f656f7b7a",
+        "actual_sha256": "ac6238712e915c05500384e09d8e94d4d3e394eb06db77f133905b6f656f7b7a",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/04_Japan_METI_CSCL/full_collection/SHA256SUMS.txt",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "f238ecc8d7ca4d7aa558c0049c16f5195842d6f16a4de031530b33cb1a4e7674",
+        "actual_sha256": "f238ecc8d7ca4d7aa558c0049c16f5195842d6f16a4de031530b33cb1a4e7674",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/05_South_Korea_Chemical_Statistics/demo/korea_chemical_statistics_national_demo.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "bc723d104cb6ed7a2e395c8dbdca7706929f79b3454855135d7e5849bf1e8aa7",
+        "actual_sha256": "bc723d104cb6ed7a2e395c8dbdca7706929f79b3454855135d7e5849bf1e8aa7",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/05_South_Korea_Chemical_Statistics/demo/korea_chemical_statistics_cas_demo.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "2c54c8668f3a8bc5bc125961e2362a12ccac50afd0687a6c5869f78fe69d938e",
+        "actual_sha256": "2c54c8668f3a8bc5bc125961e2362a12ccac50afd0687a6c5869f78fe69d938e",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/05_South_Korea_Chemical_Statistics/demo/korea_chemical_statistics_request_audit.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "08d9d78c2800f8b556399c60f90c850998e15fc213e6044bb6c573da8ceca542",
+        "actual_sha256": "08d9d78c2800f8b556399c60f90c850998e15fc213e6044bb6c573da8ceca542",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/canada_cepa_section71_evidence.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "1dbf8c4f0413327c8a57eb042fb40eabc03b46779f25b7246db0bbed06957adf",
+        "actual_sha256": "1dbf8c4f0413327c8a57eb042fb40eabc03b46779f25b7246db0bbed06957adf",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/source_file_index.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "8caf4666f37cd29f8b794c11e2e10200d6e0620fa06aa99630eb70c4e13752f9",
+        "actual_sha256": "8caf4666f37cd29f8b794c11e2e10200d6e0620fa06aa99630eb70c4e13752f9",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/request_audit.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "b0c27989de443cedef0d21f5e09d20e976d17da73646c789a40f397f7f9c4ef2",
+        "actual_sha256": "b0c27989de443cedef0d21f5e09d20e976d17da73646c789a40f397f7f9c4ef2",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/parse_audit.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "09c3622437d11d11fdcf359fec3553966fa29e5b33c5e1fb616b677f57ae8556",
+        "actual_sha256": "09c3622437d11d11fdcf359fec3553966fa29e5b33c5e1fb616b677f57ae8556",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/06_Canada_CEPA_Section71/full_collection/SHA256SUMS.txt",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "5546020776197862ab5a26e55be0f67434a6d8c3172aa311f036bced90239b3d",
+        "actual_sha256": "5546020776197862ab5a26e55be0f67434a6d8c3172aa311f036bced90239b3d",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals/full_collection/korea_new_chemicals_2018_latest.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "5227134d0532cd364f1cd69a1bba9c5b9dff6cb97b07f87018e626cd6687bf8b",
+        "actual_sha256": "5227134d0532cd364f1cd69a1bba9c5b9dff6cb97b07f87018e626cd6687bf8b",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals/full_collection/korea_new_chemicals_source_manifest.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "d97f46bbd69726181da10c7afbcbac55b69a7e8ffb505de9cb75f6b5fd18150c",
+        "actual_sha256": "d97f46bbd69726181da10c7afbcbac55b69a7e8ffb505de9cb75f6b5fd18150c",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals/full_collection/korea_new_chemicals_request_audit.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "11c90c141d708aab1081cc04a360ed0b58f0edf08cc66bbcefbd139105ac8143",
+        "actual_sha256": "11c90c141d708aab1081cc04a360ed0b58f0edf08cc66bbcefbd139105ac8143",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/07_South_Korea_New_Chemicals/full_collection/SHA256SUMS.txt",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "38bfd5e8091634b17848d436e4d2c1c7669923d6d323f762a474e84069bf7b9d",
+        "actual_sha256": "38bfd5e8091634b17848d436e4d2c1c7669923d6d323f762a474e84069bf7b9d",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/08_Taiwan_Toxic_Chemicals/full_collection/taiwan_toxic_production_volume_all.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "9fe0f602580078307ea063afbd4c7d3845e4b9561c4dbecfac6152bc1ea17470",
+        "actual_sha256": "9fe0f602580078307ea063afbd4c7d3845e4b9561c4dbecfac6152bc1ea17470",
+        "status": "match"
+      },
+      {
+        "path": "data/Official_Production_Volume_Data/08_Taiwan_Toxic_Chemicals/full_collection/download_audit.csv",
+        "manifest_origin": "data/ExposureReference/20261006T233429Z/input_manifest.csv",
+        "expected_sha256": "4eb7e4d6b383ce49607bed786345d5dcc6f95e702f815188a6a35ebd77deab0a",
+        "actual_sha256": "4eb7e4d6b383ce49607bed786345d5dcc6f95e702f815188a6a35ebd77deab0a",
+        "status": "match"
+      }
+    ],
+    "manifest_status_counts": {
+      "match": 45
+    },
+    "collection_date_note": "Collection-level retrieved_at is 2026-07-13; three item timestamps are 2026-07-21. Preserve both and do not use the collection date for every file."
+  },
+  "integrity_checks": {
+    "frozen_files_checked": 44,
+    "all_frozen_hashes_match_previous_inventory": true,
+    "production_manifest_checks": {
+      "match": 45
+    },
+    "scientific_pipeline_rerun": false,
+    "root_source_manifest_matches_previous_inventory": true
+  },
+  "release_disposition_summary": {
+    "cleared_local_data_bundles": 0,
+    "unresolved_entries": 25,
+    "candidate_official_checksum_mismatches": 4,
+    "backup_files_proposed_for_exclusion": 93
+  },
+  "next_actions": [
+    "Resolve the four local-versus-official byte differences using workbook-content and transformation provenance audits, without replacing frozen inputs.",
+    "Recover precise source versions, access routes and applicable terms for unresolved inputs.",
+    "Map raw responses to the frozen evidence dependencies and retain essential response caches; exclude backups only from the proposed package, not from disk.",
+    "Prepare attribution and approved acquisition/package instructions after source decisions."
+  ],
+  "external_evidence_files": [
+    {
+      "path": "results/publication_review/web_evidence/FCCprio-List-v0-2-Zenodo-20260115.xlsx",
+      "bytes": 787336,
+      "sha256": "e6dd26b51e9b910ee4824a98897d963e23e1ba47a03927865a06f0472989c8e0",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/LitChemPlast_v20240809.xls",
+      "bytes": 60782592,
+      "sha256": "2f129231f45f822f08350cfc15fab1b15e1f793e5d58ce332e42bef6f636ce51",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/MPLEACH.xlsx",
+      "bytes": 208922,
+      "sha256": "6044fabe3c2183bad8ca41cb6836e6dd0d4a6bbd98a9d2a2e6f65f55f9fa8ea8",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/fccprio.txt",
+      "bytes": 8557,
+      "sha256": "a54921f63f065dc8fdee4dfb08a2df512bd0eadf9dc10a00bbd787809981af65",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/fccprio_versions.json",
+      "bytes": 26940,
+      "sha256": "45da716f4bd908e88b4d30cf2bb7cd07925b2dc5077fd1c340f8a8ddc7197d9a",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/gic_license.txt",
+      "bytes": 1493,
+      "sha256": "6662dff24ab0ec7f93fbf4c9aae1747aac05e77c3dc5caab5dfbeaa110e443d5",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/litchemplast.txt",
+      "bytes": 4878,
+      "sha256": "d4fcc656a26bd989365a2d0afcae9e785a636b81863e4720fa83956315c532a0",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/metadata_summary.json",
+      "bytes": 12796,
+      "sha256": "f60483d9fc984b5b108ce757747738d7353ed9dfaafc7febbffbdb77279d5840",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/mpleach.json",
+      "bytes": 5287,
+      "sha256": "418d0a5abce1c7bc6b5e6391cbb0660e1985a5d0ca99bd37050a72d62fd94147",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/official_file_comparison.json",
+      "bytes": 3278,
+      "sha256": "1293874fe1d9d25447b1e6ddc8f2bea85245c5b1b4774e7fc7c5805933af0eb9",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/plastchem.txt",
+      "bytes": 7695,
+      "sha256": "8b92c7e76d6587edcd601d6fa73edc36debcce00b39d05456e09e8ad68a99e1d",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    },
+    {
+      "path": "results/publication_review/web_evidence/plastchem_db_v1.01.xlsx",
+      "bytes": 10402921,
+      "sha256": "b0430b42e47f1213c58918add13c69552fac8d70afbb90cc963612a605f0f49d",
+      "scope": "Local review evidence only; ignored by Git and not a public archive."
+    }
+  ]
+}
