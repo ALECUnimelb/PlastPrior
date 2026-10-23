@@ -1,5 +1,7 @@
 # Frozen and official workbook comparison
 
+Current local storage: see [retained results and verification records](results_layout.md). Evidence files were relocated without changing their bytes. Historical paths and removed stage-output locations are documented in the migration manifest; the review findings below remain unchanged.
+
 Review date: **23 October 2026 (Australia/Melbourne)**.
 Code and source-register baseline: `9877513`.
 

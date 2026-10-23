@@ -43,22 +43,29 @@ new directory under `results/final/<run_id>/` with exactly two files:
 This is export schema **2**, `compact-v2`. It changes storage only. Scientific
 stages, source files and prior output directories are not modified or deleted.
 No evidence is merged merely because two sources report the same value.
-The original schema-1 database remains a separate baseline; it is not migrated
-or overwritten automatically.
+The exporter does not migrate or overwrite an older schema-1 database.
+The approved local retention cleanup removed superseded database copies after
+verification; their hashes and comparison reports remain available.
+See [retained results and verification records](docs/results_layout.md) for
+the selected final package, current paths and the migration manifest.
 
-To package an existing completed run without recalculating scores:
+To package an existing completed run without recalculating scores, its complete
+Stage 1–7 output collection must still be present:
 
 ```python
 from pathlib import Path
 from plastprior.export import export_results
-package = export_results(Path("results") / "notebook_test", progress=print)
+package = export_results(Path("results"), progress=print)
 print(package["csv"])
 print(package["sqlite"])
 ```
 
 An optional `output_dir` must name a new directory. Both files are published
 only after validation, and existing destinations are never replaced. Intermediate
-files remain available locally. Original input datasets are distributed separately.
+files remain available until an explicitly requested cleanup. Following the
+current cleanup, read the retained final files directly; export-only execution
+requires regenerated stage files. A full notebook run regenerates these files
+and creates another final package. Original input datasets are distributed separately.
 
 ### Retention and storage
 
@@ -1942,5 +1949,8 @@ assessments and are not the separate 15-member model-identity-review cohort.
 All 183 tests passed. The notebook executed 16 code cells without errors;
 independent notebook and command-line runs produced 142 byte-identical files,
 including 132 upstream files unchanged from pre-7B fingerprints. Local reports
-are `results/validation_stage7b/ranking_validation_summary.json` and
-`results/validation_stage7b/reproducibility.json`.
+are now retained as
+`results/verification/historical_regression/ranking_validation_summary.json` and
+`results/verification/historical_regression/reproducibility.json`.
+The command above writes a new validation run to its specified output directory;
+it does not replace the retained historical reports.

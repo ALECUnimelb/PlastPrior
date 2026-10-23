@@ -1532,7 +1532,7 @@
         }
       }
     },
-    "local_detail_path": "results/publication_review/supporting_file_inventory.json",
+    "local_detail_path": "results/verification/publication_review/supporting_file_inventory.json",
     "local_detail_sha256": "d3a66e0cc4e981018aea478f00562006c840174e8dc5d815f13986672b9a47e5",
     "manifest_checks": [
       {
@@ -1854,7 +1854,8 @@
     "manifest_status_counts": {
       "match": 45
     },
-    "collection_date_note": "Collection-level retrieved_at is 2026-07-13; three item timestamps are 2026-07-21. Preserve both and do not use the collection date for every file."
+    "collection_date_note": "Collection-level retrieved_at is 2026-07-13; three item timestamps are 2026-07-21. Preserve both and do not use the collection date for every file.",
+    "original_local_detail_path": "results/publication_review/supporting_file_inventory.json"
   },
   "integrity_checks": {
     "frozen_files_checked": 44,
@@ -1879,80 +1880,100 @@
   ],
   "external_evidence_files": [
     {
-      "path": "results/publication_review/web_evidence/FCCprio-List-v0-2-Zenodo-20260115.xlsx",
+      "path": "results/verification/publication_review/web_evidence/FCCprio-List-v0-2-Zenodo-20260115.xlsx",
       "bytes": 787336,
       "sha256": "e6dd26b51e9b910ee4824a98897d963e23e1ba47a03927865a06f0472989c8e0",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/FCCprio-List-v0-2-Zenodo-20260115.xlsx"
     },
     {
-      "path": "results/publication_review/web_evidence/LitChemPlast_v20240809.xls",
+      "path": "results/verification/publication_review/web_evidence/LitChemPlast_v20240809.xls",
       "bytes": 60782592,
       "sha256": "2f129231f45f822f08350cfc15fab1b15e1f793e5d58ce332e42bef6f636ce51",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/LitChemPlast_v20240809.xls"
     },
     {
-      "path": "results/publication_review/web_evidence/MPLEACH.xlsx",
+      "path": "results/verification/publication_review/web_evidence/MPLEACH.xlsx",
       "bytes": 208922,
       "sha256": "6044fabe3c2183bad8ca41cb6836e6dd0d4a6bbd98a9d2a2e6f65f55f9fa8ea8",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/MPLEACH.xlsx"
     },
     {
-      "path": "results/publication_review/web_evidence/fccprio.txt",
+      "path": "results/verification/publication_review/web_evidence/fccprio.txt",
       "bytes": 8557,
       "sha256": "a54921f63f065dc8fdee4dfb08a2df512bd0eadf9dc10a00bbd787809981af65",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/fccprio.txt"
     },
     {
-      "path": "results/publication_review/web_evidence/fccprio_versions.json",
+      "path": "results/verification/publication_review/web_evidence/fccprio_versions.json",
       "bytes": 26940,
       "sha256": "45da716f4bd908e88b4d30cf2bb7cd07925b2dc5077fd1c340f8a8ddc7197d9a",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/fccprio_versions.json"
     },
     {
-      "path": "results/publication_review/web_evidence/gic_license.txt",
+      "path": "results/verification/publication_review/web_evidence/gic_license.txt",
       "bytes": 1493,
       "sha256": "6662dff24ab0ec7f93fbf4c9aae1747aac05e77c3dc5caab5dfbeaa110e443d5",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/gic_license.txt"
     },
     {
-      "path": "results/publication_review/web_evidence/litchemplast.txt",
+      "path": "results/verification/publication_review/web_evidence/litchemplast.txt",
       "bytes": 4878,
       "sha256": "d4fcc656a26bd989365a2d0afcae9e785a636b81863e4720fa83956315c532a0",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/litchemplast.txt"
     },
     {
-      "path": "results/publication_review/web_evidence/metadata_summary.json",
+      "path": "results/verification/publication_review/web_evidence/metadata_summary.json",
       "bytes": 12796,
       "sha256": "f60483d9fc984b5b108ce757747738d7353ed9dfaafc7febbffbdb77279d5840",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/metadata_summary.json"
     },
     {
-      "path": "results/publication_review/web_evidence/mpleach.json",
+      "path": "results/verification/publication_review/web_evidence/mpleach.json",
       "bytes": 5287,
       "sha256": "418d0a5abce1c7bc6b5e6391cbb0660e1985a5d0ca99bd37050a72d62fd94147",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/mpleach.json"
     },
     {
-      "path": "results/publication_review/web_evidence/official_file_comparison.json",
+      "path": "results/verification/publication_review/web_evidence/official_file_comparison.json",
       "bytes": 3278,
       "sha256": "1293874fe1d9d25447b1e6ddc8f2bea85245c5b1b4774e7fc7c5805933af0eb9",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/official_file_comparison.json"
     },
     {
-      "path": "results/publication_review/web_evidence/plastchem.txt",
+      "path": "results/verification/publication_review/web_evidence/plastchem.txt",
       "bytes": 7695,
       "sha256": "8b92c7e76d6587edcd601d6fa73edc36debcce00b39d05456e09e8ad68a99e1d",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/plastchem.txt"
     },
     {
-      "path": "results/publication_review/web_evidence/plastchem_db_v1.01.xlsx",
+      "path": "results/verification/publication_review/web_evidence/plastchem_db_v1.01.xlsx",
       "bytes": 10402921,
       "sha256": "b0430b42e47f1213c58918add13c69552fac8d70afbb90cc963612a605f0f49d",
-      "scope": "Local review evidence only; ignored by Git and not a public archive."
+      "scope": "Local review evidence only; ignored by Git and not a public archive.",
+      "original_path": "results/publication_review/web_evidence/plastchem_db_v1.01.xlsx"
     }
   ],
   "content_review_follow_up": {
     "report": "docs/workbook_comparison.md",
     "result": "No scientific table or stored-formula differences found in the four checked pairs. Original byte-mismatch observations and unresolved access/rights decisions remain valid."
+  },
+  "result_storage_update": {
+    "scope": "Location and retention annotation only; original scientific comparisons, hashes and review dates are unchanged.",
+    "layout_document": "docs/results_layout.md",
+    "migration_manifest": "results/verification/cleanup/migration_manifest.json",
+    "final_sqlite": "results/final/20261023T191130Z-0fa717ee/PlastPrior_results.sqlite",
+    "original_path_semantics": "original_* fields record prior locations; deleted stage paths remain historical file identities, not current standalone files.",
+    "reconstruction_limit": "Compact SQLite retains parsed records under its retention policy, not original stage-file bytes; scope-excluded patent bodies are not retained."
   }
 }

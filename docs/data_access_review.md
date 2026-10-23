@@ -1,5 +1,7 @@
 # Data access and provenance review
 
+Current local storage: see [retained results and verification records](results_layout.md). Evidence files were relocated without changing their bytes. Historical paths and removed stage-output locations are documented in the migration manifest; the review findings below remain unchanged.
+
 Review date: **23 October 2026 (Australia/Melbourne)**.
 Baseline: `17ad5e1` (publication inventory); scientific baseline: `9e211e8`.
 
@@ -113,7 +115,7 @@ audit or that every file is necessary to reproduce the analysis.
 | Root source manifest | 1 | Collection-level date differs from some file-level retrieval dates; retain both |
 
 Full per-file detail is saved locally in
-`results/publication_review/supporting_file_inventory.json`. Its SHA-256 and group
+`results/verification/publication_review/supporting_file_inventory.json`. Its SHA-256 and group
 summaries are recorded in the tracked register. The detailed file is not included
 in Git and is not yet an externally accessible supplement. File roles are
 path-based candidates, not verified dependency decisions. Raw API/query caches

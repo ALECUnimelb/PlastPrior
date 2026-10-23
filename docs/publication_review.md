@@ -1,5 +1,7 @@
 # Publication readiness review
 
+Current local storage: see [retained results and verification records](results_layout.md). Evidence files were relocated without changing their bytes. Historical paths and removed stage-output locations are documented in the migration manifest; the review findings below remain unchanged.
+
 Review date: **23 October 2026 (Australia/Melbourne)**. Scientific code baseline:
 `9e211e8bf3f71506629ca6f4c5f42428816e7aa3` (Stage 7B).
 
@@ -56,9 +58,9 @@ Exclusion from the public package does not authorise deleting local originals.
 | Official production/market raw inputs | External reproduction inputs, subject to review | Expand the raw-file inventory from existing source manifests and establish the source-specific acquisition chain |
 | `data/ExposureReference/20261006T233429Z/` | Required external inputs for current frozen reproduction | Retain all eight reference/provenance files and hashes; clearly label derived tables |
 | One selected set of stage outputs and provenance manifests | Candidate for a versioned research archive | Select minimal and complete bundles, check content/permissions and preserve all required audit links |
-| `results/PlastPrior.executed.ipynb`, `results/PlastPrior.html` | Candidate human-readable supplements | Link to the selected code/input/result revision; inspect for local paths or other unintended metadata |
-| `results/validation_stage7b/` reports | Candidate validation supplement | Include comparison scope and explicit exclusions; distinguish historical reproduction from qualified analysis |
-| `results/cli_validation/`, superseded runs and duplicate notebook exports | Exclude from the publication package unless needed for a documented validation purpose | Keep locally; do not confuse duplicate verification runs with the canonical release |
+| `results/verification/notebook_run/PlastPrior.executed.ipynb` | Candidate human-readable supplements | Link to the selected code/input/result revision; inspect for local paths or other unintended metadata |
+| `results/verification/historical_regression/` reports | Candidate validation supplement | Include comparison scope and explicit exclusions; distinguish historical reproduction from qualified analysis |
+| `results/cli_validation/`, superseded runs and duplicate notebook exports | Exclude from the publication package unless needed for a documented validation purpose | Superseded generated runs were removed by the approved cleanup; retain the selected final package and verification records |
 | `.git/`, `.venv/`, caches, `.DS_Store`, temporary logs and workspace dumps | Exclude from the publication package | Do not package a raw workspace archive; retain installation instructions instead of a virtual environment |
 | Future `LICENSE`, `CITATION.cff`, data-access instructions and environment specifications | Needed but not created by this review | Confirm licence, contributors, citation metadata, data routes and environment choices before authoring definitive claims |
 

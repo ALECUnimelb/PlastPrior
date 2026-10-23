@@ -8506,7 +8506,7 @@
         }
       ],
       "local_path": "data/SourceDatabase/plastchem_db_v1.01.xlsx",
-      "official_path": "results/publication_review/web_evidence/plastchem_db_v1.01.xlsx",
+      "official_path": "results/verification/publication_review/web_evidence/plastchem_db_v1.01.xlsx",
       "local_sha256": "fec2d84ddd69c1b863a6f68e6716429ddcc0bd51b1dfb0ec99e5e177318cb05c",
       "official_sha256": "b0430b42e47f1213c58918add13c69552fac8d70afbb90cc963612a605f0f49d",
       "unchanged_after_read": true,
@@ -8567,7 +8567,8 @@
             ]
           }
         ]
-      }
+      },
+      "original_official_path": "results/publication_review/web_evidence/plastchem_db_v1.01.xlsx"
     },
     {
       "format": "xlsx",
@@ -8973,7 +8974,7 @@
         }
       ],
       "local_path": "data/SourceDatabase/MPLEACH.xlsx",
-      "official_path": "results/publication_review/web_evidence/MPLEACH.xlsx",
+      "official_path": "results/verification/publication_review/web_evidence/MPLEACH.xlsx",
       "local_sha256": "6f6348f24987a4eab44cf31e3e36817c30079275533f721267377340b78f27b0",
       "official_sha256": "6044fabe3c2183bad8ca41cb6836e6dd0d4a6bbd98a9d2a2e6f65f55f9fa8ea8",
       "unchanged_after_read": true,
@@ -8994,7 +8995,8 @@
             ]
           }
         ]
-      }
+      },
+      "original_official_path": "results/publication_review/web_evidence/MPLEACH.xlsx"
     },
     {
       "format": "xls",
@@ -9213,7 +9215,7 @@
         "Sample"
       ],
       "local_path": "data/SourceDatabase/LitChemPlast.xls",
-      "official_path": "results/publication_review/web_evidence/LitChemPlast_v20240809.xls",
+      "official_path": "results/verification/publication_review/web_evidence/LitChemPlast_v20240809.xls",
       "local_sha256": "262bc473dc026eaede15fe77ecea2ecf4e36bee90916efd7f4f7f4a5fd1f76b4",
       "official_sha256": "2f129231f45f822f08350cfc15fab1b15e1f793e5d58ce332e42bef6f636ce51",
       "unchanged_after_read": true,
@@ -9240,7 +9242,8 @@
         ],
         "total_file_bytes_different": 25,
         "scope": "The complete Workbook stream differs only within WRITEACCESS. Formula bytecode and cached results are therefore identical; no formulas were evaluated."
-      }
+      },
+      "original_official_path": "results/publication_review/web_evidence/LitChemPlast_v20240809.xls"
     },
     {
       "format": "xlsx",
@@ -9693,7 +9696,7 @@
         }
       ],
       "local_path": "data/SourceDatabase/FCCprio-List-v0-2-Zenodo-20260115.xlsx",
-      "official_path": "results/publication_review/web_evidence/FCCprio-List-v0-2-Zenodo-20260115.xlsx",
+      "official_path": "results/verification/publication_review/web_evidence/FCCprio-List-v0-2-Zenodo-20260115.xlsx",
       "local_sha256": "65062fcccf1081dea7d75c2e009b364b553fe02568ee3d02582ed4980baa26ce",
       "official_sha256": "e6dd26b51e9b910ee4824a98897d963e23e1ba47a03927865a06f0472989c8e0",
       "unchanged_after_read": true,
@@ -9816,7 +9819,8 @@
         "visual_inspection": "Both images show the Food Packaging Forum logo. Pixel differences are retained as a presentation change; the exact editing cause is not established.",
         "pipeline_consumed": false
       },
-      "merged_ranges_equal_after_order_normalization": true
+      "merged_ranges_equal_after_order_normalization": true,
+      "original_official_path": "results/publication_review/web_evidence/FCCprio-List-v0-2-Zenodo-20260115.xlsx"
     }
   ],
   "code_references": [
@@ -9851,94 +9855,112 @@
   ],
   "evidence_artifacts": [
     {
-      "path": "results/publication_review/workbook_comparison/FCCprio-List-v0-2-Zenodo-20260115.differences.json",
+      "path": "results/verification/publication_review/workbook_comparison/FCCprio-List-v0-2-Zenodo-20260115.differences.json",
       "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/FCCprio-List-v0-2-Zenodo-20260115.differences.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/FCCprio-List-v0-2-Zenodo-20260115.summary.json",
+      "path": "results/verification/publication_review/workbook_comparison/FCCprio-List-v0-2-Zenodo-20260115.summary.json",
       "sha256": "ec8ecaa5cff08b8077f6701f5819d68ddc06222a3ccf99ecf75a3ca0a8eac30c",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/FCCprio-List-v0-2-Zenodo-20260115.summary.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/FCCprio.comment_classification.json",
+      "path": "results/verification/publication_review/workbook_comparison/FCCprio.comment_classification.json",
       "sha256": "3953a53a8340de67f08f6aea9b833cf978dff98a34ee0a6d523cea7ef4bd7e9a",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/FCCprio.comment_classification.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/FCCprio.comment_differences.json",
+      "path": "results/verification/publication_review/workbook_comparison/FCCprio.comment_differences.json",
       "sha256": "dbe811e797430e2c022aca079ab6559ba615c5bae4e11a17bb7c8cd4ef5b840b",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/FCCprio.comment_differences.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/LitChemPlast.differences.json",
+      "path": "results/verification/publication_review/workbook_comparison/LitChemPlast.differences.json",
       "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/LitChemPlast.differences.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/LitChemPlast.directory_metadata.json",
+      "path": "results/verification/publication_review/workbook_comparison/LitChemPlast.directory_metadata.json",
       "sha256": "f84b057254278622adecd7b3402fedd14262949f9680704eb31c9ec8de9cd478",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/LitChemPlast.directory_metadata.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/LitChemPlast.summary.json",
+      "path": "results/verification/publication_review/workbook_comparison/LitChemPlast.summary.json",
       "sha256": "40109fafd4b36adf8ff62c0536cc8d2a5ff520c9137af6337e9309f43caa0e5b",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/LitChemPlast.summary.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/MPLEACH.differences.json",
+      "path": "results/verification/publication_review/workbook_comparison/MPLEACH.differences.json",
       "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/MPLEACH.differences.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/MPLEACH.summary.json",
+      "path": "results/verification/publication_review/workbook_comparison/MPLEACH.summary.json",
       "sha256": "b513b44df6da825ff862c22c02057e5f43f3384cce522d6c9e251da2e741e916",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/MPLEACH.summary.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/ancillary_comparison.json",
+      "path": "results/verification/publication_review/workbook_comparison/ancillary_comparison.json",
       "sha256": "b8a4b2d898eba837f17d70360472ab7ad3df51ec0672065dc915405fd6c1cfd5",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/ancillary_comparison.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/comparison_summary.json",
+      "path": "results/verification/publication_review/workbook_comparison/comparison_summary.json",
       "sha256": "ef6ba5db4a45dd1834e1e03bac6bcd52a1bcda72dcbdd78ccc62e25541eb0e12",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/comparison_summary.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/plastchem_db_v1.01.differences.json",
+      "path": "results/verification/publication_review/workbook_comparison/plastchem_db_v1.01.differences.json",
       "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/plastchem_db_v1.01.differences.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/plastchem_db_v1.01.summary.json",
+      "path": "results/verification/publication_review/workbook_comparison/plastchem_db_v1.01.summary.json",
       "sha256": "2543067d5128991860fee46fe0d452bebf74c695e9bc7966c7379634022ee640",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/plastchem_db_v1.01.summary.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/project_reader_view_comparison.json",
+      "path": "results/verification/publication_review/workbook_comparison/project_reader_view_comparison.json",
       "sha256": "3724e564291961f8724e9872ce2b1d11dbfe878896b29587eaea7fc49b084afe",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/project_reader_view_comparison.json"
     },
     {
-      "path": "results/publication_review/workbook_comparison/reader_view_comparison.json",
+      "path": "results/verification/publication_review/workbook_comparison/reader_view_comparison.json",
       "sha256": "d352b5a9ee341dd0a5bd6166b138b221ada62d47e9033288fc45692ca309578e",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/workbook_comparison/reader_view_comparison.json"
     },
     {
-      "path": "results/publication_review/compare_workbooks.py",
+      "path": "results/verification/publication_review/compare_workbooks.py",
       "sha256": "9268d5db590876007592ac123de550b1c3b949556bd9b79cc9d66b3ba1443035",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/compare_workbooks.py"
     },
     {
-      "path": "results/publication_review/compare_reader_views.py",
+      "path": "results/verification/publication_review/compare_reader_views.py",
       "sha256": "2ca1e5849827f1a47d495463b99ad04ba3e60ab9ee79faec40d0b6061df0e329",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/compare_reader_views.py"
     },
     {
-      "path": "results/publication_review/build_workbook_report.py",
+      "path": "results/verification/publication_review/build_workbook_report.py",
       "sha256": "ac4aab15d03c9ebe4a1983b94a6401d834480a8845390e7a125105cbe41c8c75",
-      "distribution": "local_ignored_review_artifact"
+      "distribution": "local_ignored_review_artifact",
+      "original_path": "results/publication_review/build_workbook_report.py"
     }
   ],
   "limitations": [
@@ -9963,7 +9985,16 @@
     "code_reference_hashes_unchanged": true,
     "documentation_links_valid": true,
     "source_register_checksum_mismatches_retained": true,
-    "local_report_path": "results/publication_review/workbook_comparison/verification.json",
-    "local_report_sha256": "8b2bc3a068824143b19e4cae8be18a4f05010a18b22d127f33a99308ca3ccc36"
+    "local_report_path": "results/verification/publication_review/workbook_comparison/verification.json",
+    "local_report_sha256": "8b2bc3a068824143b19e4cae8be18a4f05010a18b22d127f33a99308ca3ccc36",
+    "original_local_report_path": "results/publication_review/workbook_comparison/verification.json"
+  },
+  "result_storage_update": {
+    "scope": "Location and retention annotation only; original scientific comparisons, hashes and review dates are unchanged.",
+    "layout_document": "docs/results_layout.md",
+    "migration_manifest": "results/verification/cleanup/migration_manifest.json",
+    "final_sqlite": "results/final/20261023T191130Z-0fa717ee/PlastPrior_results.sqlite",
+    "original_path_semantics": "original_* fields record prior locations; deleted stage paths remain historical file identities, not current standalone files.",
+    "reconstruction_limit": "Compact SQLite retains parsed records under its retention policy, not original stage-file bytes; scope-excluded patent bodies are not retained."
   }
 }
