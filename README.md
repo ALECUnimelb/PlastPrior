@@ -27,6 +27,124 @@ NORMAN analytical-platform predictions and GIC regulatory-list associations. Sta
 Stage 5B adds bioaccumulation and toxicity under the same identity-isolation policy.
 Stages 6A and 6B audit exposure evidence and calculate exposure dimensions in separate historical and qualified analysis views. Stage 7A assesses aggregate hazard, complete-domain priority eligibility and tiers. Stage 7B ranks eligible assessments with explicit ties and inclusive Top-N boundaries.
 
+## Final results
+
+After Stage 7B, the notebook and `python main.py --rank-priority` use the same
+`plastprior.export.export_results()` function. Each successful export creates a
+new directory under `results/final/<run_id>/` with exactly two files:
+
+- `PlastPrior_results.csv`: a 53-field summary of all compounds, including
+  incomplete and unranked records. Scores, ranks, boundary-inclusive Top-N,
+  missingness, identity exceptions and GIC review flags remain explicit.
+- `PlastPrior_results.sqlite`: complete final analysis (all original fields),
+  historical final results, source records and membership links, retained audit
+  decisions, shared evidence bodies and sparse intermediate differences.
+
+This is export schema **2**, `compact-v2`. It changes storage only. Scientific
+stages, source files and prior output directories are not modified or deleted.
+No evidence is merged merely because two sources report the same value.
+The original schema-1 database remains a separate baseline; it is not migrated
+or overwritten automatically.
+
+To package an existing completed run without recalculating scores:
+
+```python
+from pathlib import Path
+from plastprior.export import export_results
+package = export_results(Path("results") / "notebook_test", progress=print)
+print(package["csv"])
+print(package["sqlite"])
+```
+
+An optional `output_dir` must name a new directory. Both files are published
+only after validation, and existing destinations are never replaced. Intermediate
+files remain available locally. Original input datasets are distributed separately.
+
+### Retention and storage
+
+| Content | Compact representation |
+| --- | --- |
+| Final analysis, historical final order, source records and memberships | Complete primary tables, with field-by-field verification |
+| Ranking, Top-N and unranked selections | SQL views over the final analysis |
+| Explicitly declared intermediate compound tables | Column order, row order and final-compound references plus every unequal or otherwise absent field |
+| CSV/JSONL evidence and decisions | Distinct source occurrences referencing shared, compressed record bodies; large repeated fields are interned separately |
+| Historical/analysis differences | Original values and reasons retained; repeated large evidence text is referenced rather than copied |
+| Stage 6A PubChemLite patent-reference rows outside the final compound universe | Full bodies omitted only when `eligible=False`, the sole reason is `outside_compound_universe`, and the key is outside the final collection; original row ranges, counts and an ordered omission digest retained |
+| All in-scope candidates, invalid counts and query failures | Retained, including exclusions and selection reasons |
+| Stage manifests, configuration, implementation and small text provenance | Embedded, with byte-level fingerprints |
+| Whole-file backups of stage CSV/JSONL tables | Not embedded; original hashes remain inventoried |
+
+Intermediate table factorisation is lossless at the **parsed-field and row-order**
+level. It does not promise restoration of original CSV quoting or line endings.
+For each intermediate record, fields equal to the final compound are referenced;
+all different and stage-specific fields are retained as overrides. No field is
+silently dropped. `compound_lexemes` preserves the original text of typed final
+fields, so `0`, `0.0`, empty values and boolean strings can be reconstructed.
+The patent-reference scope filter does not apply to identity-reference lookup,
+other evidence sources or in-scope excluded records. Frozen historical scores
+and all historical selections are preserved.
+
+### Querying the database
+
+Start with `results`, `eligible_ranking`, `top_priority` or `unranked_review`.
+SQL views do not imply an ordering; use an explicit order:
+
+```sql
+SELECT * FROM top_priority ORDER BY Priority_rank, inchikey;
+SELECT * FROM unranked_review ORDER BY inchikey;
+SELECT artifact_path, record_number, source_id, record_id,
+       audit_id, field_path, decision_reason, selected, payload_id
+FROM evidence WHERE inchikey = 'FULL-INCHIKEY-HERE'
+ORDER BY artifact_path, record_number;
+SELECT path, disposition, record_count, retained_count, policy_json FROM artifacts;
+```
+
+`compounds` retains the complete final analysis. `historical_results` retains
+historical results separately. `source_records` and `compound_memberships` provide
+source-row traceability, with enforced foreign keys. Audit key lookup recognises
+`inchikey`, `compound_key` and `Inchikey_std`; occurrence-level provenance remains
+in each original record. Source-record identifiers and audit identifiers have
+separate lookup columns. Records without a top-level compound key remain
+accessible by artifact path and original record number.
+
+`evidence` exposes searchable identifiers and decision summaries. Complete bodies
+are stored in `evidence_payloads` as zlib-compressed canonical JSON, with explicit
+references to shared field-name schemas and large values. Use the standard-library-backed helpers to
+read complete records or reconstruct a factored intermediate table:
+
+```python
+import sqlite3
+from plastprior.export import read_audit_payload, read_artifact_records, archived_bytes
+with sqlite3.connect(package["sqlite"]) as connection:
+    row = connection.execute("SELECT payload_id FROM evidence LIMIT 1").fetchone()
+    record = read_audit_payload(connection, row[0])
+    intermediate_rows = read_artifact_records(connection, "stage7/7a/compound_priority_assessment.csv")
+    first_row = next(intermediate_rows)
+    manifest = b"".join(archived_bytes(connection, "stage7/7b/ranking_manifest.json"))
+```
+
+`read_artifact_records()` yields retained rows in original order. For the scoped
+patent-reference file it skips the explicitly omitted rows; `omitted_ranges`
+records their original positions and reason. `archived_bytes()` supports embedded
+provenance and the older schema-1 archives. It raises a clear error for compact
+stage tables whose original bytes are not embedded. Ordinary SQLite clients can
+query final results and audit lookup columns without custom extensions; decoding
+complete compressed audit bodies requires the helper or the documented codec.
+
+The field dictionary, manifests and embedded policies retain field meaning and
+units. Declared final scores use REAL, ranks/counts use INTEGER, and boolean flags
+use 1/0. Missing typed values use SQL NULL, while valid zeros are retained.
+Other fields preserve original text. CSV keeps the exact original field text
+and deterministic eligibility/rank/InChIKey ordering.
+
+Validation covers every final and source field, CSV/SQLite agreement, every
+retained audit field and lookup key, every reconstructed intermediate field,
+omission ranges/counts/digest, shared-body fingerprints and references, ranking
+order, ties, source links and database integrity. Inputs are fingerprinted again
+at completion. SQLite binary hashes can differ across exports; compare logical
+contents. Export does not authenticate inputs, resolve scientific exceptions or
+establish redistribution permission.
+
 ## Input inspection
 
 `plastprior/inputs.py` is the single implementation used by `main.py` and
@@ -35,7 +153,7 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A/5B/6A/6B/7A/7B, with sixteen code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A/5B/6A/6B/7A/7B, with seventeen code cells, including final export. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
 identifier availability, identity-resolution outcomes, model coverage, QSAR
 identity exceptions, historical LRTP calculation coverage, analysis exclusions, P/B/M/T dimension availability, exposure coverage and complete-domain priority tiers. Full provenance notes, references,

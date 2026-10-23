@@ -183,6 +183,11 @@ def main(argv: list[str] | None = None) -> int:
         rankings.write_reports(output_dir / "stage7" / "7b")
         print(rankings.summary)
         print("Incomplete records retain null ranks. Identifier order only stabilises the display of ties.")
+        from plastprior.export import export_results
+
+        package = export_results(output_dir, progress=lambda message: print(message, flush=True))
+        print(f"Final CSV: {package['csv']}")
+        print(f"Final SQLite: {package['sqlite']}")
     return 0 if passed else 1
 
 
