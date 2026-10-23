@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "policy_version": "priority-complete-domains-v1",
+  "historical_policy_version": "priority-dual-gates-v1",
+  "hazard_weights": {
+    "Persistence_score": 2,
+    "Mobility_score": 1,
+    "Bioaccumulation_score": 2,
+    "Toxicity_score": 3
+  },
+  "dimension_range": [
+    0,
+    2
+  ],
+  "tiers": {
+    "High priority": {
+      "total": 12,
+      "hazard": 4,
+      "exposure": 4
+    },
+    "Moderate priority": {
+      "total": 6,
+      "hazard": 2,
+      "exposure": 2
+    }
+  },
+  "rules": {
+    "historical_missingness": "Zero filling is confined to historical reproduction.",
+    "analysis_missingness": "No imputation or renormalisation; four hazard and five exposure dimensions are required for complete priority.",
+    "incomplete_tier": "Insufficient evidence",
+    "ranking": "Not implemented in Stage 7A",
+    "interpretation": "Priority tiers are screening categories, not evidence of safety or measured risk.",
+    "provenance": "Use existing eligible component scores and source decisions without reselection."
+  },
+  "historical_source": {
+    "path_parts": [
+      "Algorithm",
+      "step21_final_priority_scoring.py"
+    ],
+    "sha256": "b096f57943230bf92ac3bd50407695a658cb513568298025003095a3b1d8a90e",
+    "function": "add_final_priority_columns",
+    "scope": "Complete PBMT column contract and six available historical exposure indicators; compatibility fallback for missing columns is not used."
+  },
+  "baseline": {
+    "run_id": "20261006T233429Z",
+    "run_manifest_sha256": "37409fa3ec043f837efa2b64b265a6018dd6d58e3c56f364de9aff6dfe845f59",
+    "checkpoint_sha256": "4f760575604cad612aaaaa3754372e89f928e18e00b665c36cd52351aacb2325"
+  }
+}

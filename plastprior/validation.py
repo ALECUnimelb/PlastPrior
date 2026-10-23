@@ -1494,11 +1494,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--baseline", type=Path, required=True, help="Frozen historical run directory.")
     parser.add_argument("--results", type=Path, required=True, help="Current report directory for the selected stage.")
     parser.add_argument("--output-dir", type=Path, required=True, help="Validation report directory.")
-    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists", "annotations", "hazard-pm", "hazard-bt", "exposure-inputs", "exposure"], default="identity")
+    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists", "annotations", "hazard-pm", "hazard-bt", "exposure-inputs", "exposure", "priority"], default="identity")
     parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence, Stage 4A for specialists, Stage 4B for annotations, Stage 4C for hazard-pm, Stage 5A for hazard-bt; inferred from the standard layout by default.")
     parser.add_argument("--data-root", type=Path, help="Local frozen inputs for exposure-inputs validation; defaults to project data.")
     args = parser.parse_args(argv)
-    if args.stage == "exposure":
+    if args.stage == "priority":
+        from .priority_validation import compare_priority
+        report = compare_priority(args.baseline, args.results, args.output_dir, args.upstream_results, args.data_root)
+    elif args.stage == "exposure":
         from .exposure_validation import compare_exposure_scores
         report = compare_exposure_scores(args.baseline, args.results, args.output_dir, args.upstream_results, args.data_root)
     elif args.stage == "exposure-inputs":

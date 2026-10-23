@@ -1,4 +1,4 @@
-"""Inspect local source inputs without running chemical prioritisation."""
+"""Run staged chemical evidence, hazard, exposure and priority assessment."""
 
 import argparse
 from pathlib import Path
@@ -37,7 +37,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="Also audit frozen exposure evidence and eligibility (6A); no exposure or priority scores.")
     parser.add_argument("--assess-exposure", action="store_true",
                         help="Also score exposure dimensions (6B), retaining missingness and historical results; no prioritisation or ranking.")
+    parser.add_argument("--assess-priority", action="store_true",
+                        help="Also assess aggregate scores, completeness and tiers (7A); no ranking or Top-N.")
     args = parser.parse_args(argv)
+    if args.assess_priority:
+        args.assess_exposure = True
     if args.assess_exposure:
         args.audit_exposure = True
     if args.audit_exposure:
@@ -155,6 +159,14 @@ def main(argv: list[str] | None = None) -> int:
         exposure_scores.write_reports(output_dir / "stage6" / "6b")
         print(exposure_scores.summary.to_string(index=False))
         print("Formal exposure totals require five available dimensions. No combined priority or ranking calculated.")
+    if passed and args.assess_priority:
+        from plastprior.priority import integrate_priority
+
+        print("\nStage 7A: aggregate scores, completeness and tier audit", flush=True)
+        priority = integrate_priority(output_dir / "stage6" / "6b")
+        priority.write_reports(output_dir / "stage7" / "7a")
+        print(priority.summary.to_string(index=False))
+        print("Incomplete domains retain missing totals and reasons. No ranking or Top-N generated.")
     return 0 if passed else 1
 
 

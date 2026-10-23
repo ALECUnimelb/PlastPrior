@@ -11,7 +11,7 @@ evidence with explicit field mapping and selection/exclusion audits. Stage 4B
 adds LitChemPlast associations and FCChumon human-detection evidence. Stage 4C adds
 NORMAN analytical-platform predictions and GIC regulatory-list associations. Stage 5A evaluates persistence and mobility with separate historical and isolated analysis outputs.
 Stage 5B adds bioaccumulation and toxicity under the same identity-isolation policy.
-Stages 6A and 6B audit exposure evidence and calculate exposure dimensions in separate historical and qualified analysis views. Aggregate hazard and combined priority scores are not implemented.
+Stages 6A and 6B audit exposure evidence and calculate exposure dimensions in separate historical and qualified analysis views. Stage 7A assesses aggregate hazard, complete-domain priority eligibility and tiers; ranking and Top-N are not implemented.
 
 ## Input inspection
 
@@ -21,10 +21,10 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A/5B/6A/6B, with fourteen code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A/5B/6A/6B/7A, with fifteen code cells. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
 identifier availability, identity-resolution outcomes, model coverage, QSAR
-identity exceptions, historical LRTP calculation coverage, analysis exclusions, P/B/M/T dimension availability and exposure evidence/score coverage. Full provenance notes, references,
+identity exceptions, historical LRTP calculation coverage, analysis exclusions, P/B/M/T dimension availability, exposure coverage and complete-domain priority tiers. Full provenance notes, references,
 and observed SHA-256 fingerprints are saved in the inspection reports.
 Versions, dates, and references are recorded provenance, not an independent
 verification against the publisher's latest release. Unrecorded metadata is
@@ -55,6 +55,9 @@ PlastPrior/
     exposure.py
     _exposure_reference.py
     exposure_validation.py
+    priority.py
+    priority_policy.json
+    priority_validation.py
     validation.py
     sources.json
     identity_baseline.json
@@ -1556,8 +1559,8 @@ complete change accounting and deterministic reconstruction. Numeric comparison
 is exact; JSON comparison retains nesting, list order and nulls while ignoring
 object-key order and equivalent numeric spelling. Identity/GIC/quantity/query
 eligibility changes are reported explicitly, rather than forcing analysis scores
-to reproduce unsafe historical eligibility. No combined hazard-exposure
-prioritisation or ranking is implemented. Native Windows execution remains
+to reproduce unsafe historical eligibility. Stage 6B does not implement combined
+hazard-exposure prioritisation or ranking. Native Windows execution remains
 unverified.
 
 For the frozen `20261006T233429Z` run, validation passed for all 15,125
@@ -1570,3 +1573,124 @@ are `results/validation_stage6b/exposure_scoring_validation_summary.json` and
 `results/validation_stage6b/reproducibility.json`. These checks establish
 reproducibility against frozen inputs; they do not independently verify the
 underlying source observations.
+
+## Stage 7A: aggregate scores, eligibility and priority tiers
+
+```text
+python main.py --assess-priority
+```
+
+This runs Stages 1–6B and writes Stage 7A to `results/stage7/7a/`. The notebook
+provides the same entrypoint with a compact completeness and tier summary.
+`plastprior/priority.py` performs aggregation, and `priority_policy.json`
+records the weights, thresholds, historical source fingerprint and frozen-run
+binding. There is no ranking or Top-N selection in this stage.
+
+**Historical reproduction.** Join the separate Stage 5A, 5B and 6B historical
+score tables by full InChIKey, rejecting duplicates, missing identities and
+incompatible upstream manifests. Recompute the frozen rules:
+
+```text
+H = 2P + M + 2B + 3T
+Priority = H + E
+High: Priority >= 12 and H >= 4 and E >= 4
+Moderate: otherwise Priority >= 6 and H >= 2 and E >= 2
+Low: otherwise, for records with data
+```
+
+The historical view deliberately retains the old zero filling of unavailable
+hazard components. It requires all four hazard columns and six available
+historical exposure indicators, as in the frozen run; it does not invoke older
+missing-column compatibility fallbacks. Under this contract, all historical
+records have exposure data, so the historical `No data` priority category is
+not reached. Historical hazard status still distinguishes any available PBMT
+component from none. These results are labelled `historical_reproduction_only`.
+
+**Qualified analysis.** Inherit the complete Stage 6B analysis table verbatim,
+including PBMT scores, eligibility flags, evidence and exposure values. Only
+append aggregate assessment fields. The four hazard components must all be
+available for `Hazard_score`; all five exposure dimensions must be available
+for the inherited `Exposure_score`. Both domains must be complete for
+`Priority_score`, `Priority_eligible=True` and a High/Moderate/Low tier.
+Otherwise, the total is null and the tier and priority data status are
+`Insufficient evidence`. Zero is valid only when an eligible upstream component
+supports it. Malformed, negative, non-finite or out-of-range scores, inconsistent
+availability flags, and missing exclusion reasons are rejected.
+
+`Hazard_observed_score` is the weighted sum of available hazard contributions,
+without imputation or renormalisation. It is not a complete hazard score. With
+no available hazard evidence this bookkeeping sum is zero, while `Hazard_score`
+is null and `Hazard_data_status` is `Unavailable`. Always interpret this field
+with `Hazard_available_dimensions`, `Hazard_complete` and
+`Hazard_missing_dimensions`. Domain status values are `Complete`, `Partial`
+and `Unavailable`; their semantics intentionally differ from the historical
+`Has data` / `No data` flags. Every unavailable component contributes its exact
+upstream reason to `Priority_ineligibility_reasons`.
+
+**Identity, GIC and exposure limitations.** The 15 unresolved model associations
+retain their QSAR/Pov/LRTP isolation and all 58 source memberships. Independent
+structural and database evidence remains usable. None currently has four
+available PBMT components, so none receives a complete priority total. This is
+a completeness decision, not deletion of the chemical or all its evidence.
+GIC name-review flags, shared-association decisions and metadata limitations
+remain unchanged. GIC contributes only through the already qualified exposure
+inventory component; raw list labels do not add hazard or priority points.
+Negative-quantity exclusions, patent query failures, valid source zeroes and
+unavailable human-detection evidence retain the Stage 6B treatment. No source
+selection, identity resolution, live query or model prediction is repeated.
+
+**Audit outputs.**
+
+| Output | Purpose |
+| --- | --- |
+| `priority_historical.csv` | Ten historical component scores and seven final score/status/tier fields |
+| `compound_priority_assessment.csv` | Unchanged Stage 6B analysis plus aggregate scores, completeness and tiers |
+| `priority_decisions.jsonl` | Historical and analysis decisions, weighted components, missing reasons, identity/GIC context and source-ledger references |
+| `priority_changes.csv` | Every changed final field, old/new values and documented causes, including status-semantics changes |
+| `priority_summary.csv` | Domain completeness and tier counts for each view |
+| `identity_review_source_links.jsonl` | Unchanged source memberships of the 15 model-review compounds |
+| `priority_manifest.json` | Policy, implementation, upstream and output hashes; counts and explicit no-ranking scope |
+
+Decision records join to `pm_decisions.jsonl`, `bt_decisions.jsonl` and
+`exposure_analysis_decisions.jsonl` by full InChIKey. Their upstream manifests
+bind those files to their source observations and exclusions. The full source
+ledgers remain in their original stage directories rather than being duplicated.
+`priority_changes.csv` distinguishes upstream hazard-isolation changes, exposure
+eligibility changes, incomplete-domain withholding and revised status semantics.
+Its row count is a count of changed fields, not changed chemicals or scores.
+
+**Validation and interpretation.**
+
+```text
+python -m plastprior.validation --stage priority --baseline PATH_TO_FROZEN_RUN --results results/stage7/7a --output-dir results/validation_stage7a
+```
+
+The validator recursively checks preceding stages, verifies the frozen seventh
+stage checkpoint and compound table hashes, and compares seven historical final
+fields and ten input scores for every full InChIKey. Independent arithmetic checks
+use fixed historical weights and dual-gate boundaries; they verify analysis
+missingness, qualification, source references, unchanged upstream fields and
+complete change accounting. Deterministic replay must reproduce every Stage 7A
+output. Historical parity does not require qualified analysis results to match
+historical zero-filled values.
+
+Complete-case eligibility favours compounds with more available evidence and
+does not establish representativeness of the full inventory. Missing records
+must remain visible alongside their available evidence. Low priority does not
+mean safe; score weights and tier thresholds are screening choices, not measured
+risks or probabilities. Source observations are not independently validated by
+reproducing the frozen computation. Native Windows execution remains unverified.
+
+For the frozen `20261006T233429Z` run, all 15,125 records match the historical
+seven final fields and ten input scores with zero differences. Independent
+analysis and deterministic-reconstruction checks also passed. There are 8,550
+complete hazard totals and 4,244 complete priority assessments: 2,051 High,
+1,828 Moderate and 365 Low. The other 10,881 records are `Insufficient evidence`.
+Among eligible assessments, 13 priority totals and two tiers differ from the
+historical view because of upstream exposure eligibility changes. All changes,
+including withheld totals and revised status semantics, are documented.
+All 174 tests passed. The notebook executed 15 code cells without errors;
+independent notebook and command-line runs produced 132 byte-identical files,
+including 125 upstream files unchanged from the pre-7A fingerprints. Local
+reports are `results/validation_stage7a/priority_validation_summary.json` and
+`results/validation_stage7a/reproducibility.json`.
