@@ -35,7 +35,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="Also assess bioaccumulation and toxicity (5B); no aggregate hazard, exposure or priority scores.")
     parser.add_argument("--audit-exposure", action="store_true",
                         help="Also audit frozen exposure evidence and eligibility (6A); no exposure or priority scores.")
+    parser.add_argument("--assess-exposure", action="store_true",
+                        help="Also score exposure dimensions (6B), retaining missingness and historical results; no prioritisation or ranking.")
     args = parser.parse_args(argv)
+    if args.assess_exposure:
+        args.audit_exposure = True
     if args.audit_exposure:
         args.assess_bt = True
     if args.assess_bt:
@@ -143,6 +147,14 @@ def main(argv: list[str] | None = None) -> int:
         exposure.write_reports(output_dir / "stage6" / "6a")
         print(exposure.summary.to_string(index=False))
         print("Frozen inputs and identity gates audited. No exposure scores or numeric maxima calculated.")
+    if passed and args.assess_exposure:
+        from plastprior.exposure import integrate_exposure_scores
+
+        print("\nStage 6B: exposure dimension assessment with eligibility audit", flush=True)
+        exposure_scores = integrate_exposure_scores(output_dir / "stage6" / "6a", args.data_root)
+        exposure_scores.write_reports(output_dir / "stage6" / "6b")
+        print(exposure_scores.summary.to_string(index=False))
+        print("Formal exposure totals require five available dimensions. No combined priority or ranking calculated.")
     return 0 if passed else 1
 
 

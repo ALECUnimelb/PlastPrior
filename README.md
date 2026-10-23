@@ -11,7 +11,7 @@ evidence with explicit field mapping and selection/exclusion audits. Stage 4B
 adds LitChemPlast associations and FCChumon human-detection evidence. Stage 4C adds
 NORMAN analytical-platform predictions and GIC regulatory-list associations. Stage 5A evaluates persistence and mobility with separate historical and isolated analysis outputs.
 Stage 5B adds bioaccumulation and toxicity under the same identity-isolation policy.
-Aggregate hazard, exposure and priority scores are not implemented.
+Stages 6A and 6B audit exposure evidence and calculate exposure dimensions in separate historical and qualified analysis views. Aggregate hazard and combined priority scores are not implemented.
 
 ## Input inspection
 
@@ -21,10 +21,10 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A/5B, with twelve code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A/5B/6A/6B, with fourteen code cells. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
 identifier availability, identity-resolution outcomes, model coverage, QSAR
-identity exceptions, historical LRTP calculation coverage, analysis exclusions and P/B/M/T dimension availability. Full provenance notes, references,
+identity exceptions, historical LRTP calculation coverage, analysis exclusions, P/B/M/T dimension availability and exposure evidence/score coverage. Full provenance notes, references,
 and observed SHA-256 fingerprints are saved in the inspection reports.
 Versions, dates, and references are recorded provenance, not an independent
 verification against the publisher's latest release. Unrecorded metadata is
@@ -32,8 +32,7 @@ shown as **Not recorded**. File modification times are not treated as source dat
 
 The initial file declarations, provenance notes, and worksheet/header selections
 were carried forward from the ChemicalPrio input registry and readers. They were
-checked against the local frozen input collection. No legacy runtime code or
-scoring implementation is imported.
+checked against the local frozen input collection. The old project is never imported at runtime. Local historical kernels retain versioned source-function fingerprints for regression.
 
 ## Project structure
 
@@ -52,6 +51,10 @@ PlastPrior/
     evidence_annotations.py
     hazard.py
     hazard_bt.py
+    exposure_inputs.py
+    exposure.py
+    _exposure_reference.py
+    exposure_validation.py
     validation.py
     sources.json
     identity_baseline.json
@@ -62,6 +65,8 @@ PlastPrior/
     evidence_annotations.json
     hazard_policy.json
     hazard_bt_policy.json
+    exposure_inputs.json
+    exposure_policy.json
   tests/
     test_inputs.py
     test_source_records.py
@@ -73,6 +78,8 @@ PlastPrior/
     test_annotations.py
     test_hazard.py
     test_hazard_bt.py
+    test_exposure_inputs.py
+    test_exposure.py
     test_validation.py
   data/                     # Local inputs; ignored by Git
   results/                  # Generated reports; ignored by Git
@@ -87,7 +94,7 @@ resolution, QSAR evidence integration, evidence assembly, hazard assessment,
 exposure assessment, and chemical prioritisation. Stages 1 and 2, frozen-report
 QSAR integration (3A), and historical Pov/LRTP calculation with identity isolation
 (3B), basic source evidence assembly (4A), and specialist literature/human-detection
-evidence (4B), analytical/regulatory annotations (4C), persistence/mobility assessment (5A), and bioaccumulation/toxicity assessment (5B) are implemented. Later stages will be introduced incrementally with
+evidence (4B), analytical/regulatory annotations (4C), persistence/mobility assessment (5A), and bioaccumulation/toxicity assessment (5B), exposure evidence audit (6A), and exposure dimension assessment (6B) are implemented. Later stages will be introduced incrementally with
 corresponding validation.
 
 ## Source record assembly
@@ -1432,3 +1439,134 @@ from the historical audit must be explained by the explicit invalid-bound
 exclusions. Exposure-score agreement is intentionally outside Stage 6A. Native Windows
 execution remains unverified; only the existing portable Python dependencies
 are used.
+
+## Stage 6B: exposure dimension assessment
+
+```text
+python main.py --assess-exposure
+```
+
+This runs Stages 1–6A and writes Stage 6B to `results/stage6/6b/`.
+`exposure.py` implements evidence qualification, scoring and change reporting;
+`exposure_policy.json` records thresholds, rules and input provenance. The
+private `_exposure_reference.py` contains namespaced ports of the fingerprinted
+historical functions. This compatibility layer preserves historical parsing,
+source-selection order and nested audits for regression; it is not a new
+workflow stage and never imports the old project. Analysis evidence must pass
+Stage 6A eligibility before it can supply a score.
+
+In addition to the Stage 6A input bundle, supply
+`data/ExposureReference/20261006T233429Z/official_us_epa_production_by_cas.csv`
+from the frozen Stage 6 checkpoint. Its declared hash and checkpoint membership
+are verified. It is a frozen derived table used to reconstruct the historical
+EPA compatibility audit; original archive-to-table transformations are not
+rerun. Source archives remain fingerprinted by Stage 6A.
+
+Five exposure dimensions have a theoretical combined maximum of 10:
+
+| Dimension | Rule |
+| --- | --- |
+| Production/market scale | Positive quantity below 1,000 tonnes: 0.5; at least 1,000: 1; at least 100,000: 2. Eligible positive qualitative presence supplies 0.5 when the numeric score is absent or zero. |
+| Patent activity | Count at least 1 / 1,000 / 10,000: 0.5 / 1 / 2. |
+| PubMed query frequency | Count at least 1 / 5 / 20: 0.5 / 1 / 2. LitChemPlast counts remain auxiliary. |
+| Food-contact/human-detection evidence | FCCmigex membership contributes 1; identity-qualified FCChumon detection contributes 1. Source membership alone is not human detection. |
+| Industrial-inventory association | Eligible unique tag count at least 1 / 2 / 4: 0.5 / 1 / 2. |
+
+**Two explicit result roles.** `exposure_historical.csv` recomputes all 63
+historical exposure fields, including the full evidence JSON, source choices,
+legacy EPA audit and historical zero-filling behavior. Its role is
+`historical_reproduction_only`. `compound_exposure_scores.csv` preserves all
+Stage 5B analysis fields and adds exposure results with role
+`analysis_after_eligibility_audit`. Historical outputs are never substituted for
+eligible analysis inputs.
+
+**Selection and provenance.** Quantities are never added across sources,
+jurisdictions, activities or periods. The selected proxy is the maximum eligible
+historical quantity, using the reported upper bound before the lower bound.
+Within-source ties use value-status priority, year and record ID; across-source
+ties use value status, metric type and source ID, following the historical order.
+Unknown reporting periods remain unknown, and tonnage is not silently annualised.
+The ledger retains the selected parsed record ID, per-source winners, lower-ranked
+candidates and exclusion reasons. Equal source counts are never summed for patents;
+curated and PubChemLite evidence use the maximum count with explicit source
+precedence and row/path provenance. External queries only correct a zero baseline
+when the Stage 6A query qualification passes.
+
+**Missingness and observed zero.** An unavailable component is null, not zero.
+A completed zero query or inventory lookup supplies zero only for that defined
+proxy; absence from a database does not establish no real-world exposure.
+`Exposure_available_dimensions` counts the five dimensions, with food contact
+and human detection grouped together. `Exposure_score` is present only when all
+five dimensions are available. `Exposure_observed_score` sums the available
+components without renormalisation and is not a complete score for ranking.
+`Exposure_missing_dimensions`, component availability flags and reasons retain
+the distinction. `Exposure_score_basis` lists positive available contributions
+and does not certify that the total is complete.
+
+FCChumon zero additionally requires a completed valid-CAS source lookup. The
+23 rejected ambiguous-CAS associations and 331 records without a valid query
+CAS are unavailable for the human-detection component, not confirmed zero.
+The original resolution paths remain in the decision ledger. Food-contact
+membership remains independently usable, but the joint dimension is incomplete
+when the human-detection component is unavailable.
+
+**Exceptions.** The 15 model-review associations retain all 58 memberships and
+all upstream QSAR/Pov/LRTP isolation. Neither predictions nor PBMT scores enter
+the exposure input view; independent exposure evidence remains eligible.
+GIC name associations remain unavailable for inventory scoring, and shared-tag
+associations require direct local support. All 12 directly supported inventory
+tags in the shared-identifier case remain eligible. Metadata limitations persist.
+Negative quantity observations remain visible but cannot supply a numeric
+candidate. The frozen historical run selected none of these negative quantities,
+so removing the 423 formerly eligible invalid candidates must not replace any
+historical numeric winner. The qualitative identity gate is applied separately.
+
+The 74 terminal-status patent queries with error messages remain excluded from
+zero correction. This error gate already existed historically. The analysis
+change is that failed correction without a positive independent fallback remains
+unavailable instead of becoming zero. No-CID records and unsuccessful PubMed
+queries are also distinct from validated zero counts. Curated count observations
+retain their nested field paths, values and selection/rejection explanations;
+PubChemLite winners link to their Stage 6A parsed-row audit IDs.
+
+| Output | Purpose |
+| --- | --- |
+| `exposure_historical.csv` | Recomputed historical exposure fields; regression only |
+| `compound_exposure_scores.csv` | Unchanged upstream analysis plus qualified exposure scores, coverage and missingness |
+| `exposure_historical_selection.jsonl` | Reconstructed historical market-source selections and rejection counts |
+| `exposure_historical_evidence.jsonl` | Complete historical nested exposure evidence |
+| `exposure_analysis_decisions.jsonl` | Qualified selections, source links, gate decisions and component reasons |
+| `exposure_candidate_decisions.csv` | Every canonical/legacy candidate, eligibility and selected/excluded/lower-ranked reason in both views |
+| `exposure_score_changes.csv` | Every changed historical exposure field, before/after value and reason |
+| `exposure_score_summary.csv` | Available, unavailable and zero results by component and view |
+| `identity_review_source_links.jsonl` | All 58 memberships of the model-review cohort |
+| `exposure_scoring_manifest.json` | Input/upstream, implementation, policy and output hashes; runtime and rules |
+
+Validation:
+
+```text
+python -m plastprior.validation --stage exposure --baseline PATH_TO_FROZEN_RUN --results results/stage6/6b --output-dir results/validation_stage6b
+```
+
+Validation recursively checks Stage 6A and earlier stages; compares all 63
+historical fields and nested evidence by full InChIKey; verifies the historical
+market-selection audit; independently applies analysis thresholds and missingness;
+and checks unchanged upstream fields, prediction isolation, source lineage,
+complete change accounting and deterministic reconstruction. Numeric comparison
+is exact; JSON comparison retains nesting, list order and nulls while ignoring
+object-key order and equivalent numeric spelling. Identity/GIC/quantity/query
+eligibility changes are reported explicitly, rather than forcing analysis scores
+to reproduce unsafe historical eligibility. No combined hazard-exposure
+prioritisation or ranking is implemented. Native Windows execution remains
+unverified.
+
+For the frozen `20261006T233429Z` run, validation passed for all 15,125
+compounds and 63 historical fields, including recursive evidence comparisons,
+with no differences. The qualified analysis has 7,951 complete exposure totals
+and 7,174 incomplete totals. All 162 tests passed. Independent command-line and
+notebook execution produced 125 byte-identical output files, including 115
+upstream files unchanged from the pre-6B fingerprints. Detailed local reports
+are `results/validation_stage6b/exposure_scoring_validation_summary.json` and
+`results/validation_stage6b/reproducibility.json`. These checks establish
+reproducibility against frozen inputs; they do not independently verify the
+underlying source observations.

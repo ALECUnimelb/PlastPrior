@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "scope": "Stage 6B exposure dimension scoring, historical reproduction and eligibility-isolated analysis; no combined hazard-exposure priority or ranking",
+  "reference_run": "20261006T233429Z",
+  "historical_sources": [
+    {
+      "path": "Algorithm/exposure_scoring_policy.py",
+      "sha256": "bd19812ecf5451741ced18bad481e1bb3668f79851ddbfe3ee58075ba4ae72f5",
+      "ported_symbols": [
+        "AVAILABLE_MARKET_PRESENCE_STATUSES",
+        "EXPOSURE_DIMENSION_MAX_SCORE",
+        "EXPOSURE_SCORE_LEVELS",
+        "EXPOSURE_SCORING_POLICY_VERSION",
+        "EXPOSURE_TOTAL_MAX_SCORE",
+        "INVENTORY_SCORE_THRESHOLDS",
+        "INVENTORY_SCORING_POLICY_VERSION",
+        "LITERATURE_SCORE_THRESHOLDS",
+        "LITERATURE_SCORING_POLICY_VERSION",
+        "PATENT_SCORE_THRESHOLDS",
+        "PATENT_SCORING_POLICY_VERSION",
+        "POSITIVE_MARKET_PRESENCE_STATUSES",
+        "PRODUCTION_SCORE_THRESHOLDS_TONNES",
+        "PRODUCTION_SCORING_POLICY_VERSION",
+        "_nonnegative_float",
+        "_score_from_thresholds",
+        "inventory_score",
+        "literature_score",
+        "patent_score",
+        "production_market_data_available",
+        "production_market_score",
+        "score_class"
+      ]
+    },
+    {
+      "path": "Algorithm/step20a_prepare_official_production_volume.py",
+      "sha256": "39d1e0c39dc45c48431ab0169338f6f42177d056279c61ccaade4f6a9953ca7f",
+      "ported_symbols": [
+        "CASRN_PATTERN",
+        "is_valid_casrn"
+      ]
+    },
+    {
+      "path": "Algorithm/step20b_select_production_volume.py",
+      "sha256": "38b9d6d61382f4ae9a55b942ca69ed44baf9877e061dae008b4f7429fa80b959",
+      "ported_symbols": [
+        "CASRN_FINDER",
+        "COMPACT_OFFICIAL_FIELDS",
+        "ELIGIBLE_FALLBACK_SOURCES",
+        "FALLBACK_JURISDICTIONS",
+        "FALLBACK_SOURCE_PRIORITY",
+        "OFFICIAL_MATCH_METHOD",
+        "OFFICIAL_SOURCE_SHORT",
+        "PRODUCTION_POLICY_VERSION",
+        "REQUIRED_OFFICIAL_COLUMNS",
+        "_as_float",
+        "_compact_official_record",
+        "_is_missing",
+        "_iter_fallback_values",
+        "_json_object",
+        "_normalise_inchikey",
+        "_prepare_official_rows",
+        "_read_official_table",
+        "_selection_basis",
+        "build_official_production_selections",
+        "build_representative_cas_index",
+        "extract_representative_casrns",
+        "resolve_production_selection",
+        "select_existing_production_fallback"
+      ]
+    },
+    {
+      "path": "Algorithm/step20c_external_exposure_evidence.py",
+      "sha256": "01b4a9dce50a5bd2faf5ca8a44e5a182f6960c942e46bb155060c556f8e74a8a",
+      "ported_symbols": [
+        "LITERATURE_POLICY_VERSION",
+        "LITERATURE_REQUIRED_COLUMNS",
+        "PATENT_POLICY_VERSION",
+        "PATENT_REQUIRED_COLUMNS",
+        "PATENT_TERMINAL_STATUSES",
+        "_as_float",
+        "_is_missing",
+        "_json_value",
+        "_load_records",
+        "_normalise_compound_keys",
+        "_normalise_inchikey",
+        "_sha256",
+        "build_literature_query_audit",
+        "load_patent_zero_corrections",
+        "load_pubmed_query_audit",
+        "resolve_patent_selection"
+      ]
+    },
+    {
+      "path": "production_evidence/selection.py",
+      "sha256": "0198a60970112b57f78a5616fab46b28b7b64a2207be727bdeda260dc60c916a",
+      "ported_symbols": [
+        "CompoundSelectionState",
+        "PLASTCHEM_DATASET_URL",
+        "PLASTCHEM_SOURCE_URL",
+        "SELECTION_FIELDS",
+        "SELECTION_POLICY_VERSION",
+        "_ELIGIBLE_IDENTITY_STATUSES",
+        "_METRIC_PRIORITY",
+        "_PRESENCE_PRIORITY",
+        "_VALUE_STATUS_PRIORITY",
+        "_canonical_candidate",
+        "_decimal",
+        "_decimal_output",
+        "_final_candidate_key",
+        "_public_candidate",
+        "_selected_quantity",
+        "_selection_row",
+        "_source_candidate_key",
+        "_text",
+        "_year",
+        "iter_legacy_plastchem_candidates"
+      ]
+    },
+    {
+      "path": "Algorithm/step20_exposure_scoring.py",
+      "sha256": "f5a260b5deca8122a4135c890a500e186b09d63553dbb16d38a2e5f030792c61",
+      "ported_symbols": [
+        "EXPOSURE_DIMENSION_INDICATORS",
+        "EXPOSURE_OUTPUT_COLUMNS",
+        "EXPOSURE_SCALE_OUTPUT_COLUMNS",
+        "_as_float",
+        "_extract_exposure_inputs",
+        "_is_nullish",
+        "_iter_nested_values",
+        "_json_default",
+        "_json_dumps_compact",
+        "_load_pubchemlite_patent_lookup",
+        "_lookup_patent_count",
+        "_max_numeric_from_nested",
+        "_safe_json_loads",
+        "_score_exposure_inputs",
+        "_truthy_indicator",
+        "add_exposure_columns"
+      ]
+    }
+  ],
+  "official_reference": {
+    "parts": [
+      "ExposureReference",
+      "20261006T233429Z",
+      "official_us_epa_production_by_cas.csv"
+    ],
+    "artifact_id": "official_us_epa_production_by_cas_csv",
+    "bytes": 34276423,
+    "path": "06. ExposureScoring/official_us_epa_production_by_cas.csv",
+    "scope": "run",
+    "sha256": "bc41aebc8c8f53330752675058db1c6c91cc5b0e178f31f8d74a95806be621e1"
+  },
+  "thresholds": {
+    "production": [
+      [
+        1000,
+        1
+      ],
+      [
+        100000,
+        2
+      ]
+    ],
+    "patent": [
+      [
+        1,
+        0.5
+      ],
+      [
+        1000,
+        1
+      ],
+      [
+        10000,
+        2
+      ]
+    ],
+    "literature": [
+      [
+        1,
+        0.5
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        20,
+        2
+      ]
+    ],
+    "inventory": [
+      [
+        1,
+        0.5
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        4,
+        2
+      ]
+    ]
+  },
+  "rules": {
+    "missingness": "Unavailable evidence produces a null analysis component. Valid observed zero is distinct. Formal total requires all five dimensions; observed-component sum and coverage are reported separately without renormalisation.",
+    "production": "Select the historical maximum among Stage 6A numeric-eligible records. Upper bound precedes lower bound; retain original value-status/year/record and metric/source tie-breaks. No summation or annualisation. Eligible positive qualitative evidence supplies 0.5 when the numeric score is zero or unavailable.",
+    "patent": "Retain the maximum valid curated/PubChemLite count without summing; use a validated external zero-baseline correction only when eligible. A failed correction with no positive fallback remains unavailable; cached zero alone does not certify a successful zero-correction query.",
+    "literature": "Only eligible PubMed title/abstract query hits enter the literature component; LitChemPlast counts remain auxiliary.",
+    "gic": "Use Stage 6A direct-support eligibility and industrial tags; name-only associations are unavailable. Completed no-match gives zero for this inventory proxy only. Preserve metadata limitations.",
+    "identity": "QSAR and Pov/LRTP are never exposure scoring inputs. All 15 model-review associations remain isolated; independent exposure evidence is assessed separately.",
+    "historical": "Recompute all 63 historical exposure fields including source selections and recursive evidence JSON. The supplementary official EPA table is a frozen derived input; original archive transformations are not rerun.",
+    "human_detection": "A completed valid-CAS no-match is zero for the source-detection indicator. Missing/invalid query CAS, a rejected ambiguous CAS association, or absent resolution policy is unavailable; membership is not detection."
+  }
+}
