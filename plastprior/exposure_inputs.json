@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "scope": "Stage 6A exposure evidence intake, field mapping and eligibility audit only; no selection of numeric maxima and no new scores",
+  "reference_run": "20261006T233429Z",
+  "inputs": [
+    {
+      "id": "market",
+      "parts": [
+        "ExposureReference",
+        "20261006T233429Z",
+        "market_presence_evidence.csv"
+      ],
+      "sha256": "c93f680da72d1f2a542553944ea638d8900c8a4cbec7bb4f6a041c9eec3ce583",
+      "artifact_id": "market_presence_evidence_csv",
+      "historical_path": "06. ExposureScoring/production_market_evidence/runs/20261006T233958Z-5e6b4a8b/market_presence_evidence.csv",
+      "role": "frozen_derived_input_not_rebuilt"
+    },
+    {
+      "id": "production_inputs",
+      "parts": [
+        "ExposureReference",
+        "20261006T233429Z",
+        "input_manifest.csv"
+      ],
+      "sha256": "01fdc4bb8a0c675ab40f658151fb3f4b4da4fc0de42cb24ea5030ff932a26315",
+      "artifact_id": "production_market_input_manifest_csv",
+      "historical_path": "06. ExposureScoring/production_market_evidence/runs/20261006T233958Z-5e6b4a8b/input_manifest.csv",
+      "role": "frozen_derived_input_not_rebuilt"
+    },
+    {
+      "id": "registry",
+      "parts": [
+        "ExposureReference",
+        "20261006T233429Z",
+        "source_registry.csv"
+      ],
+      "sha256": "c03a5745b8fc381121b0b07ea74c5f5430d51f05c94f9b37dd490627c0da027a",
+      "artifact_id": "production_market_source_registry_csv",
+      "historical_path": "06. ExposureScoring/production_market_evidence/runs/20261006T233958Z-5e6b4a8b/source_registry.csv",
+      "role": "frozen_derived_input_not_rebuilt"
+    },
+    {
+      "id": "production",
+      "parts": [
+        "ExposureReference",
+        "20261006T233429Z",
+        "production_volume_evidence.csv"
+      ],
+      "sha256": "94dc2fadfedda39490dcde9ade04db8adbf42f33bb2c47b1fd8c46ef34f58ad7",
+      "artifact_id": "production_volume_evidence_csv",
+      "historical_path": "06. ExposureScoring/production_market_evidence/runs/20261006T233958Z-5e6b4a8b/production_volume_evidence.csv",
+      "role": "frozen_derived_input_not_rebuilt"
+    },
+    {
+      "id": "run_manifest",
+      "parts": [
+        "ExposureReference",
+        "20261006T233429Z",
+        "run_manifest.json"
+      ],
+      "sha256": "37409fa3ec043f837efa2b64b265a6018dd6d58e3c56f364de9aff6dfe845f59",
+      "role": "frozen_provenance"
+    },
+    {
+      "id": "input_manifest",
+      "parts": [
+        "ExposureReference",
+        "20261006T233429Z",
+        "input_manifest.json"
+      ],
+      "sha256": "e019d5c28de60fab1a85bab64ba357894af128fb562fe35d42b1adee688055bc",
+      "role": "frozen_provenance"
+    },
+    {
+      "id": "stage6_checkpoint",
+      "parts": [
+        "ExposureReference",
+        "20261006T233429Z",
+        "stage6_checkpoint.json"
+      ],
+      "sha256": "96940c1ff878870620d7d5fe5a02debf7f9c1f4783976ed1155b1ec4e6cfe9bc",
+      "role": "frozen_provenance"
+    },
+    {
+      "id": "patent",
+      "parts": [
+        "Patent data",
+        "pubchem_zero_patent_check_final.csv"
+      ],
+      "sha256": "7e2cde226a66e48dafdabbeeb66145205fd41607b4cd0eec7db49128085b2d66",
+      "role": "frozen_source_input"
+    },
+    {
+      "id": "pubmed",
+      "parts": [
+        "Literature data",
+        "pubmed_title_abstract_counts_final.csv"
+      ],
+      "sha256": "6bfd5cc3973946e863d2dd956ae5640f5018dcc80455375deb5aa1a3d194a5c2",
+      "role": "frozen_source_input"
+    },
+    {
+      "id": "pubchemlite",
+      "parts": [
+        "SourceDatabase",
+        "PubChemLite.csv"
+      ],
+      "sha256": "c3f512b4d326a9f479cb0bb6e395d43f7c3c89b218955bd9f633d71ae5f74678",
+      "role": "frozen_source_input"
+    }
+  ],
+  "production_root_parts": [
+    "Official_Production_Volume_Data"
+  ],
+  "canonical_fields": [
+    "record_id",
+    "schema_version",
+    "source_id",
+    "source_name",
+    "jurisdiction",
+    "evidence_class",
+    "activity",
+    "evidence_scope",
+    "cas_rn",
+    "inchikey",
+    "chemical_name",
+    "dashboard_match",
+    "reporting_period",
+    "reporting_year",
+    "quantity_raw",
+    "value_status",
+    "quantity_lower_tonnes",
+    "quantity_upper_tonnes",
+    "quantity_unit",
+    "market_presence",
+    "source_url",
+    "dataset_url",
+    "source_location",
+    "raw_relative_path",
+    "raw_sha256",
+    "source_response_sha256",
+    "audit_relative_path",
+    "retrieved_at_utc",
+    "identity_match_status",
+    "non_additive_warning",
+    "source_record_id",
+    "source_details_json",
+    "adapter_version"
+  ],
+  "eligible_identity_statuses": [
+    "unique_dashboard_match",
+    "native_inchikey_match",
+    "legacy_inchikey_compound_record"
+  ],
+  "presence_priority": {
+    "": 0,
+    "unknown": 0,
+    "not_found_in_source": 1,
+    "confirmed_zero_quantity": 2,
+    "historical_record": 3,
+    "confirmed_record_no_public_quantity": 4,
+    "confirmed_confidential_quantity": 5,
+    "confirmed_positive_quantity": 6
+  },
+  "positive_presence": [
+    "historical_record",
+    "confirmed_record_no_public_quantity",
+    "confirmed_confidential_quantity",
+    "confirmed_positive_quantity"
+  ],
+  "rules": {
+    "qualitative_market": "Require an in-scope chemical, accepted identity mapping, eligible compound-level source and an interpretable presence state before qualitative aggregation. Ambiguous CAS records cannot contribute.",
+    "historical_market": "Reconstruct the historical best-presence state before the identity/numeric gate for audit comparison only. Do not compute scores or select numeric maxima.",
+    "quantity": "Keep raw quantity, bounds, unit, activity, year and jurisdiction. Both annual tonnes and tonnes with unspecified reporting period are retained as candidates; do not annualise, combine or select a maximum. Temporal comparability remains a later selection decision.",
+    "gic": "Name-only associations remain review_required. Industrial inventory tags need direct local support on a matched SID and the frozen inventory classification. Unsupported shared-identifier tags are excluded. No-match is a completed lookup, not proof of absence.",
+    "gic_metadata": "Classification uses frozen metadata retained by Stage 4C; historical metadata acquisition hashes remain unavailable. No independent current regulatory verification is claimed.",
+    "identity_review": "The 15 model-association reviews do not invalidate independent exposure evidence; QSAR/Pov/LRTP isolation remains enforced and no prediction is consumed.",
+    "external": "Keep all rows, including out-of-scope rows and failed/no-candidate queries. Nonempty query error messages require review even when a terminal status/count is present; neither partial query coverage nor no CID is a confirmed zero. Audit patent zero-baseline correction and PubMed eligibility without selecting counts or scoring.",
+    "provenance": "Canonical production/market tables are frozen derived inputs, not newly reconstructed raw-source transformations. Verify declared primary inputs and raw-file hashes where recorded; record hash gaps explicitly."
+  },
+  "historical_sources": [
+    {
+      "path": "production_evidence/selection.py",
+      "sha256": "0198a60970112b57f78a5616fab46b28b7b64a2207be727bdeda260dc60c916a"
+    },
+    {
+      "path": "production_evidence/model.py",
+      "sha256": "f6f0b60c9dd70884dabf15ff640801eaf06642100986636af9d9842d76343d47"
+    },
+    {
+      "path": "production_evidence/registry.py",
+      "sha256": "07b6f97ede20c1a17ef5f1ad958d0dd704027a179b952515828a1e453a1fbbf4"
+    },
+    {
+      "path": "Algorithm/step20c_external_exposure_evidence.py",
+      "sha256": "01b4a9dce50a5bd2faf5ca8a44e5a182f6960c942e46bb155060c556f8e74a8a"
+    }
+  ],
+  "eligible_quantity_units": [
+    "metric_tonne/year",
+    "metric_tonne"
+  ]
+}

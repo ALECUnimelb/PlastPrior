@@ -1494,10 +1494,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--baseline", type=Path, required=True, help="Frozen historical run directory.")
     parser.add_argument("--results", type=Path, required=True, help="Current report directory for the selected stage.")
     parser.add_argument("--output-dir", type=Path, required=True, help="Validation report directory.")
-    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists", "annotations", "hazard-pm", "hazard-bt"], default="identity")
+    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists", "annotations", "hazard-pm", "hazard-bt", "exposure-inputs"], default="identity")
     parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence, Stage 4A for specialists, Stage 4B for annotations, Stage 4C for hazard-pm, Stage 5A for hazard-bt; inferred from the standard layout by default.")
+    parser.add_argument("--data-root", type=Path, help="Local frozen inputs for exposure-inputs validation; defaults to project data.")
     args = parser.parse_args(argv)
-    if args.stage == "identity":
+    if args.stage == "exposure-inputs":
+        from .exposure_validation import compare_exposure_inputs
+        report = compare_exposure_inputs(args.baseline, args.results, args.output_dir, args.upstream_results, args.data_root)
+    elif args.stage == "identity":
         report = compare_identity(args.baseline, args.results, args.output_dir)
     else:
         validator = {"qsar": compare_qsar, "lrtp": compare_lrtp, "evidence": compare_basic_evidence, "specialists": compare_specialist_evidence, "annotations": compare_annotations, "hazard-pm": compare_pm_hazard, "hazard-bt": compare_bt_hazard}[args.stage]

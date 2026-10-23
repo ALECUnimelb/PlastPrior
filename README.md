@@ -1306,3 +1306,129 @@ unknown historical metadata must remain explicitly unrecorded until supported
 by evidence. Structural migration and changes to scientific rules should be
 reviewed separately, with stage-level comparisons against a documented
 reference input/result pair.
+
+## Stage 6A: exposure evidence intake and eligibility
+
+```text
+python main.py --audit-exposure
+```
+
+This runs the preceding stages, then writes evidence and eligibility reports to
+`results/stage6/6a/`. It does not compute exposure scores, aggregate PBMT scores,
+select a numeric maximum, rank chemicals or run live database queries. The
+upstream Stage 5B analysis table remains the authority for PBMT results.
+`plastprior/exposure_inputs.json` declares frozen inputs, fingerprints, identity
+allowlists, presence states and eligibility rules; `exposure_inputs.py` streams
+observation ledgers. The Notebook adds one compact Stage 6A cell.
+
+**Frozen inputs.** The canonical production and market tables are imported
+historical derived inputs, not independently rebuilt raw-source transformations.
+Under `data/ExposureReference/20261006T233429Z/`, supply these exact files from
+the pinned run: `production_volume_evidence.csv`, `market_presence_evidence.csv`,
+`source_registry.csv`, the production/market `input_manifest.csv`, the root
+`run_manifest.json` and `input_manifest.json`, and the Stage 6 `checkpoint.json`
+renamed to `stage6_checkpoint.json`. The four canonical files originate from
+`06. ExposureScoring/production_market_evidence/runs/20261006T233958Z-5e6b4a8b/`.
+All paths and SHA-256 values are declared in the policy. Original official
+source files remain under `data/Official_Production_Volume_Data/`; patent,
+PubMed and PubChemLite paths are also policy-defined. All inputs remain ignored
+by Git and require separate distribution and licensing review for publication.
+Runtime does not import or require the old project.
+
+The pinned run/checkpoint chain verifies all four canonical files. The 32
+production-input manifest entries and every raw-file reference are checked
+against local bytes. Multiple raw references in a cell are paired in their
+recorded order. `source_response_sha256` is retained as a historical response
+fingerprint, not falsely checked as a whole-file hash. Raw files are checked
+again before the success manifest is published. These checks establish input
+consistency, not independent confirmation of the original transformations or
+chemical identity assignments.
+
+**Market identity gate.** Every canonical source field and record occurrence
+is retained. `source_row_number` denotes the parsed CSV record position including
+the header, not a physical line number. An accepted full-key association,
+in-scope compound and eligible compound-level source are required before a
+qualitative presence state can contribute. Confidential evidence can qualify
+without a numeric quantity. Unknown, not found, confirmed zero, confidential,
+historical and positive states remain distinct. National-context records remain
+in the audit but cannot supply compound-level evidence. The historical
+pre-gate presence state and evidence count are retained separately.
+
+Numeric qualification checks bounds and units without selecting or adding
+quantities. Annual tonnes and tonnes with an unspecified reporting period
+remain distinguishable; unspecified periods are never silently annualised.
+Jurisdiction, activity, source scope and non-additivity warnings remain attached
+to each record. All 17,735 valid legacy PlastChem observations are retained;
+7,968 UCSF observations remain visible with an unsupported-source reason.
+The source ledger links back to all Stage 4A exposure observations, including
+source selection and exclusion reasons. Specialist source membership,
+LitChemPlast association and FCChumon detection are retained as different facts.
+
+**GIC gate.** All 1,132 name-only associations require review and have an empty
+eligible inventory count, not zero. A qualifying inventory tag must be supported
+locally on at least one matched SID and classified by the frozen metadata as
+industrial inventory/registration/use, excluding auxiliary tags. Shared-identifier
+expansion flags remain visible. For `GUUHFMWKWLOQMM-NTCAYCPXSA-N`, all 12 industrial
+inventory tags have direct support across the matched SIDs. The unsupported
+`JP-CSCL_CI` and `JP-CSCL_CII` associations are excluded; they are also outside
+the industrial-inventory class. A completed no-match lookup is distinct from
+an unqueried record and does not establish absence from real-world use.
+Historical metadata acquisition hashes remain unavailable; these are frozen
+classifications, not a current regulatory verification.
+
+**Other exposure evidence.** Every PubChemLite, external patent and PubMed
+record is retained with raw fields and source fingerprint, including records
+outside the compound universe. Patent zero-baseline correction eligibility
+requires a completed, consistent query and no existing nonzero curated or
+PubChemLite patent evidence. A nonempty query error requires review even if a
+terminal status and count are present, because multi-CID retrieval may be
+partial. No CID, no candidate term, query failure and a successful zero count
+are distinct. PubMed title/abstract query hits remain unreviewed bibliographic
+proxies; no full-text or chemical-identity confirmation is implied. No final
+patent or literature count is selected at this stage.
+
+The 15 unresolved model associations retain all 58 source links. All 57 QSAR
+fields and 12 Pov/LRTP values/flags remain withheld upstream. Exposure intake
+never consumes model predictions; independent exposure observations are
+qualified by their own identity and source evidence. The GIC issues remain
+annotations and eligibility decisions; no GIC-derived score is computed.
+
+| Output | Contents |
+| --- | --- |
+| `market_source_records.csv` | All 448,174 canonical rows, native identifiers, source fields, separate qualitative/numeric eligibility and exclusion reasons |
+| `legacy_production_records.csv` | Selected and excluded legacy production observations with compound, field, source and value-index lineage |
+| `market_gate_audit.csv` | Per-compound historical and gated presence states, eligibility counts and changes |
+| `raw_file_verification.csv` | Declared and observed raw hashes, including explicit provenance gaps if present |
+| `market_source_summary.csv` | Row and eligibility counts by source; counts are not unique chemicals |
+| `patent_records.jsonl`, `pubmed_records.jsonl`, `pubchemlite_patent_records.jsonl` | All raw query/source records, qualifiers and exclusion reasons |
+| `gic_tag_eligibility.jsonl`, `gic_compound_audit.csv` | Direct SID/tag support, matching path, frozen classification, metadata limits and missingness |
+| `exposure_source_links.jsonl` | Unchanged Stage 4A exposure selection/exclusion provenance |
+| `compound_exposure_evidence.csv` | Compact eligibility view with specialist decisions, identity and GIC flags; no scores |
+| `identity_review_source_links.jsonl` | All original source memberships of the 15 model-review compounds |
+| `exposure_field_mapping.csv`, `exposure_summary.csv`, `exposure_manifest.json` | Mappings, totals, policies, runtime and input/upstream/output fingerprints |
+
+Validate with:
+
+```text
+python -m plastprior.validation --stage exposure-inputs --baseline PATH_TO_FROZEN_RUN --results results/stage6/6a --output-dir results/validation_stage6a
+```
+
+Validation recursively checks Stage 5B and earlier stages. It compares every
+canonical source field and external raw record, preserving multiplicity, and
+compares all 15,125 historical presence states and evidence counts with the
+frozen historical selection audit. Intended eligibility changes are reported
+separately: 21,331 identity-ambiguous market/production observations are withheld,
+and 611 compound presence states change after qualification. A lower or unknown
+state is not evidence of lower measured exposure. Validation also checks source
+links, model isolation, GIC direct support and deterministic reconstruction.
+The validation report also writes `quantity_anomalies.csv` and
+`numeric_eligibility_changes.csv`. Negative Nordic SPIN quantity values remain
+verbatim in the source ledger but cannot represent nonnegative quantities:
+423 formerly eligible observations across 229 compounds are excluded from
+numeric eligibility. Their source meaning remains unresolved; they are not
+converted to zero, made positive or treated as measured negative exposure.
+Qualitative presence is assessed separately. Every numeric-count difference
+from the historical audit must be explained by the explicit invalid-bound
+exclusions. Exposure-score agreement is intentionally outside Stage 6A. Native Windows
+execution remains unverified; only the existing portable Python dependencies
+are used.
