@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 from decimal import Decimal, InvalidOperation
 import json
 from pathlib import Path
@@ -746,18 +746,249 @@ def compare_basic_evidence(baseline, results, output_dir, upstream_results=None)
     return summary
 
 
+def compare_specialist_evidence(baseline, results, output_dir, upstream_results=None):
+    """Compare the complete 4B boundary and separately verify model-identity isolation."""
+    from .evidence_specialists import DEFAULT_POLICY
+    from .lrtp import VALUE_COLUMNS
+    baseline, results, output_dir = Path(baseline), Path(results), Path(output_dir)
+    basic = Path(upstream_results) if upstream_results is not None else results.parent
+    stage2 = basic.parent / "stage2"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    differences, checks = [], []
+
+    def compare(old, new, fields, scope):
+        differences.extend(_compare_qsar_frame(old, new, "inchikey", {c: c for c in fields}, set(), scope))
+        checks.append({"scope": scope, "rows": len(old), "fields": len(fields)})
+
+    def compare_json(old, new, key, scope):
+        for diff in _compare_evidence(json.dumps(old), json.dumps(new), key):
+            diff.update(scope=scope, field=diff["field"].replace("LRTP_evidence", scope, 1))
+            differences.append(diff)
+
+    def jsonl(path):
+        with path.open(encoding="utf-8") as stream:
+            return [json.loads(line) for line in stream]
+
+    try:
+        upstream = compare_basic_evidence(baseline, basic, output_dir / "stage4a")
+        if upstream["status"] != "passed":
+            raise ValueError("Upstream Stage 4A regression failed.")
+        manifest = _read_json(results / "specialist_manifest.json")
+        _verify_hash(DEFAULT_POLICY, manifest["policy_sha256"])
+        _verify_hash(Path(__file__).with_name("evidence_specialists.py"), manifest["implementation_sha256"])
+        _verify_hash(stage2 / "identity_manifest.json", manifest["upstream_manifest_sha256"]["identity"])
+        _verify_hash(basic / "evidence_manifest.json", manifest["upstream_manifest_sha256"]["basic"])
+        for file, digest in manifest["output_sha256"].items():
+            _verify_hash(results / file, digest)
+        run = _read_json(baseline / "run_manifest.json")
+        artifacts = {}
+        for stage in ("3", "4"):
+            entry = run["stages"][stage]
+            _verify_hash(baseline / entry["checkpoint"], entry["checkpoint_sha256"])
+            for item in _read_json(baseline / entry["checkpoint"])["artifacts"]:
+                path = baseline / item["path"]
+                _verify_hash(path, item["sha256"])
+                artifacts[item["artifact_id"]] = path
+        frozen_inputs = {r["filename"]: r["sha256"] for r in _read_json(baseline / "input_manifest.json")["records"]}
+        for item in manifest["inputs"]:
+            if item["sha256"] != frozen_inputs[item["filename"]]:
+                raise ValueError("Specialist source differs from frozen inputs.")
+        old = _read_csv(artifacts["compound_inventory_with_evidence_csv"]).rename(columns={"Inchikey_std": "inchikey"})
+        before = _read_csv(artifacts["compound_inventory_with_qsar_csv"]).rename(columns={"Inchikey_std": "inchikey"})
+        history = _read_csv(results / "specialist_historical.csv")
+        analysis = _read_csv(results / "compound_specialist_evidence.csv")
+        prior = _read_csv(basic / "compound_evidence.csv")
+        cas = _read_csv(results / "cas_identity_view.csv")
+        compare(old, history, ["db_LitChemPlast"], "historical_membership_projection")
+        compare(before, cas, ["CAS", "cas_mapping_status", "cas_mapping_count", "cas_connectivity_count"], "compound_CAS_projection")
+        old_index = before.set_index("inchikey")
+        for row in cas.to_dict("records"):
+            for field in ("cas_values_json", "cas_mapping_details_json"):
+                compare_json(json.loads(old_index.at[row["inchikey"], field]), json.loads(row[field]), row["inchikey"], field)
+        checks.append({"scope": "all_CAS_aliases_and_mapping_details", "rows": len(cas), "fields": 2})
+        hindex = history.set_index("inchikey")
+        for row in old.to_dict("records"):
+            payload = json.loads(row["db_extract_info"])
+            payload.pop("analytical_detectability", None)
+            compare_json(payload, json.loads(hindex.at[row["inchikey"], "db_extract_info"]), row["inchikey"], "complete_4B_evidence_JSON")
+        checks.append({"scope": "complete_4B_evidence_JSON", "rows": len(old), "fields": 1})
+        audits = {}
+        for name, legacy in (("litchemplast", "litchemplast_resolution_audit_jsonl"),
+                             ("fcchumon", "fcchumon_detection_resolution_audit_jsonl")):
+            expected = jsonl(artifacts[legacy])
+            actual = jsonl(results / (name + "_resolution_audit.jsonl"))
+            if len(actual) != len(expected) or len({r["compound_key"] for r in actual}) != len(actual):
+                raise ValueError("Specialist audit rows are missing or duplicated.")
+            mapping = {r["compound_key"]: r for r in actual}
+            for row in expected:
+                compare_json(row, mapping[row["compound_key"]], row["compound_key"], name + "_resolution")
+            audits[name] = mapping
+            checks.append({"scope": name + "_resolution_every_field", "rows": len(expected), "fields": len(expected[0])})
+        compare(prior, analysis, [c for c in prior if c not in {"inchikey", "db_extract_info"}], "unchanged_upstream_fields_and_prediction_isolation")
+        compare(history, analysis, ["db_extract_info"], "historical_evidence_retained_in_analysis")
+        for row in analysis.to_dict("records"):
+            lit, human = (audits[name][row["inchikey"]] for name in ("litchemplast", "fcchumon"))
+            state = ("detected" if human["detected"] else "matched_without_positive_count") if human["selected"] else human["match_method"]
+            expected = {"litchemplast_evidence_available": str(lit["selected"]), "litchemplast_match_method": lit["match_method"],
+                        "fcchumon_evidence_available": str(human["selected"]), "fcchumon_evidence_status": state,
+                        "fcchumon_detected": str(human["detected"]) if human["selected"] else ""}
+            if any(row[k] != value for k, value in expected.items()):
+                raise ValueError("Analysis availability conflates missing, rejected or matched evidence.")
+        if any(c.startswith("GIC_") or c in {"Analytical_detectability", "LRTP_evidence", "db_LitChemPlast"} for c in analysis):
+            raise ValueError("Out-of-scope or historical-only fields entered analysis.")
+        if any("analytical_detectability" in json.loads(v) for v in history["db_extract_info"]):
+            raise ValueError("Stage 4C evidence was generated.")
+        review = analysis["qsar_identity_status"].eq("review_required")
+        predictions = [c for c in _read_json(Path(__file__).with_name("qsar_models.json"))["legacy_merge_columns"] if not c.startswith("Basic | ")]
+        if analysis.loc[review, predictions + VALUE_COLUMNS].ne("").any().any():
+            raise ValueError("An identity-review prediction is available in Stage 4B.")
+        exceptions = _read_csv(results / "identity_review_evidence.csv")
+        if exceptions["inchikey"].duplicated().any() or set(exceptions["inchikey"]) != set(analysis.loc[review, "inchikey"]):
+            raise ValueError("Identity-review subset is incomplete.")
+        aindex = analysis.set_index("inchikey")
+        for row in exceptions.to_dict("records"):
+            key = row["inchikey"]
+            for col in ("qsar_inchikey", "vega_row_no", "litchemplast_evidence_available", "litchemplast_match_method", "fcchumon_evidence_available", "fcchumon_evidence_status", "fcchumon_detected"):
+                if row[col] != aindex.at[key, col]:
+                    raise ValueError("Identity-review subset differs from the analysis output.")
+            lit = audits["litchemplast"][key]
+            for field, value in (("litchemplast_linked_record_count", lit["linked_record_count"]),
+                                 ("litchemplast_unique_publication_count", lit["unique_publication_count"])):
+                actual = row[field]
+                if (value is None and actual != "") or (value is not None and (actual == "" or Decimal(actual) != Decimal(value))):
+                    raise ValueError("Identity-review literature counts differ from the full audit.")
+            if row["identity_reason"] != aindex.at[key, "qsar_identity_reason"] or row["prediction_exclusion_reason"] != "identity_review_required":
+                raise ValueError("Identity-review exclusion reasons changed.")
+        sources = jsonl(results / "specialist_source_rows.jsonl")
+        source_map = {r["record_id"]: r for r in sources}
+        if len(source_map) != len(sources):
+            raise ValueError("Duplicated source record identifiers.")
+        originals = _read_csv(stage2 / "resolved_records.csv").set_index("record_id")
+        source_meta = {r["table_id"]: r for r in manifest["inputs"]}
+        for table_id, meta in source_meta.items():
+            source = [r for r in sources if r["table_id"] == table_id]
+            if [r["source_record_number"] for r in source] != list(range(1, meta["rows"] + 1)):
+                raise ValueError("Source rows are incomplete or reordered.")
+        for row in sources:
+            meta = source_meta[row["table_id"]]
+            if row["source_sha256"] != meta["sha256"] or row["source_row_number"] != row["source_record_number"] + meta["header"] + 1:
+                raise ValueError("Source hash or row location changed.")
+            if row["table_id"] != "litchemplast_links":
+                for col in ("source_sha256", "table_id", "source_native_id"):
+                    if row[col] != originals.at[row["record_id"], col]:
+                        raise ValueError("Source provenance differs from Stage 2.")
+        cas_links = _read_csv(results / "cas_source_links.csv")
+        members = _read_csv(stage2 / "compound_memberships.csv")
+        if set(zip(cas_links["inchikey"], cas_links["record_id"])) != set(zip(members["inchikey"], members["record_id"])):
+            raise ValueError("CAS provenance lost source members.")
+        for row in cas_links.to_dict("records"):
+            original = originals.loc[row["record_id"]]
+            if row["cas_reported"] != original["cas_reported"] or row["source_sha256"] != original["source_sha256"]:
+                raise ValueError("CAS alias provenance differs from Stage 2.")
+        conversions = jsonl(results / "count_conversion_audit.jsonl")
+        conversion_map = {(r["record_id"], r["source_column"]): r for r in conversions}
+        if len(conversion_map) != len(conversions):
+            raise ValueError("Duplicated count-conversion decisions.")
+        candidates = jsonl(results / "specialist_candidates.jsonl")
+        selected_counts = {"litchemplast": Counter(), "fcchumon": Counter()}
+        selected_source_rows = defaultdict(set)
+        selected_link_rows = defaultdict(set)
+        for row in candidates:
+            kind = "litchemplast" if row["candidate_type"].startswith("lit_") else "fcchumon"
+            key = row["compound_key"]
+            if not row["source_record_ids"] or any(r not in source_map for r in row["source_record_ids"] + row["relationship_record_ids"]):
+                raise ValueError("Candidate source links are missing.")
+            if not row["selection_reason"]:
+                raise ValueError("Candidate has no selection or exclusion reason.")
+            if row["selected"]:
+                selected_counts[kind][key] += 1
+                selected_source_rows[key, kind].update(row["source_record_ids"])
+                selected_link_rows[key].update(row["relationship_record_ids"])
+            if kind == "fcchumon" and row["selected"]:
+                chosen = defaultdict(list)
+                for field in row["field_decisions"]:
+                    conversion = conversion_map[field["record_id"], field["source_column"]]
+                    values = [conversion_map[rid, field["source_column"]]["normalized_value"] for rid in row["source_record_ids"]]
+                    if field["record_id"] not in row["source_record_ids"] or field["normalized_value"] != conversion["normalized_value"]:
+                        raise ValueError("Maximum-count decision differs from its source conversion.")
+                    expected_selection = field["normalized_value"] == max(values)
+                    reason = "supports_group_maximum" if expected_selection else "not_selected_lower_count"
+                    if field["selected_for_maximum"] != expected_selection or field["selection_reason"] != reason:
+                        raise ValueError("Maximum-count selection or exclusion reason is incorrect.")
+                    if field["selected_for_maximum"]:
+                        chosen[field["source_column"]].append(field["normalized_value"])
+                resolution = audits[kind][key]
+                expected = resolution["detection_count"]
+                if not chosen[resolution["detection_field"]] or set(chosen[resolution["detection_field"]]) != {expected}:
+                    raise ValueError("Human detection count lost its contributing source rows.")
+        for kind, records in audits.items():
+            if any(selected_counts[kind][key] != int(r["selected"]) for key, r in records.items()):
+                raise ValueError("Selected evidence lacks a unique traced candidate group.")
+        link_decisions = jsonl(results / "literature_link_decisions.jsonl")
+        link_count, publication_count, actual_link_rows = Counter(), Counter(), defaultdict(set)
+        counted_links, counted_publications = defaultdict(set), defaultdict(set)
+        for row in link_decisions:
+            key, rid = row["compound_key"], row["record_id"]
+            raw = source_map[rid]["raw_fields"]
+            if rid in actual_link_rows[key] or rid not in selected_link_rows[key]:
+                raise ValueError("Relationship decision is duplicated or has no selected source group.")
+            actual_link_rows[key].add(rid)
+            if any(row[f] != raw[f] for f in ("Chem_id", "LitChem_id", "Lit_id")):
+                raise ValueError("Relationship identifiers differ from the retained source row.")
+            if not row["chemical_record_ids"] or not set(row["chemical_record_ids"]) <= selected_source_rows[key, "litchemplast"]:
+                raise ValueError("Relationship lost its selected Chemical source row.")
+            for identifier, flag, reason_field, seen in (("LitChem_id", "counted_link_record", "link_reason", counted_links),
+                                                         ("Lit_id", "counted_publication", "publication_reason", counted_publications)):
+                value = row[identifier]
+                expected_flag = value is not None and value not in seen[key]
+                reason = "missing_identifier" if value is None else "counted_unique_identifier" if expected_flag else "duplicate_identifier_not_recounted"
+                if row[flag] != expected_flag or row[reason_field] != reason:
+                    raise ValueError("Unique/duplicate relationship-count decision is incorrect.")
+                seen[key].add(value)
+            link_count[key] += row["counted_link_record"]
+            publication_count[key] += row["counted_publication"]
+        for key, row in audits["litchemplast"].items():
+            if row["selected"] and (link_count[key] != row["linked_record_count"] or publication_count[key] != row["unique_publication_count"] or actual_link_rows[key] != selected_link_rows[key]):
+                raise ValueError("Unique relationship counts differ from source contribution decisions.")
+        for row in conversions:
+            if row["raw_value"] != source_map[row["record_id"]]["raw_fields"][row["source_column"]] or not row["conversion_reason"]:
+                raise ValueError("Count conversion lost its raw value or reason.")
+        counts = {"compounds": len(analysis), "source_rows": len(sources), "cas_source_links": len(cas_links),
+                  "candidate_groups": len(candidates), "literature_link_decisions": len(link_decisions), "count_conversions": len(conversions),
+                  "identity_review_compounds": len(exceptions), "litchemplast_selected": sum(r["selected"] for r in audits["litchemplast"].values()),
+                  "fcchumon_selected": sum(r["selected"] for r in audits["fcchumon"].values()),
+                  "fcchumon_detected": sum(r["detected"] for r in audits["fcchumon"].values())}
+        if manifest["counts"] != counts:
+            raise ValueError("Manifest counts disagree with validated artifacts.")
+        changes = int(before["db_LitChemPlast"].ne(old["db_LitChemPlast"]).sum())
+        summary = {"status": "passed" if not differences else "failed", "scope": "Stage 4B only; no 4C or downstream scoring",
+                   "baseline_run": run["run_id"], "upstream_regression": "passed", **counts,
+                   "historical_membership_flag_changes": changes, "isolated_prediction_fields": int(review.sum()) * len(predictions + VALUE_COLUMNS),
+                   "comparison_policy": "Exact text, scalar types and decimal values; recursive JSON and list order; no numerical tolerance",
+                   "baseline_boundary": "Final Stage 4 without analytical_detectability JSON and GIC top-level columns",
+                   "implementation_sha256": _file_hash(Path(__file__)), "specialist_manifest_sha256": _file_hash(results / "specialist_manifest.json"),
+                   "scientific_identity_review": "pending", "interpretation": "Historical agreement and inherited prediction isolation verified separately; no independent scientific identity confirmation."}
+    except (ValueError, KeyError, OSError) as exc:
+        summary = {"status": "failed", "scope": "Stage 4B", "error": str(exc)}
+    summary["unexplained_differences"] = len(differences)
+    pd.DataFrame(differences, columns=["scope", "key", "field", "expected", "actual"]).to_csv(output_dir / "specialist_validation_differences.csv", index=False, encoding="utf-8", lineterminator="\n")
+    pd.DataFrame(checks, columns=["scope", "rows", "fields"]).to_csv(output_dir / "specialist_validation_checks.csv", index=False, encoding="utf-8", lineterminator="\n")
+    (output_dir / "specialist_validation_summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, required=True, help="Frozen historical run directory.")
     parser.add_argument("--results", type=Path, required=True, help="Current report directory for the selected stage.")
     parser.add_argument("--output-dir", type=Path, required=True, help="Validation report directory.")
-    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence"], default="identity")
-    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence; inferred from the standard layout by default.")
+    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists"], default="identity")
+    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence, Stage 4A for specialists; inferred from the standard layout by default.")
     args = parser.parse_args(argv)
     if args.stage == "identity":
         report = compare_identity(args.baseline, args.results, args.output_dir)
     else:
-        validator = {"qsar": compare_qsar, "lrtp": compare_lrtp, "evidence": compare_basic_evidence}[args.stage]
+        validator = {"qsar": compare_qsar, "lrtp": compare_lrtp, "evidence": compare_basic_evidence, "specialists": compare_specialist_evidence}[args.stage]
         report = validator(args.baseline, args.results, args.output_dir, args.upstream_results)
     print(json.dumps(report, indent=2))
     return 0 if report["status"] == "passed" else 1

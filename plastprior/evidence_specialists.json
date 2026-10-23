@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "scope": "Stage 4B only; excludes 4C and downstream scoring",
+  "policies": {
+    "litchemplast": "litchemplast-one-key-one-count-v1",
+    "fcchumon": "fcchumon-human-detection-one-to-one-cas-v1"
+  },
+  "historical_sources": [
+    {
+      "path": "Algorithm/step15c_litchemplast_evidence.py",
+      "sha256": "82cf3397a97d14b92a43b8a412f5b8a625dd14f2a2aaf9214f170e198cb860ef"
+    },
+    {
+      "path": "Algorithm/step15d_fcchumon_detection_evidence.py",
+      "sha256": "14dbbe972a0de387bb8d4a753f29d5da4c8a98a5fa62d186fad08a1471a3fb5a"
+    },
+    {
+      "path": "Algorithm/step08_merge_same_inchikeys.py",
+      "sha256": "15696896ec10388a9e15a34db0c3f38966e9d4cc88b7a3680bb57eb4727f8549"
+    }
+  ],
+  "tables": {
+    "litchemplast": {
+      "columns": [
+        "Chem_id",
+        "INCHIKEY",
+        "CASRN",
+        "count_LitChem_id"
+      ],
+      "role": "chemical_records"
+    },
+    "litchemplast_links": {
+      "columns": [
+        "Chem_id",
+        "LitChem_id",
+        "Lit_id"
+      ],
+      "role": "chemical_literature_relationships"
+    },
+    "fcchumon_s1": {
+      "columns": [
+        "CAS",
+        "Chemical name",
+        "FCChumon entries (detection \"YES\")"
+      ],
+      "role": "human_detection"
+    },
+    "fcchumon_s2": {
+      "columns": [
+        "CAS",
+        "Chemical name",
+        "Studies reporting: \"FCC detected YES\"",
+        "FCChumon entries (detection \"YES\")"
+      ],
+      "role": "human_detection"
+    }
+  },
+  "fcchumon_fields": {
+    "s1": "FCChumon entries (detection \"YES\")",
+    "s2": "Studies reporting: \"FCC detected YES\"",
+    "s2_database": "FCChumon entries (detection \"YES\")"
+  },
+  "rules": {
+    "cas_identity": "All member CAS aliases, checksum-valid, sorted; worst mapping status across aliases; canonical full identities unchanged",
+    "litchemplast_match": "Exact full InChIKey first; CAS fallback only for source rows without a valid full key and an unambiguous target with one candidate",
+    "litchemplast_count": "Unique LitChem_id and unique Lit_id separately; require the frozen relationship sheet; no silent declared-count fallback",
+    "fcchumon_match": "One-to-one target CAS and exactly one sheet/CAS candidate; reject multiple candidates including cross-sheet matches",
+    "fcchumon_count": "Maximum within each source sheet/CAS group; do not sum across sheets",
+    "reader": "Historical pandas type inference and default NA tokens; UTF-8 exports; source files remain unchanged",
+    "counts": "Historical coercion of missing/non-numeric values to zero and integer truncation retained with raw-value conversion audit; negative counts fail",
+    "availability": "Unmatched or rejected evidence is unavailable, not negative; legacy zero/False retained only with explicit resolution status",
+    "identity_review": "QSAR and Pov/LRTP isolation inherited unchanged; independent source evidence uses Stage 2 identities and separate source matching rules"
+  }
+}

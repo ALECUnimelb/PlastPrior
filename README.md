@@ -7,7 +7,8 @@ identities and aggregates records by full structure-derived InChIKey. Stage 3A
 also integrates the frozen VEGA predictions with explicit identity-review
 flags. Stage 3B reproduces historical Pov/LRTP calculations and isolates
 unverified identities from analysis outputs. Stage 4A assembles basic source
-evidence with explicit field mapping and selection/exclusion audits. Hazard, exposure and priority
+evidence with explicit field mapping and selection/exclusion audits. Stage 4B
+adds LitChemPlast associations and FCChumon human-detection evidence. Hazard, exposure and priority
 scores are not implemented.
 
 ## Input inspection
@@ -18,7 +19,7 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A, with eight code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B, with nine code cells. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
 identifier availability, identity-resolution outcomes, model coverage, QSAR
 identity exceptions, historical LRTP calculation coverage and analysis exclusions. Full provenance notes, references,
@@ -45,12 +46,14 @@ PlastPrior/
     lrtp.py
     evidence.py
     _evidence_rules.py
+    evidence_specialists.py
     validation.py
     sources.json
     identity_baseline.json
     qsar_models.json
     lrtp_parameters.json
     evidence_fields.json
+    evidence_specialists.json
   tests/
     test_inputs.py
     test_source_records.py
@@ -58,6 +61,7 @@ PlastPrior/
     test_qsar.py
     test_lrtp.py
     test_evidence.py
+    test_specialist_evidence.py
     test_validation.py
   data/                     # Local inputs; ignored by Git
   results/                  # Generated reports; ignored by Git
@@ -71,7 +75,8 @@ The planned sequence is input validation and ingestion, chemical identity
 resolution, QSAR evidence integration, evidence assembly, hazard assessment,
 exposure assessment, and chemical prioritisation. Stages 1 and 2, frozen-report
 QSAR integration (3A), and historical Pov/LRTP calculation with identity isolation
-(3B), and basic source evidence assembly (4A) are implemented. Later stages will be introduced incrementally with
+(3B), basic source evidence assembly (4A), and specialist literature/human-detection
+evidence (4B) are implemented. Later stages will be introduced incrementally with
 corresponding validation.
 
 ## Source record assembly
@@ -641,6 +646,134 @@ Tests cover precedence, identity exclusions, duplicate observations,
 classification overwrite/list rules, changed source hashes, missing versus
 zero/False, prediction isolation and the pre-enrichment baseline boundary.
 
+## Stage 4B: literature associations and human detection
+
+`plastprior/evidence_specialists.py` integrates LitChemPlast and FCChumon after
+Stage 4A. `evidence_specialists.json` declares source tables, required fields,
+detection definitions, count policies and the original implementation hashes.
+Both resolvers and their provenance handling reside in this one module. No
+legacy repository code is imported at runtime. `--integrate-specialists` runs
+Stages 1 through 4B; `--integrate-evidence` still stops at 4A.
+
+**Identity association.** The representative CAS is insufficient for specialist
+matching. `cas_identity_view.csv` reconstructs all checksum-valid CAS aliases
+from Stage 2 member records, using the existing CAS mapping audit. The compound
+status is the most severe alias status: one-to-one, multiple full keys with one
+connectivity block, or conflicting connectivity blocks. Missing valid aliases
+remain `invalid_or_missing`. `cas_source_links.csv` retains every member and its
+reported CAS, including members without a valid CAS. This is an evidence view;
+no identity is resolved again and no compound is merged.
+
+**LitChemPlast.** The Chemical sheet supplies `Chem_id`, `INCHIKEY`, `CASRN` and
+`count_LitChem_id`. The LiteratureChemical sheet supplies `Chem_id`, `LitChem_id`
+and `Lit_id`. An exact full InChIKey match has precedence. CAS fallback considers
+only Chemical rows with a missing or invalid full key, and requires a one-to-one
+target mapping and exactly one CAS candidate. A valid conflicting source key
+cannot be bypassed by CAS. Candidates excluded by precedence, identity conflict
+or ambiguity retain their source and relationship row identifiers.
+
+Counts use unique `LitChem_id` relationships and unique `Lit_id` publications,
+reported separately. Duplicate associations are retained but not counted twice.
+Multiple Chemical rows with the same key are aggregated before counting. The
+source-declared maximum is retained for comparison; it is not added to the
+relationship count. The public integration entrypoint requires the frozen
+relationship sheet and does not silently fall back to declared counts if it is
+missing. A matched chemical with zero relationships remains a selected source.
+The specialist count replaces the generic count only in the new 4B output;
+Stage 4A artifacts remain intact.
+
+**FCChumon.** S1 uses `FCChumon entries (detection "YES")`; S2 uses
+`Studies reporting: "FCC detected YES"` for detection and separately retains
+`FCChumon entries (detection "YES")` as the database-entry count. Counts take
+the maximum within each sheet/CAS group. They are not summed across duplicate
+rows or sheets. Selection requires an unambiguous target CAS and exactly one
+sheet/CAS candidate; multiple aliases or cross-sheet candidates are rejected.
+Candidate audits identify the rows supporting each maximum and lower-count
+rows that were not selected for that maximum.
+
+The analysis fields distinguish `detected`, `matched_without_positive_count`,
+`no_match`, and rejected associations. `fcchumon_detected` is empty when evidence
+is unavailable. Historical resolution JSON retains the original zero/False
+conventions with explicit matching status; these values must not be interpreted
+as observed absence when the association was not selected. A missing or
+non-numeric source count was historically converted to zero, and FCChumon
+fractional counts were truncated to integers. The conversion audit retains the
+raw value and reason. Negative counts fail integration. Historical coercion is
+not an independent endorsement of source completeness or measurement quality.
+
+**Membership and availability.** Stage 2 `source_tables_json` is unchanged.
+`litchemplast_evidence_available` is a separate evidence-association annotation.
+The historical projection retains `db_LitChemPlast` for comparison: the old
+resolver marked 36 additional compounds as members after successful specialist
+matching. That compatibility column is omitted from the analysis table so it
+cannot overwrite original source membership. Specialist availability establishes
+only that the declared matching rule selected evidence, not scientific certainty.
+
+**Identity-review compounds.** All 15 QSAR representation exceptions retain
+empty values in the 57 QSAR and 12 Pov/LRTP fields. Identity reasons and upstream
+availability flags are unchanged. Independently matched source evidence uses
+the canonical Stage 2 identity and its guarded CAS aliases. In the frozen run,
+two exceptions have full-key LitChemPlast matches with four and one associated
+records respectively, each from one publication; none of the 15 has a FCChumon
+match. These are regression outcomes, not hardcoded overrides. The dedicated
+review table exposes all 15 outcomes and exclusion reasons. The original QSAR
+report links and historical model values remain in Stage 3, with provenance
+linked through the unchanged upstream manifests.
+
+Outputs are written under the ignored `results/stage4/4b/` directory:
+
+| Output | Purpose |
+| --- | --- |
+| `compound_specialist_evidence.csv` | Analysis inventory with specialist evidence and inherited model exclusions |
+| `specialist_historical.csv` | Full keys, 4B evidence JSON and the legacy LitChemPlast membership projection |
+| `cas_identity_view.csv`, `cas_source_links.csv` | All compound CAS aliases, ambiguity details and member-level source links |
+| `litchemplast_resolution_audit.jsonl`, `fcchumon_resolution_audit.jsonl` | One complete historical resolution record per compound and source |
+| `specialist_source_rows.jsonl` | All four reader-interpreted source tables, file hashes, worksheet/row positions and native IDs |
+| `specialist_candidates.jsonl` | Selected and rejected candidate groups, linked source rows and maximum-count contributions |
+| `literature_link_decisions.jsonl` | Each selected relationship row, Chemical row links and unique/duplicate counting decisions |
+| `count_conversion_audit.jsonl` | Original count values, conversions and historical aggregation policy |
+| `identity_review_evidence.csv` | All 15 model-identity exceptions and their independent source-evidence outcomes |
+| `specialist_manifest.json` | Scope, policy/code/input/upstream/output fingerprints, source warnings, runtime and counts |
+
+Source-row identifiers reuse Stage 2 identifiers for Chemical and FCChumon rows.
+Relationship-row identifiers use the same source ID, table ID, file hash and
+parsed-row-number scheme. Original workbooks remain unchanged. The ledger
+contains reader-interpreted values under the historical pandas policy, not
+byte-for-byte worksheet cell encodings. Orphan or missing Chemical references
+are retained and labelled rather than silently removed from the source ledger.
+
+**Validation.** Run:
+
+```text
+python -m plastprior.validation --stage specialists --baseline "path to the frozen run" --results results/stage4/4b --output-dir results/validation_stage4b
+```
+
+The validator first runs the complete Stage 4A regression and its upstream
+checks. It compares all 15,125 compound CAS views and both 15,125-row specialist
+audits against the frozen artifacts, field by field. Complete evidence JSON is
+compared with the archived final Stage 4 after removing only the Stage 4C
+analytical-detectability block; GIC top-level columns are excluded. The 4B
+literature counts are retained in this comparison. Object key order is ignored;
+list order, scalar types, missing positions and exact decimal values are checked
+without numerical tolerance. The legacy membership projection is also compared.
+
+Independent checks cover source provenance, candidate selection, relationship
+contributions, review-subset completeness, all 1,035 prediction-field exclusions,
+and unchanged upstream fields apart from the explicitly enriched evidence JSON.
+Historical agreement is separate from independent scientific identity review.
+Expected frozen outcomes are 3,164 exact-key and 80 fallback LitChemPlast matches,
+6 LitChemPlast ambiguity rejections, 388 FCChumon matches including 229 positive
+counts, and 23 FCChumon ambiguity rejections. Counts alone do not establish
+agreement; unexplained field differences fail validation.
+
+Tests exercise source-key conflicts, CAS ambiguity, cross-sheet rejection,
+duplicate association counts, zero relationships, different S1/S2 definitions,
+maximum selection, numerical coercion, source hash failures and model-isolation
+safeguards. CLI/notebook output equality and unchanged earlier-stage hashes are
+checked separately. Native Windows execution remains a separate verification
+requirement. Stage 4C, analytical/GIC enrichment and all downstream scoring are
+outside this implementation.
+
 ## Installation
 
 Use 64-bit Python 3.12. From the project directory, create an isolated environment:
@@ -727,6 +860,7 @@ python main.py --resolve-identities
 python main.py --integrate-qsar
 python main.py --calculate-lrtp
 python main.py --integrate-evidence
+python main.py --integrate-specialists
 ```
 
 A missing source file, unreadable source table, absent required column, or empty

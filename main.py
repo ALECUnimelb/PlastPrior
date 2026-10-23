@@ -25,7 +25,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="Also calculate Pov/LRTP and isolate unverified identities; no downstream scoring.")
     parser.add_argument("--integrate-evidence", action="store_true",
                         help="Also assemble basic source evidence (4A); no specialist enrichment or scoring.")
+    parser.add_argument("--integrate-specialists", action="store_true",
+                        help="Also integrate LitChemPlast and FCChumon evidence (4B); no 4C or scoring.")
     args = parser.parse_args(argv)
+    if args.integrate_specialists:
+        args.integrate_evidence = True
     print("Inspecting source files and supporting input presence...", flush=True)
     report = inspect_inputs(args.data_root)
     for title, frame in (("Source files", report.sources[["source", "version", "status", "detail"]]),
@@ -83,6 +87,14 @@ def main(argv: list[str] | None = None) -> int:
                         evidence.write_reports(output_dir / "stage4")
                         print(evidence.manifest["counts"])
                         print("Basic evidence complete. Specialist enrichment and downstream scoring are not performed.")
+                        if args.integrate_specialists:
+                            from plastprior.evidence_specialists import integrate_specialist_evidence
+
+                            print("\nStage 4B: literature associations and human detection evidence", flush=True)
+                            specialists = integrate_specialist_evidence(output_dir / "stage2", output_dir / "stage4", args.data_root)
+                            specialists.write_reports(output_dir / "stage4" / "4b")
+                            print(specialists.manifest["counts"])
+                            print("Stage 4B complete. Model identity exclusions remain in effect; no 4C or scoring.")
     return 0 if passed else 1
 
 
