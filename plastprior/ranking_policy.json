@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "policy_version": "priority-competition-rank-v1",
+  "default_top_n": 100,
+  "rules": {
+    "eligibility": "Inherit Stage 7A complete-domain eligibility; never impute scores.",
+    "rank": "One plus the number of eligible scores strictly greater than this score.",
+    "ties": "Exact numeric equality before display rounding; equal scores share competition rank.",
+    "display": "Descending score, then full InChIKey ascending; identifiers are not scientific tie-breakers.",
+    "top_n": "Include every record tied with the Nth eligible record; return all eligible records when N exceeds the pool.",
+    "unranked": "Null rank and null Top-N selection; retain source context and missingness reasons.",
+    "tier": "Retain Stage 7A tiers; tiers do not sort or break ties.",
+    "historical": "Reproduce pandas single-column descending quicksort in frozen input order; ordinal position is not a scientific rank."
+  },
+  "historical": {
+    "run_id": "20261006T233429Z",
+    "input_order_sha256": "1926b6c4e4cd43b09e4022098482823dbaeb15513fd6690ebfd023a9f3ec12a9",
+    "top100_sha256": "0529d928c88830c59fdf61ec8125014b4afcbbd19d9f73ad0a5e457dc811fbb9",
+    "checkpoint_sha256": "4f760575604cad612aaaaa3754372e89f928e18e00b665c36cd52351aacb2325",
+    "source_parts": [
+      "pipeline",
+      "tables.py"
+    ],
+    "source_sha256": "acb55baa2e7ea6c12df088232d1c08fa1c308f3dc9fb57077064105a2f51318e",
+    "environment": {
+      "pandas": "3.0.2",
+      "numpy": "2.4.4"
+    },
+    "comparison_scope": "Identity order and the overlapping migrated score/status/tier fields; additional legacy annotations are not reconstructed.",
+    "top100_order_sha256": "971e414fc35964f5e3eb14d114562cdb2b7419d7b4670759d32eac86240420fb"
+  }
+}

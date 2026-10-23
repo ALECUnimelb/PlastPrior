@@ -39,7 +39,15 @@ def main(argv: list[str] | None = None) -> int:
                         help="Also score exposure dimensions (6B), retaining missingness and historical results; no prioritisation or ranking.")
     parser.add_argument("--assess-priority", action="store_true",
                         help="Also assess aggregate scores, completeness and tiers (7A); no ranking or Top-N.")
+    parser.add_argument("--rank-priority", action="store_true",
+                        help="Also generate eligible competition ranks and inclusive Top-N (7B).")
+    parser.add_argument("--top-n", type=int, default=100,
+                        help="Requested eligible Top-N size; boundary ties are included (default: 100).")
     args = parser.parse_args(argv)
+    if args.top_n <= 0:
+        parser.error("--top-n must be positive")
+    if args.rank_priority:
+        args.assess_priority = True
     if args.assess_priority:
         args.assess_exposure = True
     if args.assess_exposure:
@@ -167,6 +175,14 @@ def main(argv: list[str] | None = None) -> int:
         priority.write_reports(output_dir / "stage7" / "7a")
         print(priority.summary.to_string(index=False))
         print("Incomplete domains retain missing totals and reasons. No ranking or Top-N generated.")
+    if passed and args.rank_priority:
+        from plastprior.ranking import integrate_ranking
+
+        print("\nStage 7B: eligible competition ranks and inclusive Top-N", flush=True)
+        rankings = integrate_ranking(output_dir / "stage7" / "7a", args.top_n)
+        rankings.write_reports(output_dir / "stage7" / "7b")
+        print(rankings.summary)
+        print("Incomplete records retain null ranks. Identifier order only stabilises the display of ties.")
     return 0 if passed else 1
 
 

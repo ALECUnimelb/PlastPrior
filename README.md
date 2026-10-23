@@ -11,7 +11,7 @@ evidence with explicit field mapping and selection/exclusion audits. Stage 4B
 adds LitChemPlast associations and FCChumon human-detection evidence. Stage 4C adds
 NORMAN analytical-platform predictions and GIC regulatory-list associations. Stage 5A evaluates persistence and mobility with separate historical and isolated analysis outputs.
 Stage 5B adds bioaccumulation and toxicity under the same identity-isolation policy.
-Stages 6A and 6B audit exposure evidence and calculate exposure dimensions in separate historical and qualified analysis views. Stage 7A assesses aggregate hazard, complete-domain priority eligibility and tiers; ranking and Top-N are not implemented.
+Stages 6A and 6B audit exposure evidence and calculate exposure dimensions in separate historical and qualified analysis views. Stage 7A assesses aggregate hazard, complete-domain priority eligibility and tiers. Stage 7B ranks eligible assessments with explicit ties and inclusive Top-N boundaries.
 
 ## Input inspection
 
@@ -21,7 +21,7 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A/5B/6A/6B/7A, with fifteen code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A/5B/6A/6B/7A/7B, with sixteen code cells. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
 identifier availability, identity-resolution outcomes, model coverage, QSAR
 identity exceptions, historical LRTP calculation coverage, analysis exclusions, P/B/M/T dimension availability, exposure coverage and complete-domain priority tiers. Full provenance notes, references,
@@ -58,6 +58,9 @@ PlastPrior/
     priority.py
     priority_policy.json
     priority_validation.py
+    ranking.py
+    ranking_policy.json
+    ranking_validation.py
     validation.py
     sources.json
     identity_baseline.json
@@ -1694,3 +1697,118 @@ independent notebook and command-line runs produced 132 byte-identical files,
 including 125 upstream files unchanged from the pre-7A fingerprints. Local
 reports are `results/validation_stage7a/priority_validation_summary.json` and
 `results/validation_stage7a/reproducibility.json`.
+
+## Stage 7B: eligible ranks and inclusive Top-N
+
+```text
+python main.py --rank-priority --top-n 100
+```
+
+This runs Stages 1–7A and writes Stage 7B to `results/stage7/7b/`. The ranking
+module checks the upstream manifest, implementation and policy fingerprints,
+and verifies qualification against Stage 7A. It does not change scores, tiers,
+evidence, source selections, model exclusions or GIC associations.
+
+**Ranks and ties.** Only `Priority_eligible=True` records with a complete finite
+score enter the ranking. Competition rank is one plus the number of eligible
+scores strictly greater than the record's score. Equal scores share ranks,
+for example 1, 2, 2, 4. Decimal comparisons precede display rounding. Descending
+score and ascending full InChIKey give a reproducible display order, but the
+identifier is not evidence of higher priority within a tied group.
+
+The Top-N export includes the entire group tied with the Nth eligible record.
+It can therefore contain more than N rows. A positive integer N is required;
+when N exceeds the eligible pool, all eligible records are returned. With no
+eligible records, the export is empty and its boundary score is null. Summary
+metadata retains N, actual selected count, cutoff and boundary group size.
+`Priority_tier` remains unchanged. Its dual hazard/exposure gates mean that a
+Moderate record can have a higher total than a High record; tiers do not reorder
+the score ranking or break ties.
+
+**Unranked records and limitations.** Every record remains in
+`compound_rankings.csv`, including the 15 model-review compounds. Ineligible
+records have null `Priority_rank`, `Priority_tie_size` and `Top_n_selected`;
+null selection is not a valid negative selection within the ranked pool.
+Supported complete zero scores remain rankable. `unranked_review.csv` is sorted
+only by InChIKey and retains component scores, missingness reasons and identity
+and GIC context. It does not rank incomplete records by observed partial sums.
+GIC name-only associations do not regain eligibility. Other GIC review flags
+do not create additional exclusions beyond the qualified Stage 7A decision.
+
+**Historical reproduction.** The historical view reproduces the legacy
+single-column descending pandas quicksort on Stage 7A historical scores in
+their original frozen compound order. Both the input key order and the frozen
+Top-100 key sequence are fingerprinted. `Historical_sort_position` is an
+ordinal display position, not a scientific tie rank. Separately labelled
+`Historical_derived_score_rank` values apply the new competition convention
+to historical scores; they were not fields in the old export.
+
+Historical pandas 3.0.2 and NumPy 2.4.4 versions are recorded, alongside the
+actual runtime and an environment-match flag. Different versions are permitted
+only if the frozen Top-100 key-order check passes. If that check fails, use an
+isolated environment with the recorded versions and rerun validation; do not
+replace the historical order with the new identifier order. This fallback uses
+the same Python entrypoint on macOS and Windows. Native Windows execution has
+not been verified.
+
+The historical validation covers full identity order, seven final fields and
+ten input scores, plus the 16 overlapping score/status/tier fields in the old
+Top-100. Additional legacy Top-100 names, categories, analytical annotations
+and source-detail columns are explicitly listed as outside reconstruction
+scope in the validation report; no full-table parity claim is made for them.
+
+**Change accounting.** For each currently eligible record, retain three
+competition ranks: historical full pool, historical scores restricted to the
+current eligible pool, and current analysis. The first difference quantifies
+the eligibility-pool effect; the second captures score updates within the
+eligible pool, involving the record and/or its competitors. These are defined
+comparison scenarios, not a unique causal attribution. Own-score changes are
+flagged separately. Historical and analysis ordinal display positions are also
+recorded; tied analysis groups carry an explicit identifier-display annotation,
+which does not imply a change in scientific rank. A rank improvement does not itself establish stronger
+evidence or greater measured risk. Membership comparison uses historical
+strict Top-N versus current inclusive Top-N for the requested N; historical
+Top-100 membership is also retained separately when N differs from 100.
+
+| Output | Purpose |
+| --- | --- |
+| `compound_rankings.csv` | All unchanged Stage 7A fields plus qualification, ranks, ties and nullable Top-N selection |
+| `eligible_priority_ranking.csv` | Compact complete-case ranking with evidence context |
+| `top_priority_including_ties.csv` | Full inclusive Top-N, without truncating the boundary group |
+| `unranked_review.csv` | All incomplete records, their available evidence and missing reasons |
+| `historical_priority_order.csv` | Legacy sorting with explicit ordinal positions and newly derived tie ranks |
+| `historical_top100.csv` | Reconstructed frozen Top-100 order and migrated scientific fields |
+| `ranking_changes.csv` | Pool/score rank shifts, membership changes, reasons and Stage 7A decision references |
+| `ranking_summary.json` | Eligible/unranked counts, requested N, actual size, cutoff and boundary ties |
+| `identity_review_source_links.jsonl` | Unchanged 58 source memberships for the model-review cohort |
+| `ranking_manifest.json` | Implementation, rules, upstream/output hashes and runtime metadata |
+
+Validation:
+
+```text
+python -m plastprior.validation --stage ranking --baseline PATH_TO_FROZEN_RUN --results results/stage7/7b --output-dir results/validation_stage7b
+```
+
+This recursively validates prior stages, checks the frozen historical artifacts,
+independently counts strictly greater eligible scores, checks every boundary
+member and exclusion, verifies change decomposition, permutes input rows and
+reconstructs all outputs deterministically. Analysis ranks must be invariant
+to input order; legacy ordinal positions intentionally follow the frozen
+sorting contract. Complete-case selection favours well-characterised compounds.
+The ranked subset is not the complete chemical universe, and the ranking is
+a screening order rather than a precise risk estimate.
+
+For the frozen `20261006T233429Z` run, validation passed with zero differences
+in historical Top-100 membership, order and 16 overlapping migrated fields.
+All preceding stages, independent ranks, boundary membership, exclusion reasons,
+change decomposition, permutation invariance and deterministic reconstruction
+also passed. The analysis ranks 4,244 compounds and leaves 10,881 unranked.
+Requested Top-100 includes 107 compounds: the cutoff is 19.5 and all 22 members
+of its boundary tie group are retained. Relative to the historical strict
+Top-100, 22 records enter and 15 leave. Those 15 departures are incomplete
+assessments and are not the separate 15-member model-identity-review cohort.
+All 183 tests passed. The notebook executed 16 code cells without errors;
+independent notebook and command-line runs produced 142 byte-identical files,
+including 132 upstream files unchanged from pre-7B fingerprints. Local reports
+are `results/validation_stage7b/ranking_validation_summary.json` and
+`results/validation_stage7b/reproducibility.json`.
