@@ -10,6 +10,10 @@ The [data access and provenance review](docs/data_access_review.md) and
 licence observations and unresolved differences between frozen inputs and
 candidate official files.
 
+The [read-only workbook comparison](docs/workbook_comparison.md) explains those
+byte differences and records equivalent scientific tables for the four checked
+workbook pairs, while retaining their distinct source fingerprints.
+
 PlastPrior is being developed as a framework integrating hazard and exposure
 evidence to prioritise plastic-associated chemicals. The current implementation
 inspects local inputs, assembles source inventory records, resolves chemical

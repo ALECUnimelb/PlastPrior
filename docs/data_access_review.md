@@ -8,6 +8,12 @@ covering 12 primary sources, four supporting sources, eight production/market
 sources and one frozen reference bundle. It records official access routes,
 licence observations, local hashes and unresolved actions. It does not replace
 inputs, change scoring, resolve chemical identities or approve a public release.
+
+Follow-up: the [read-only workbook comparison](workbook_comparison.md) found no
+scientific cell-value or stored-formula differences in the four candidate pairs.
+Byte differences remain recorded; acquisition history and distribution decisions
+are still unresolved. The findings below retain the scope of the initial access
+review.
 The earlier [publication inventory](publication_inventory.json) remains a dated
 baseline; this review adds new external evidence without rewriting it.
 
@@ -129,14 +135,13 @@ No exact local data bundle has completed both access and rights review. For now:
 - **Proposed package exclusions:** the backup directory and operational logs,
   subject to dependency review. No local files were removed.
 
-The next focused task is a **read-only provenance comparison of the four
-different workbooks**: compare sheet names, dimensions, formulas/cached values,
-scientifically consumed fields and workbook metadata; record every difference
-and any documented transformation. Use the downloaded official files separately
-from the frozen inputs. Classify findings as container/metadata-only,
-non-consumed content, consumed scientific content, or unresolved. This audit
-must precede any decision to correct or replace an input. New input adoption
-would require an explicit versioned analysis and full regression comparison.
+The **read-only comparison of the four different workbooks** proposed by this
+initial review is now complete; see the [comparison report](workbook_comparison.md).
+It found equivalent scientific tables and stored formulas, with presentation and
+metadata differences retained explicitly. Acquisition and editing history remain
+unresolved. Continue the source-access and attribution work while preserving the
+frozen inputs. Any future input adoption would require an explicit versioned
+analysis and full regression comparison.
 
 The fifteen model-identity anomalies, GIC review flags, missing-value handling,
 historical/analysis separation and ranking rules remain unchanged. This pass

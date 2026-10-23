@@ -109,7 +109,7 @@
       "exact_snapshot_status": "candidate_archive_checksum_mismatch",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "Candidate version 1.01 identified; local file checksum differs from the record. Header publication date and descriptive release date differ; neither is a local retrieval date.",
+      "required_action": "Retain distinct file fingerprints and the content-equivalence audit. Recover acquisition/editing provenance and confirm applicable attribution and distribution terms. Do not silently replace frozen inputs.",
       "candidate_record": {
         "doi": "10.5281/zenodo.15397723",
         "record_url": "https://zenodo.org/records/15397723",
@@ -155,6 +155,17 @@
         "downloaded_sha256": "b0430b42e47f1213c58918add13c69552fac8d70afbb90cc963612a605f0f49d",
         "download_matches_published_checksum": true,
         "local_matches_download_sha256": false
+      },
+      "content_comparison": {
+        "review_date": "2026-10-23",
+        "report": "docs/workbook_comparison.json",
+        "status": "scientific_tables_equal_byte_identity_different",
+        "worksheets_checked": 11,
+        "stored_values_and_formulas_equal": true,
+        "pipeline_reader_fields_equal": true,
+        "source_bytes_unchanged": true,
+        "editing_history_established": false,
+        "rights_decision_changed": false
       }
     },
     {
@@ -223,7 +234,7 @@
       "exact_snapshot_status": "candidate_archive_checksum_mismatch",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "Candidate S133 version record identified; local workbook checksum differs. S133 identifies a list, not the exact acquisition date.",
+      "required_action": "Retain distinct file fingerprints and the content-equivalence audit. Recover acquisition/editing provenance and confirm applicable attribution and distribution terms. Do not silently replace frozen inputs.",
       "candidate_record": {
         "doi": "10.5281/zenodo.18157912",
         "record_url": "https://zenodo.org/records/18157912",
@@ -264,6 +275,17 @@
         "downloaded_sha256": "6044fabe3c2183bad8ca41cb6836e6dd0d4a6bbd98a9d2a2e6f65f55f9fa8ea8",
         "download_matches_published_checksum": true,
         "local_matches_download_sha256": false
+      },
+      "content_comparison": {
+        "review_date": "2026-10-23",
+        "report": "docs/workbook_comparison.json",
+        "status": "scientific_tables_equal_byte_identity_different",
+        "worksheets_checked": 1,
+        "stored_values_and_formulas_equal": true,
+        "pipeline_reader_fields_equal": true,
+        "source_bytes_unchanged": true,
+        "editing_history_established": false,
+        "rights_decision_changed": false
       }
     },
     {
@@ -363,7 +385,7 @@
       "exact_snapshot_status": "candidate_archive_checksum_mismatch",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "The catalog concept DOI resolves to a newer release. Version 0.2 is record 17199870; its workbook checksum differs from the local file.",
+      "required_action": "Retain distinct file fingerprints and the content-equivalence audit. Recover acquisition/editing provenance and confirm applicable attribution and distribution terms. Do not silently replace frozen inputs.",
       "candidate_record": {
         "doi": "10.5281/zenodo.17199870",
         "record_url": "https://zenodo.org/records/17199870",
@@ -408,6 +430,17 @@
         "downloaded_sha256": "e6dd26b51e9b910ee4824a98897d963e23e1ba47a03927865a06f0472989c8e0",
         "download_matches_published_checksum": true,
         "local_matches_download_sha256": false
+      },
+      "content_comparison": {
+        "review_date": "2026-10-23",
+        "report": "docs/workbook_comparison.json",
+        "status": "scientific_tables_equal_byte_identity_different",
+        "worksheets_checked": 4,
+        "stored_values_and_formulas_equal": true,
+        "pipeline_reader_fields_equal": true,
+        "source_bytes_unchanged": true,
+        "editing_history_established": false,
+        "rights_decision_changed": false
       }
     },
     {
@@ -445,7 +478,7 @@
       "exact_snapshot_status": "candidate_archive_checksum_mismatch",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "The article identifies a versioned database archive, v20240809. The local renamed XLS differs in checksum; the candidate version must not be silently assigned to the local input.",
+      "required_action": "Retain distinct file fingerprints and the content-equivalence audit. Recover acquisition/editing provenance and confirm applicable attribution and distribution terms. Do not silently replace frozen inputs.",
       "candidate_record": {
         "doi": "10.5281/zenodo.13271346",
         "record_url": "https://zenodo.org/records/13271346",
@@ -489,6 +522,17 @@
         "downloaded_sha256": "2f129231f45f822f08350cfc15fab1b15e1f793e5d58ce332e42bef6f636ce51",
         "download_matches_published_checksum": true,
         "local_matches_download_sha256": false
+      },
+      "content_comparison": {
+        "review_date": "2026-10-23",
+        "report": "docs/workbook_comparison.json",
+        "status": "scientific_tables_equal_byte_identity_different",
+        "worksheets_checked": 7,
+        "stored_values_and_formulas_equal": true,
+        "pipeline_reader_fields_equal": true,
+        "source_bytes_unchanged": true,
+        "editing_history_established": false,
+        "rights_decision_changed": false
       }
     },
     {
@@ -1828,8 +1872,8 @@
     "backup_files_proposed_for_exclusion": 93
   },
   "next_actions": [
-    "Resolve the four local-versus-official byte differences using workbook-content and transformation provenance audits, without replacing frozen inputs.",
-    "Recover precise source versions, access routes and applicable terms for unresolved inputs.",
+    "Retain the four byte-different but scientifically equivalent workbook pairs and their audit; recover acquisition and editing provenance.",
+    "Recover precise source versions, access routes and applicable terms for remaining unresolved inputs.",
     "Map raw responses to the frozen evidence dependencies and retain essential response caches; exclude backups only from the proposed package, not from disk.",
     "Prepare attribution and approved acquisition/package instructions after source decisions."
   ],
@@ -1906,5 +1950,9 @@
       "sha256": "b0430b42e47f1213c58918add13c69552fac8d70afbb90cc963612a605f0f49d",
       "scope": "Local review evidence only; ignored by Git and not a public archive."
     }
-  ]
+  ],
+  "content_review_follow_up": {
+    "report": "docs/workbook_comparison.md",
+    "result": "No scientific table or stored-formula differences found in the four checked pairs. Original byte-mismatch observations and unresolved access/rights decisions remain valid."
+  }
 }
