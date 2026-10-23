@@ -977,18 +977,229 @@ def compare_specialist_evidence(baseline, results, output_dir, upstream_results=
     return summary
 
 
+def compare_annotations(baseline, results, output_dir, upstream_results=None):
+    """Check the complete historical Stage 4 boundary, provenance and isolated analysis view."""
+    from .evidence_annotations import DEFAULT_POLICY, OUTPUT_COLUMNS, dependency_fingerprint
+    from .evidence_specialists import require_prediction_isolation
+    from .lrtp import _verify_outputs
+    baseline, results, output_dir = Path(baseline), Path(results), Path(output_dir)
+    upstream_folder = Path(upstream_results) if upstream_results is not None else results.parent / '4b'
+    output_dir.mkdir(parents=True, exist_ok=True)
+    differences, checks = [], []
+
+    def jsonl(path):
+        with path.open(encoding='utf-8') as stream:
+            return [json.loads(line) for line in stream]
+
+    def compare_json(a, b, key, scope):
+        for diff in _compare_evidence(json.dumps(a), json.dumps(b), key):
+            diff.update(scope=scope, field=diff['field'].replace('LRTP_evidence', scope, 1))
+            differences.append(diff)
+
+    def compare_frame(a, b, fields, numeric, scope):
+        fields = [c for c in fields if c != 'inchikey']
+        differences.extend(_compare_qsar_frame(a, b, 'inchikey', {c: c for c in fields}, set(numeric), scope))
+        checks.append({'scope': scope, 'rows': len(a), 'fields': len(fields)})
+
+    try:
+        previous = compare_specialist_evidence(baseline, upstream_folder, output_dir / 'stage4b')
+        if previous['status'] != 'passed': raise ValueError('Upstream Stage 4B regression failed.')
+        manifest = _read_json(results / 'annotation_manifest.json')
+        policy = _read_json(DEFAULT_POLICY)
+        _verify_hash(DEFAULT_POLICY, manifest['policy_sha256'])
+        _verify_hash(Path(__file__).with_name('evidence_annotations.py'), manifest['implementation_sha256'])
+        _verify_hash(upstream_folder / 'specialist_manifest.json', manifest['upstream_manifest_sha256'])
+        _verify_outputs(results, manifest)
+        if dependency_fingerprint() != manifest['dependency']: raise ValueError('GIC dependency changed.')
+        if manifest['inputs'] != policy['inputs']: raise ValueError('Input declarations differ from policy.')
+        run = _read_json(baseline / 'run_manifest.json')
+        frozen = {r['filename']: r['sha256'] for r in _read_json(baseline / 'input_manifest.json')['records']}
+        for item in manifest['inputs']:
+            if item['historical_hash_recorded'] and item['sha256'] != frozen[item['parts'][-1]]:
+                raise ValueError('Annotation input differs from frozen run: ' + item['role'])
+        checkpoint = baseline / run['stages']['4']['checkpoint']
+        _verify_hash(checkpoint, run['stages']['4']['checkpoint_sha256'])
+        artifacts = {}
+        for record in _read_json(checkpoint)['artifacts']:
+            path = baseline / record['path']
+            _verify_hash(path, record['sha256'])
+            artifacts[record['artifact_id']] = path
+        old = _read_csv(artifacts['compound_inventory_with_evidence_csv']).rename(columns={'Inchikey_std': 'inchikey'})
+        prior = _read_csv(upstream_folder / 'compound_specialist_evidence.csv')
+        actual = _read_csv(results / 'compound_annotated_evidence.csv')
+        history = _read_csv(results / 'annotation_historical.csv')
+        numeric = ['GIC_regulatory_listing_count', 'GIC_inventory_listing_count']
+        compare_frame(old, history, OUTPUT_COLUMNS, numeric, 'historical_annotation_fields')
+        compare_frame(history, actual, OUTPUT_COLUMNS + ['db_extract_info'], numeric, 'historical_analysis_annotation_agreement')
+        compare_frame(prior, actual, [c for c in prior.columns if c != 'db_extract_info'], [], 'unchanged_upstream_fields')
+        old_map = old.set_index('inchikey')
+        prior_map = prior.set_index('inchikey')
+        for row in actual.to_dict('records'):
+            key = row['inchikey']
+            payload = json.loads(row['db_extract_info'])
+            compare_json(json.loads(old_map.at[key, 'db_extract_info']), payload, key, 'complete_stage4_evidence_JSON')
+            without_annotation = {k: v for k, v in payload.items() if k != 'analytical_detectability'}
+            compare_json(json.loads(prior_map.at[key, 'db_extract_info']), without_annotation, key, 'upstream_evidence_preserved')
+        checks.append({'scope': 'complete_stage4_evidence_JSON', 'rows': len(actual), 'fields': 1})
+        expected_audit = jsonl(artifacts['gic_regulatory_audit_jsonl'])
+        observed_audit = jsonl(results / 'gic_resolution_audit.jsonl')
+        gic_map = {r['compound_key']: r for r in observed_audit}
+        if len(gic_map) != len(actual) or len(observed_audit) != len(actual) or set(gic_map) != set(actual['inchikey']):
+            raise ValueError('GIC audit keys are missing or duplicated.')
+        excluded_runtime_fields = ['inventory_file', 'metadata_file', 'generated_at']
+        runtime = []
+        used_metadata = {}
+        for row in expected_audit:
+            key = row['compound_key']
+            compare_json({k: v for k, v in row.items() if k not in excluded_runtime_fields}, gic_map[key], key, 'GIC_resolution')
+            runtime.append({'compound_key': key, 'historical_runtime_fields': {k: row[k] for k in excluded_runtime_fields},
+                            'current_policy': 'Fixed source parts and hashes are in annotation_manifest.json; output timestamps are omitted for deterministic replay.'})
+            for listing in row['listings']:
+                tag = listing['list_tag']
+                if tag in used_metadata and used_metadata[tag] != listing:
+                    raise ValueError('Frozen metadata is internally inconsistent.')
+                used_metadata[tag] = listing
+        checks.append({'scope': 'GIC_resolution', 'rows': len(observed_audit), 'fields': len(observed_audit[0])})
+        metadata = {r['effective_listing']['list_tag']: r for r in jsonl(results / 'gic_metadata_audit.jsonl')}
+        for tag, listing in used_metadata.items():
+            compare_json(listing, metadata[tag]['effective_listing'], tag, 'frozen_used_metadata')
+        checks.append({'scope': 'frozen_used_metadata', 'rows': len(used_metadata), 'fields': 11})
+        candidates = jsonl(results / 'norman_candidates.jsonl')
+        candidate_map = {r['record_id']: r for r in candidates}
+        if len(candidate_map) != len(candidates): raise ValueError('Duplicated NORMAN source IDs.')
+        selected = {r['lookup_inchikey']: r for r in candidates if r['selected']}
+        if len(selected) != sum(r['selected'] for r in candidates): raise ValueError('More than one selected NORMAN row per key.')
+        norman = jsonl(results / 'norman_resolution_audit.jsonl')
+        if len(norman) != len(actual) or {r['compound_key'] for r in norman} != set(actual['inchikey']):
+            raise ValueError('NORMAN audit identities differ.')
+        analysis_map = actual.set_index('inchikey')
+        for row in norman:
+            key = row['compound_key']
+            source = selected.get(key)
+            if row['source_record_id'] != (source['record_id'] if source else None):
+                raise ValueError('Selected NORMAN source link differs from ranking decision.')
+            evidence = json.loads(analysis_map.at[key, 'db_extract_info']).get('analytical_detectability')
+            if source:
+                if evidence['norman_susdat_id'] != source['source_native_id'] or evidence['lookup_inchikey'] != key:
+                    raise ValueError('NORMAN source identity was lost.')
+            elif evidence is not None: raise ValueError('Unmatched NORMAN evidence was attached.')
+            if analysis_map.at[key, 'norman_prediction_available'] != str(source is not None):
+                raise ValueError('Incorrect NORMAN availability flag.')
+        bridge_rows = {r['record_id']: r for r in jsonl(results / 'cid_bridge_source_rows.jsonl')}
+        bridge_links = jsonl(results / 'cid_bridge_links.jsonl')
+        from .evidence_annotations import _normalise_cid, _parse_cids, source_record
+        inputs_by_name = {r['parts'][-1]: r['sha256'] for r in manifest['inputs']}
+        for row in candidates + list(bridge_rows.values()):
+            if row['source_sha256'] != inputs_by_name[row['source_filename']]:
+                raise ValueError('Source-row hash differs from the pinned input.')
+            source = {'id': row['source_id'], 'table_id': row['table_id'], 'sha256': row['source_sha256'],
+                      'filename': row['source_filename'], 'sheet': row['source_sheet']}
+            expected_record = source_record(source, row['source_record_number'], row['raw_fields'], row['source_native_id'])
+            if expected_record != {k: row[k] for k in expected_record}:
+                raise ValueError('Source-row identity or parsed/physical row provenance changed.')
+        if any(not row['decision_reason'] for row in candidates):
+            raise ValueError('NORMAN candidate selection or exclusion reason is missing.')
+        for link in bridge_links:
+            raw = bridge_rows[link['source_record_id']]['raw_fields']
+            if str(raw[link['key_column']]).strip().upper() != link['compound_key']:
+                raise ValueError('CID bridge lost its source key.')
+            cids = _parse_cids(raw[link['cid_column']]) if link['source']=='pubchemlite' else {_normalise_cid(raw[link['cid_column']])} - {None}
+            if link['cids'] != sorted(cids) or link['decision_reason'] != ('eligible_bridge' if cids else 'missing_or_unparseable_cid'):
+                raise ValueError('CID bridge values or exclusion reasons differ from source fields.')
+        source_sids = {r['sid']: r for r in jsonl(results / 'gic_source_rows.jsonl')}
+        tag_map = manifest['gic_inventory_tag_dictionary']['list_data']
+        identifier_sources = jsonl(results / 'gic_identifier_tag_sources.jsonl')
+        identifier_tags = {}
+        for source in identifier_sources:
+            if source['list_tags'] != [tag_map[str(i)] for i in source['list_ids']]:
+                raise ValueError('GIC identifier support tags differ from raw tag IDs.')
+            identifier_tags.setdefault(source['identifier'], set()).update(source['list_tags'])
+        for source in source_sids.values():
+            local = {tag_map[str(i)] for values in source['raw_fields'].values() for ids in values.values() for i in ids}
+            effective = set().union(*(identifier_tags[value] for value in source['effective_identifiers']))
+            if source['local_list_tags'] != sorted(local) or source['effective_list_tags'] != sorted(effective) or source['shared_identifier_added_tags'] != sorted(effective - local):
+                raise ValueError('GIC shared-identifier tag propagation lost its provenance.')
+        used_sids = set()
+        expected_decisions = 0
+        for audit in observed_audit:
+            key = audit['compound_key']
+            for attempt in audit['lookup_attempts']:
+                expected_decisions += 1
+                tags = set()
+                for sid in attempt['matched_sids']:
+                    used_sids.add(sid)
+                    tags.update(source_sids[sid]['effective_list_tags'])
+                if sorted(tags) != attempt['matched_list_tags']: raise ValueError('GIC tags differ from the effective shared-identifier trace.')
+            flags = {'gic_match_method': audit['match_method'], 'gic_name_review_required': str(audit['match_method']=='chemical_name'),
+                     'gic_multiple_cids': str(len(audit['query_values']) > 1 if audit['match_method']=='cid_bridge' else False),
+                     'gic_multiple_sids': str(len(audit['matched_sids']) > 1), 'gic_metadata_historical_hash_available': 'False',
+                     'gic_shared_identifier_tag_expansion': str(bool(set(audit['matched_list_tags']) - set().union(*(set(source_sids[sid]['local_list_tags']) for sid in audit['matched_sids']))))}
+            for field, expected in flags.items():
+                if analysis_map.at[key, field] != expected: raise ValueError('Incorrect association review flag: ' + field)
+        if set(source_sids) != used_sids: raise ValueError('GIC source ledger omits or adds SID records.')
+        bridge_ids = {}
+        for link in bridge_links:
+            if link['cids']: bridge_ids.setdefault(link['compound_key'], set()).add(link['source_record_id'])
+        decisions = jsonl(results / 'gic_match_decisions.jsonl')
+        if len(decisions) != expected_decisions: raise ValueError('Query decisions are incomplete.')
+        for decision in decisions:
+            if not decision['decision_reason']: raise ValueError('Missing query decision reason.')
+            local = set().union(*(set(source_sids[sid]['local_list_tags']) for sid in decision['matched_sids']))
+            if decision['shared_identifier_added_tags'] != sorted(set(decision['matched_list_tags']) - local):
+                raise ValueError('Query-level shared identifier expansion differs from source support.')
+            if decision['selected'] != (decision['method'] == gic_map[decision['compound_key']]['match_method']):
+                raise ValueError('Selected query path differs from historical resolution.')
+            expected_ids = sorted(bridge_ids.get(decision['compound_key'], set())) if decision['method']=='cid_bridge' else []
+            if decision['cid_source_record_ids'] != expected_ids: raise ValueError('CID query source links are incomplete or inconsistent.')
+        require_prediction_isolation(actual)
+        review = actual['qsar_identity_status'].eq('review_required')
+        exceptions = _read_csv(results / 'identity_review_annotations.csv')
+        compare_frame(actual.loc[review], exceptions, [c for c in exceptions.columns if c != 'prediction_exclusion_reason'], [], 'identity_review_annotations')
+        if not exceptions['prediction_exclusion_reason'].eq('identity_review_required').all(): raise ValueError('Review reasons lost.')
+        links = jsonl(results / 'identity_review_source_links.jsonl')
+        members = _read_csv(results.parent.parent / 'stage2' / 'compound_memberships.csv')
+        expected_links = members.loc[members['inchikey'].isin(exceptions['inchikey'])].to_dict('records')
+        if Counter(_semantic_digest(x) for x in links) != Counter(_semantic_digest(x) for x in expected_links):
+            raise ValueError('Identity-review source links changed.')
+        counts = {'compounds': len(actual), 'norman_matched': sum(r['source_record_id'] is not None for r in norman),
+                  'gic_matched': sum(r['regulatory_listing_count'] > 0 for r in observed_audit),
+                  'gic_name_review_required': sum(r['match_method']=='chemical_name' for r in observed_audit),
+                  'gic_tag_expansion_review_required': int(actual['gic_shared_identifier_tag_expansion'].eq('True').sum()),
+                  'identity_review_compounds': len(exceptions), 'identity_review_source_links': len(links)}
+        if counts != manifest['counts']: raise ValueError('Annotation counts differ from validated records.')
+        with (output_dir / 'runtime_provenance_comparison.jsonl').open('w', encoding='utf-8', newline='\n') as stream:
+            for row in runtime: stream.write(json.dumps(row) + '\n')
+        summary = {'status': 'passed' if not differences else 'failed', 'scope': 'Stage 4C; no downstream scoring',
+                   'baseline_run': run['run_id'], 'upstream_regression': 'passed', **counts,
+                   'gic_match_methods': manifest['gic_match_methods'], 'frozen_metadata_tags_checked': len(used_metadata),
+                   'metadata_historical_byte_hash': 'unavailable; used effective fields compared to frozen audit',
+                   'gic_historical_version': 'unrecorded; current legacy implementation matched by source fingerprint',
+                   'excluded_runtime_fields': excluded_runtime_fields,
+                   'comparison_policy': 'Exact text, types, decimal values, recursive JSON and list order; no numerical tolerance',
+                   'isolated_prediction_fields': len(exceptions) * 69, 'scientific_identity_review': 'pending',
+                   'annotation_manifest_sha256': _file_hash(results / 'annotation_manifest.json'),
+                   'validation_implementation_sha256': _file_hash(Path(__file__))}
+    except (ValueError, KeyError, OSError, ImportError) as exc:
+        summary = {'status': 'failed', 'scope': 'Stage 4C', 'error': str(exc)}
+    summary['unexplained_differences'] = len(differences)
+    pd.DataFrame(differences, columns=['scope','key','field','expected','actual']).to_csv(output_dir / 'annotation_validation_differences.csv', index=False, encoding='utf-8', lineterminator='\n')
+    pd.DataFrame(checks, columns=['scope','rows','fields']).to_csv(output_dir / 'annotation_validation_checks.csv', index=False, encoding='utf-8', lineterminator='\n')
+    (output_dir / 'annotation_validation_summary.json').write_text(json.dumps(summary, indent=2)+'\n', encoding='utf-8')
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, required=True, help="Frozen historical run directory.")
     parser.add_argument("--results", type=Path, required=True, help="Current report directory for the selected stage.")
     parser.add_argument("--output-dir", type=Path, required=True, help="Validation report directory.")
-    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists"], default="identity")
-    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence, Stage 4A for specialists; inferred from the standard layout by default.")
+    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists", "annotations"], default="identity")
+    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence, Stage 4A for specialists, Stage 4B for annotations; inferred from the standard layout by default.")
     args = parser.parse_args(argv)
     if args.stage == "identity":
         report = compare_identity(args.baseline, args.results, args.output_dir)
     else:
-        validator = {"qsar": compare_qsar, "lrtp": compare_lrtp, "evidence": compare_basic_evidence, "specialists": compare_specialist_evidence}[args.stage]
+        validator = {"qsar": compare_qsar, "lrtp": compare_lrtp, "evidence": compare_basic_evidence, "specialists": compare_specialist_evidence, "annotations": compare_annotations}[args.stage]
         report = validator(args.baseline, args.results, args.output_dir, args.upstream_results)
     print(json.dumps(report, indent=2))
     return 0 if report["status"] == "passed" else 1

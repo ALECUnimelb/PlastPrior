@@ -5,3 +5,7 @@ xlrd==2.0.2
 jupyterlab==4.5.7
 ipykernel==7.2.0
 rdkit==2026.3.1
+
+# Global Inventory Compiler; PyPI gic is an unrelated project. Git is required.
+gic @ git+https://github.com/envris/global-inventory-compiler-public.git@9487e9395ee51f7cce304ff65a041854d908211d
+pypdf==6.21.2

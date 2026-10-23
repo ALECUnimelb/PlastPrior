@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "scope": "Stage 4C annotations only; no downstream scoring",
+  "constants": {
+    "ANALYTICAL_SOURCE_ID": "NORMAN_SusDat",
+    "ANALYTICAL_INTERPRETATION": "Model-predicted analytical-platform amenability; not an experimental detection result.",
+    "NORMAN_SUSDAT_KEY_COLUMNS": [
+      "Norman_SusDat_ID",
+      "Name",
+      "MS_Ready_StdInChIKey"
+    ],
+    "NORMAN_ANALYTICAL_COLUMNS": [
+      "Prob. of GC",
+      "Prob. RPLC",
+      "Pred. Chromatography",
+      "Prob. of both Ionization Source",
+      "Prob. EI",
+      "Prob. ESI",
+      "Pred. Ionization source",
+      "Prob. both ESI mode",
+      "Prob. +ESI",
+      "Prob. -ESI",
+      "Pred. ESI mode",
+      "Preferable Platform by decision Tree",
+      "Pred_RTI_Positive_ESI",
+      "Uncertainty_RTI_pos",
+      "Pred_RTI_Negative_ESI",
+      "Uncertainty_RTI_neg"
+    ],
+    "INVENTORY_REGISTRATION_CLASS": "inventory_registration_or_use_only",
+    "REGULATORY_CLASS_PRIORITY": [
+      "prohibited_or_phaseout",
+      "restricted_or_authorisation_required",
+      "candidate_or_high_concern",
+      "monitoring_reporting_or_hazard_classification",
+      "inventory_registration_or_use_only",
+      "auxiliary_identifier_only"
+    ],
+    "REGULATORY_CLASS_LABELS": {
+      "prohibited_or_phaseout": "Prohibited/phase-out",
+      "restricted_or_authorisation_required": "Restricted/authorisation",
+      "candidate_or_high_concern": "Candidate/high concern",
+      "monitoring_reporting_or_hazard_classification": "Monitoring/reporting/hazard",
+      "inventory_registration_or_use_only": "Inventory/registration/use",
+      "auxiliary_identifier_only": "Auxiliary identifier only"
+    },
+    "REGULATORY_ACTION_CLASS_BY_TAG": {
+      "AU-ICHEMS_S7": "prohibited_or_phaseout",
+      "EU-POPs": "prohibited_or_phaseout",
+      "JP-CSCL_CI": "prohibited_or_phaseout",
+      "KR-KECL_PR": "prohibited_or_phaseout",
+      "US-TSCA_12C": "prohibited_or_phaseout",
+      "AU-ICHEMS_S6": "restricted_or_authorisation_required",
+      "EU-REACH_XIV": "restricted_or_authorisation_required",
+      "EU-REACH_XVII": "restricted_or_authorisation_required",
+      "JP-CSCL_CII": "restricted_or_authorisation_required",
+      "KR-KECL_PP": "restricted_or_authorisation_required",
+      "KR-KECL_R": "restricted_or_authorisation_required",
+      "KR-KECL_SSIC": "restricted_or_authorisation_required",
+      "US-TSCA_5E": "restricted_or_authorisation_required",
+      "US-TSCA_5F": "restricted_or_authorisation_required",
+      "US-TSCA_R": "restricted_or_authorisation_required",
+      "EU-REACH_SVHC": "candidate_or_high_concern",
+      "TR-CSI_SVHC": "candidate_or_high_concern",
+      "AU-ICHEMS_S5": "monitoring_reporting_or_hazard_classification",
+      "AU-NPI": "monitoring_reporting_or_hazard_classification",
+      "CL-HSIUN": "monitoring_reporting_or_hazard_classification",
+      "EU-ARN": "monitoring_reporting_or_hazard_classification",
+      "EU-CLP_VI": "monitoring_reporting_or_hazard_classification",
+      "EU-CoRAP": "monitoring_reporting_or_hazard_classification",
+      "EU-SPIN": "monitoring_reporting_or_hazard_classification",
+      "JP-CSCL_M": "monitoring_reporting_or_hazard_classification",
+      "JP-CSCL_PAC": "monitoring_reporting_or_hazard_classification",
+      "JP-ISHA": "monitoring_reporting_or_hazard_classification",
+      "JP-PRTR_SDS": "monitoring_reporting_or_hazard_classification",
+      "KR-KECL_T": "monitoring_reporting_or_hazard_classification",
+      "MY-EHS": "monitoring_reporting_or_hazard_classification",
+      "TH-HAS": "monitoring_reporting_or_hazard_classification",
+      "US-TRI": "monitoring_reporting_or_hazard_classification",
+      "US-TSCA_CDR": "monitoring_reporting_or_hazard_classification",
+      "US-TSCA_T": "monitoring_reporting_or_hazard_classification",
+      "US-TSCA_TP": "monitoring_reporting_or_hazard_classification",
+      "AU-AIIC": "inventory_registration_or_use_only",
+      "CA-DSL": "inventory_registration_or_use_only",
+      "CN-IECSC": "inventory_registration_or_use_only",
+      "EU-REACH_PR": "inventory_registration_or_use_only",
+      "EU-REACH_R": "inventory_registration_or_use_only",
+      "JP-CSCL": "inventory_registration_or_use_only",
+      "KR-KECL": "inventory_registration_or_use_only",
+      "NZ-NZIoC": "inventory_registration_or_use_only",
+      "PH-PICCS": "inventory_registration_or_use_only",
+      "TR-CSI": "inventory_registration_or_use_only",
+      "TW-CSI": "inventory_registration_or_use_only",
+      "US-TSCA": "inventory_registration_or_use_only",
+      "PubChem": "auxiliary_identifier_only",
+      "CASCC": "auxiliary_identifier_only"
+    }
+  },
+  "output_columns": [
+    "Analytical_detectability",
+    "GIC_regulatory_status",
+    "GIC_regulatory_listing_count",
+    "GIC_regulatory_classes",
+    "GIC_regulatory_summary",
+    "GIC_inventory_listing_count",
+    "GIC_inventory_list_tags",
+    "GIC_inventory_data_status"
+  ],
+  "gic_dependency": {
+    "version": "1.0.0",
+    "url": "https://github.com/envris/global-inventory-compiler-public.git",
+    "commit": "9487e9395ee51f7cce304ff65a041854d908211d",
+    "historical_version_status": "Not recorded in the frozen run; current legacy environment provides a compatibility reference only.",
+    "source_sha256": "2d0a9220c87ca3139ff354e6c6a2759dbf3738d353a108540aeff3832b6de68c"
+  },
+  "historical_sources": [
+    {
+      "path": "Algorithm/step22_analytical_detectability.py",
+      "sha256": "e317fb7d59babf7535702abac3b082dc6d8a1f4441fb35bbd62785a005b29dc9"
+    },
+    {
+      "path": "Algorithm/step15b_gic_regulatory_enrichment.py",
+      "sha256": "a32c0aee338e188216beba830ce9410718b9555f8230801b06c270843f23aaf6"
+    }
+  ],
+  "inputs": [
+    {
+      "parts": [
+        "SourceDatabase",
+        "susdat_2025-06-03-092022 (1).xlsx"
+      ],
+      "role": "norman",
+      "sha256": "263fdb920c7ebd9b72dad42bf189e10cac81746c3b62730afed53b849f2b135c",
+      "historical_hash_recorded": true
+    },
+    {
+      "parts": [
+        "SourceDatabase",
+        "PubChemLite.csv"
+      ],
+      "role": "pubchemlite",
+      "sha256": "c3f512b4d326a9f479cb0bb6e395d43f7c3c89b218955bd9f633d71ae5f74678",
+      "historical_hash_recorded": true
+    },
+    {
+      "parts": [
+        "GIC Regulatory Inventory",
+        "inventory_20260330.jsonl"
+      ],
+      "role": "inventory",
+      "sha256": "143f23320f609188d2cbedb5a6a655b1191d91564516b6cf1a5417f3b5df8f95",
+      "historical_hash_recorded": true
+    },
+    {
+      "parts": [
+        "GIC Regulatory Inventory",
+        "gic_list_tag_metadata.csv"
+      ],
+      "role": "metadata",
+      "sha256": "55164e5cc5a4026d46fa956a6e709280814b6cbb86aec14c1be53c40178e6270",
+      "historical_hash_recorded": false
+    }
+  ],
+  "limitations": {
+    "norman": "Model-predicted analytical amenability, not experimental detection; derived_scores are historical annotation metadata only.",
+    "name_fallback": "Exact library identifier lookup using the resolved compound name, without fuzzy matching; name-only association requires review and does not confirm identity.",
+    "cid_bridge": "Union of CIDs from PubChemLite and both SusDat key columns; multiple CIDs/SIDs remain explicit and do not establish one-to-one identity.",
+    "sid_tags": "The pinned GIC library unions list tags across all inventory occurrences of each identifier string, then across identifiers on each matched SID. Shared names (including placeholders) can propagate tags from other SIDs. Historical associations remain unchanged; added tags and all supporting identifier occurrences require review.",
+    "metadata": "Metadata CSV bytes were not recorded in the frozen input manifest. Current bytes are pinned; used effective fields are compared to frozen per-compound listings.",
+    "regulatory": "Historical inventory associations and classification policy; not a statement of current legal status or applicability.",
+    "identity_review": "Retain all 15 upstream reviews and source links; 57 QSAR and 12 Pov/LRTP values remain unavailable. Independent annotations use the Stage 2 identity.",
+    "reader": "Pandas historical inference and default NA tokens. Raw fields are reader-interpreted values; original file hashes preserve byte provenance."
+  },
+  "norman_field_mapping": {
+    "Norman_SusDat_ID": "norman_susdat_id",
+    "Name": "name",
+    "MS_Ready_StdInChIKey": "lookup_inchikey",
+    "Prob. of GC": "probabilities.gc",
+    "Prob. RPLC": "probabilities.rplc",
+    "Pred. Chromatography": "pred_chromatography",
+    "Prob. of both Ionization Source": "probabilities.both_ionization_sources",
+    "Prob. EI": "probabilities.ei",
+    "Prob. ESI": "probabilities.esi",
+    "Pred. Ionization source": "pred_ionization_source",
+    "Prob. both ESI mode": "probabilities.both_esi_modes",
+    "Prob. +ESI": "probabilities.positive_esi",
+    "Prob. -ESI": "probabilities.negative_esi",
+    "Pred. ESI mode": "pred_esi_mode",
+    "Preferable Platform by decision Tree": "preferred_platform",
+    "Pred_RTI_Positive_ESI": "retention_time_predictions.positive_esi",
+    "Uncertainty_RTI_pos": "retention_time_predictions.positive_esi_uncertainty",
+    "Pred_RTI_Negative_ESI": "retention_time_predictions.negative_esi",
+    "Uncertainty_RTI_neg": "retention_time_predictions.negative_esi_uncertainty"
+  },
+  "norman_selection": [
+    "Exact canonical full InChIKey to MS_Ready_StdInChIKey after trim/uppercase",
+    "Descending populated analytical-field count after probability coercion",
+    "Descending maximum RPLC/GC/ESI/EI probability",
+    "First source row for remaining ties; alternatives retained"
+  ],
+  "gic_field_mapping": {
+    "inchikey": "Stage 2 compound_inventory.inchikey",
+    "name": "Stage 2 compound_inventory.name_resolved",
+    "pubchemlite_cid": "PubChemLite.InChIKey -> all digit groups in Related_CIDs",
+    "susdat_cid": "SusDat.StdInChIKey or MS_Ready_StdInChIKey -> first digit group in PubChem_CID",
+    "list_tag": "Query identifier -> SIDs -> cleaned SID identifiers -> global identifier-to-tag union, including other SID source rows",
+    "metadata": "list_tag -> effective regulation/jurisdiction/scope/date/action/rationale fields"
+  }
+}

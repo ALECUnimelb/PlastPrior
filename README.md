@@ -8,7 +8,8 @@ also integrates the frozen VEGA predictions with explicit identity-review
 flags. Stage 3B reproduces historical Pov/LRTP calculations and isolates
 unverified identities from analysis outputs. Stage 4A assembles basic source
 evidence with explicit field mapping and selection/exclusion audits. Stage 4B
-adds LitChemPlast associations and FCChumon human-detection evidence. Hazard, exposure and priority
+adds LitChemPlast associations and FCChumon human-detection evidence. Stage 4C adds
+NORMAN analytical-platform predictions and GIC regulatory-list associations. Hazard, exposure and priority
 scores are not implemented.
 
 ## Input inspection
@@ -19,7 +20,7 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B, with nine code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C, with ten code cells. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
 identifier availability, identity-resolution outcomes, model coverage, QSAR
 identity exceptions, historical LRTP calculation coverage and analysis exclusions. Full provenance notes, references,
@@ -47,6 +48,7 @@ PlastPrior/
     evidence.py
     _evidence_rules.py
     evidence_specialists.py
+    evidence_annotations.py
     validation.py
     sources.json
     identity_baseline.json
@@ -54,6 +56,7 @@ PlastPrior/
     lrtp_parameters.json
     evidence_fields.json
     evidence_specialists.json
+    evidence_annotations.json
   tests/
     test_inputs.py
     test_source_records.py
@@ -62,6 +65,7 @@ PlastPrior/
     test_lrtp.py
     test_evidence.py
     test_specialist_evidence.py
+    test_annotations.py
     test_validation.py
   data/                     # Local inputs; ignored by Git
   results/                  # Generated reports; ignored by Git
@@ -76,7 +80,7 @@ resolution, QSAR evidence integration, evidence assembly, hazard assessment,
 exposure assessment, and chemical prioritisation. Stages 1 and 2, frozen-report
 QSAR integration (3A), and historical Pov/LRTP calculation with identity isolation
 (3B), basic source evidence assembly (4A), and specialist literature/human-detection
-evidence (4B) are implemented. Later stages will be introduced incrementally with
+evidence (4B), and analytical/regulatory annotations (4C) are implemented. Later stages will be introduced incrementally with
 corresponding validation.
 
 ## Source record assembly
@@ -771,8 +775,139 @@ duplicate association counts, zero relationships, different S1/S2 definitions,
 maximum selection, numerical coercion, source hash failures and model-isolation
 safeguards. CLI/notebook output equality and unchanged earlier-stage hashes are
 checked separately. Native Windows execution remains a separate verification
-requirement. Stage 4C, analytical/GIC enrichment and all downstream scoring are
-outside this implementation.
+requirement. The 4B entrypoint stops before 4C; the annotation entrypoint below
+adds 4C separately. All downstream scoring remains outside this implementation.
+
+## Stage 4C: analytical-platform predictions and regulatory-list associations
+
+`plastprior/evidence_annotations.py` adds annotations to the Stage 4B analysis
+view. `evidence_annotations.json` declares the exact input files and hashes,
+NORMAN field mappings and selection order, GIC bridge mappings, tag classes,
+repository revision and provenance limitations. No legacy repository is needed
+at runtime. Earlier outputs are read without modification.
+
+```text
+python main.py --integrate-annotations
+python -m plastprior.validation --stage annotations --baseline "path to the frozen run" --results results/stage4/4c --output-dir results/validation_stage4c
+```
+
+The command executes Stages 1 through 4C. The existing `--integrate-specialists`
+command still stops at 4B. All processing uses the frozen local sources; no
+inventory download, metadata generation, identity repair or scoring is performed.
+Missing or changed input files fail explicitly.
+
+### NORMAN selection and interpretation
+
+The canonical full key is compared to `MS_Ready_StdInChIKey` after trimming and
+uppercasing. For duplicate keys, the historical ranking first maximises the
+number of populated analytical fields, then the maximum RPLC/GC/ESI/EI
+probability, and retains the first source row for remaining ties. Probability
+coercion precedes ranking; zero is a valid value, while nonnumeric values become
+missing with an explicit conversion reason. Every source candidate, rejected
+candidate, raw interpreted field and physical worksheet row is retained. CSV
+bridge records use parsed record numbers; physical CSV line numbers are not
+asserted because quoted multiline cells and blank lines can change them.
+
+The 16 analytical fields and three source identity fields have explicit output
+mappings. Predictions describe platform amenability, not measured occurrence or
+experimental detection. The historical `derived_scores.lc_esi` and `gc_ei` values
+are pairwise probability minima retained only as annotation metadata. They are
+not exposure, hazard or priority scores. Missing predictions do not establish
+analytical inaccessibility.
+
+### GIC matching and review boundaries
+
+The frozen rule tries an available full InChIKey, then the union of CIDs from
+PubChemLite `Related_CIDs` and SusDat `PubChem_CID`, then `name_resolved`. SusDat
+uses both its standard and MS-ready keys. The inventory has no InChIKey field;
+actual matches therefore use CID or name. A non-auxiliary listing takes
+precedence; an auxiliary-only candidate is retained only if no such listing is
+found. All attempted paths and their selection or exclusion reasons are saved.
+
+Names use the pinned GIC identifier lookup without added fuzzy matching. Every
+selected name association has `gic_name_review_required=True`. CID multiplicity
+and SID multiplicity have separate flags. Neither name nor CID matching is
+proof of chemical identity. The pinned GIC library builds a **global identifier-to-tag
+index**: the same identifier string can collect tags from multiple SIDs. A SID
+query then unions the tags of all its identifiers. Shared names, including
+placeholder-like names, can therefore introduce tags that do not occur in the
+matched SID's own JSONL record. Historical results are preserved, with
+`gic_shared_identifier_tag_expansion=True` where the selected association adds
+such tags. This is an additional review requirement, not identity confirmation.
+The trace retains local versus effective tags, added tags for each query, and
+all contributing identifier occurrences, including other SIDs and physical
+JSONL line numbers. No automatic correction or scoring is applied.
+
+The seven historical GIC columns are reproduced, including the distinction
+between `available` with no match and `not_queried` with an unavailable inventory
+count. Regulatory classes are fixed historical annotations, not a conclusion
+about current legal status, jurisdictional applicability or exposure.
+
+### Metadata and dependency provenance
+
+The inventory, PubChemLite and SusDat hashes are compared with the frozen run's
+input manifest. The metadata CSV was not hash-recorded in that manifest. Its
+current bytes are pinned, and all effective fields for tags used in the historical
+GIC audit are compared individually. Unused tags have no such historical audit
+coverage. `source_date` values are preserved as reported, not independently
+verified retrieval or effective dates. The missing historical file hash remains
+an explicit limitation even when all used fields agree.
+
+The dependency is the Global Inventory Compiler at the repository commit in
+`requirements.txt`; **the PyPI package named `gic` is unrelated**. Installation
+requires Git and access to that repository. For offline installation, build a
+wheel from the declared revision and install it with its dependencies; do not substitute the same-named PyPI package. The
+runtime verifies version and the complete Python source fingerprint (normalised
+to LF); recorded VCS origins must also match. Missing VCS origin metadata is
+reported explicitly for wheel installations. The pinned
+implementation matches the current legacy environment, but the old run did not
+record a GIC package version, so historical version identity is not claimed.
+
+### Identity isolation and outputs
+
+The 15 upstream identity reviews and 58 compound-to-source links are retained.
+All 57 QSAR and 12 Pov/LRTP values remain blank in the analysis table, and both
+availability flags remain false. Existing Stage 3 historical files are retained
+unchanged. Independent NORMAN/GIC annotations use the canonical Stage 2 key and
+do not resolve the VEGA representation discrepancies.
+
+Outputs are local under `results/stage4/4c/` and ignored by Git:
+
+| Output | Purpose |
+| --- | --- |
+| `compound_annotated_evidence.csv` | Complete analysis view with inherited model isolation and association review flags |
+| `annotation_historical.csv` | Full-key projection of the complete evidence JSON and eight historical annotation columns |
+| `norman_candidates.jsonl`, `norman_resolution_audit.jsonl` | All ranked source candidates, conversions, decisions and per-compound selected source IDs |
+| `cid_bridge_source_rows.jsonl`, `cid_bridge_links.jsonl` | Target-relevant source rows and eligible key/CID edges, including missing CID reasons |
+| `gic_resolution_audit.jsonl`, `gic_match_decisions.jsonl` | Historical query audit plus source-linked selection/exclusion decisions |
+| `gic_source_rows.jsonl`, `gic_identifier_tag_sources.jsonl` | Queried SID rows, local/effective tags and all shared-identifier tag contributors |
+| `gic_metadata_audit.jsonl` | Raw metadata rows, effective values and historical provenance limits |
+| `identity_review_annotations.csv`, `identity_review_source_links.jsonl` | Unresolved model exceptions and original member links |
+| `annotation_manifest.json` | Input, upstream, implementation, policy, dependency and output fingerprints |
+
+The validator first reruns all upstream comparisons. It then checks all eight
+historical annotation fields, the complete evidence JSON and every scientific
+GIC audit field. Only historical absolute input paths and `generated_at` are
+separated into `runtime_provenance_comparison.jsonl`: the new manifest records
+portable input parts and hashes and deterministic outputs omit timestamps.
+Comparison retains JSON list order, scalar types, missing positions and exact
+decimal values without numerical tolerance. It also checks unchanged upstream
+columns, review flags, source links, SID-to-tag provenance and all 1,035 isolated
+prediction cells. Equal row counts alone do not establish agreement.
+
+The frozen reference contains 6,294 NORMAN matches and 9,620 GIC associations
+(8,488 CID bridges and 1,132 name matches). Among the 15 unresolved identities,
+three have NORMAN predictions; six have GIC CID matches, two name matches and
+seven no match. These are regression expectations, not eligibility overrides.
+
+The frozen trace identifies one additional GIC review case:
+`GUUHFMWKWLOQMM-NTCAYCPXSA-N` (`alpha-Hexylcinnamaldehyde`). Its CID bridge reaches
+SID 268665, which contains the shared name `<CAS RN deleted>`. Other inventory
+rows with that name contribute `JP-CSCL_CI` and `JP-CSCL_CII` through the global
+identifier index. The historical `prohibited_or_phaseout` label is retained for
+reproduction and explicitly flagged; it must not be interpreted as an
+independently confirmed classification. This association review is separate
+from the 15 VEGA identity reviews and is not automatically corrected here.
 
 ## Installation
 
@@ -861,6 +996,7 @@ python main.py --integrate-qsar
 python main.py --calculate-lrtp
 python main.py --integrate-evidence
 python main.py --integrate-specialists
+python main.py --integrate-annotations
 ```
 
 A missing source file, unreadable source table, absent required column, or empty

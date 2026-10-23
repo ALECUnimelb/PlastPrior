@@ -27,7 +27,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="Also assemble basic source evidence (4A); no specialist enrichment or scoring.")
     parser.add_argument("--integrate-specialists", action="store_true",
                         help="Also integrate LitChemPlast and FCChumon evidence (4B); no 4C or scoring.")
+    parser.add_argument("--integrate-annotations", action="store_true",
+                        help="Also attach NORMAN and GIC annotations (4C); no downstream scoring.")
     args = parser.parse_args(argv)
+    if args.integrate_annotations:
+        args.integrate_specialists = True
     if args.integrate_specialists:
         args.integrate_evidence = True
     print("Inspecting source files and supporting input presence...", flush=True)
@@ -94,7 +98,15 @@ def main(argv: list[str] | None = None) -> int:
                             specialists = integrate_specialist_evidence(output_dir / "stage2", output_dir / "stage4", args.data_root)
                             specialists.write_reports(output_dir / "stage4" / "4b")
                             print(specialists.manifest["counts"])
-                            print("Stage 4B complete. Model identity exclusions remain in effect; no 4C or scoring.")
+                            print("Stage 4B complete. Model identity exclusions remain in effect.")
+                            if args.integrate_annotations:
+                                from plastprior.evidence_annotations import integrate_annotations
+
+                                print("\nStage 4C: analytical-platform and regulatory-list annotations", flush=True)
+                                annotations = integrate_annotations(output_dir / "stage4" / "4b", args.data_root)
+                                annotations.write_reports(output_dir / "stage4" / "4c")
+                                print(annotations.manifest["counts"])
+                                print("Name associations require review; model exclusions remain in effect. No scoring performed.")
     return 0 if passed else 1
 
 
