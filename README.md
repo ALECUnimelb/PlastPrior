@@ -10,7 +10,8 @@ unverified identities from analysis outputs. Stage 4A assembles basic source
 evidence with explicit field mapping and selection/exclusion audits. Stage 4B
 adds LitChemPlast associations and FCChumon human-detection evidence. Stage 4C adds
 NORMAN analytical-platform predictions and GIC regulatory-list associations. Stage 5A evaluates persistence and mobility with separate historical and isolated analysis outputs.
-Bioaccumulation, toxicity, exposure and priority scores are not implemented.
+Stage 5B adds bioaccumulation and toxicity under the same identity-isolation policy.
+Aggregate hazard, exposure and priority scores are not implemented.
 
 ## Input inspection
 
@@ -20,10 +21,10 @@ column labels, and reports dimensions for 14 selected source-native tables:
 two identity-reference tables, 11 inventory tables, and one literature-to-chemical
 link table. The catalog is `plastprior/sources.json`.
 
-The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A, with eleven code cells. It displays
+The notebook contains Setup, Stage 1, Stage 2 and Stage 3A/3B/4A/4B/4C/5A/5B, with twelve code cells. It displays
 file versions, table dimensions, inspection outcomes, source record counts,
 identifier availability, identity-resolution outcomes, model coverage, QSAR
-identity exceptions, historical LRTP calculation coverage, analysis exclusions and P/M availability. Full provenance notes, references,
+identity exceptions, historical LRTP calculation coverage, analysis exclusions and P/B/M/T dimension availability. Full provenance notes, references,
 and observed SHA-256 fingerprints are saved in the inspection reports.
 Versions, dates, and references are recorded provenance, not an independent
 verification against the publisher's latest release. Unrecorded metadata is
@@ -50,6 +51,7 @@ PlastPrior/
     evidence_specialists.py
     evidence_annotations.py
     hazard.py
+    hazard_bt.py
     validation.py
     sources.json
     identity_baseline.json
@@ -59,6 +61,7 @@ PlastPrior/
     evidence_specialists.json
     evidence_annotations.json
     hazard_policy.json
+    hazard_bt_policy.json
   tests/
     test_inputs.py
     test_source_records.py
@@ -69,6 +72,7 @@ PlastPrior/
     test_specialist_evidence.py
     test_annotations.py
     test_hazard.py
+    test_hazard_bt.py
     test_validation.py
   data/                     # Local inputs; ignored by Git
   results/                  # Generated reports; ignored by Git
@@ -83,7 +87,7 @@ resolution, QSAR evidence integration, evidence assembly, hazard assessment,
 exposure assessment, and chemical prioritisation. Stages 1 and 2, frozen-report
 QSAR integration (3A), and historical Pov/LRTP calculation with identity isolation
 (3B), basic source evidence assembly (4A), and specialist literature/human-detection
-evidence (4B), analytical/regulatory annotations (4C), and persistence/mobility assessment (5A) are implemented. Later stages will be introduced incrementally with
+evidence (4B), analytical/regulatory annotations (4C), persistence/mobility assessment (5A), and bioaccumulation/toxicity assessment (5B) are implemented. Later stages will be introduced incrementally with
 corresponding validation.
 
 ## Source record assembly
@@ -1144,6 +1148,121 @@ separately in 120 field-level impact rows. Hash-verified deterministic replay
 checks every Stage 5A artifact, while upstream-field and source-lineage checks
 ensure that no records or review flags have been lost. No B/T, exposure or
 aggregate priority scoring is added by this stage.
+
+## Bioaccumulation and toxicity assessment (Stage 5B)
+
+`plastprior/hazard_bt.py` extends the Stage 5A analysis with B and T as separate
+dimensions. `hazard_bt_policy.json` declares model order, endpoint fields, units,
+ADI rules, score cutoffs, structural triggers and source-code fingerprints. It
+uses verified local Stage 3 inputs and Stage 4 evidence; it does not import the
+old project or read historical Stage 5 scores during calculation. The Stage 5A
+implementation and its reports remain unchanged.
+
+Run through Stage 5B with:
+
+```text
+python main.py --assess-bt
+```
+
+The inherited screening rules are:
+
+- BCF: select the first usable model in Arnot–Gobas, CAESAR, Meylan order, with
+  nonmissing prediction and ADI at least 0.5. This is not a maximum across models.
+  Predicted log10 BCF (L/kg) at least 3.7, 3.0 and 2.0 maps to 2, 1 and 0.5,
+  respectively; values below 2.0 map to zero.
+- Structural B: count Cl/Br atoms and those attached to six-member all-carbon
+  aromatic rings. At least four total or two ring-bound Cl/Br atoms gives 2;
+  otherwise at least two total or one ring-bound gives 1. F and I do not enter
+  this rule. An untriggered rule is unavailable, not zero. Parsing failure and
+  missing structure retain explicit statuses. RDKit is required; install the
+  pinned dependencies before running this pathway.
+- Final B: maximum of the selected BCF and structural scores, with BCF first on
+  ties and all tied bases retained. A usable independent zero still precedes
+  curated evidence.
+- T: use Ames consensus, CAESAR/ISS carcinogenicity, CAESAR developmental
+  toxicity, IRFMN-CERAPP ER effect and IRFMN fish acute LC50. Positive binary
+  endpoints score 2 except ER (1); negative endpoints score zero. Fish LC50 in
+  mg/L at most 1, 10 and 100 maps to 2, 1 and 0.5, respectively; higher values
+  map to zero. Select the maximum usable endpoint, retaining the first on ties.
+  Endpoint-specific negative labels are parsed before generic labels.
+- Ames has no ADI field in the historical configuration. Other T endpoints
+  require ADI at least 0.5. Every endpoint, including Ames, requires an eligible
+  identity association; the absence of an ADI field is not an isolation override.
+- Curated B/T: only when independent evidence is unavailable, select PlastChem
+  first, then other databases alphabetically, retaining the first numeric value.
+  Source values such as 0.25 remain unchanged. Toxicological labels are retained
+  in audit context but are not converted into scores.
+
+These rules reproduce historical screening conventions. Their migration does
+not independently validate the structural heuristic, cutoff values or endpoint
+aggregation. Any scientific rule revision requires separate review and a new
+comparison baseline.
+
+**Structural representation.** The structural pathway uses `qsar_smiles` from
+local Stage 3 screening of Stage 2 input structures, never `Basic | Smile_std`
+from model reports. This representation equals the frozen Stage 5 `Smile_std`
+for all 15,125 compounds. Ten input structures have different text after local
+standardisation, including removal of explicit hydrogen notation; these are
+recorded in `bt_structure_mapping.csv` without overwriting Stage 2 identity
+fields. The mapping includes original structure text, selected representation,
+source representative ID, upstream manifest hash, structural counts/triggers
+and RDKit version. Using this non-isomeric representation follows the historical
+Cl/Br pathway; it does not merge full chemical identities.
+
+**Identity isolation.** All 57 QSAR fields and 12 Pov/LRTP values/flags remain
+withheld for the 15 unresolved associations. Independent local structures and
+curated observations remain eligible. Within this cohort, four former BCF-based
+B scores become unavailable, one structural B score remains, and ten B scores
+remain unavailable. All 15 QSAR-based T scores are excluded: five are replaced
+by PlastChem evidence and ten become unavailable. Of the five replacements,
+three increase from zero, one decreases and one retains its numeric value while
+changing its basis. Scores, bases and evidence are audited separately, so an
+unchanged numeric value does not conceal a source change. Expected availability
+is 10,068 historical versus 10,064 analysis B scores, and 12,885 versus 12,875 T
+scores. Unavailable results are never assigned zero.
+
+GIC name-match and shared-identifier-expansion flags remain unresolved and are
+carried forward verbatim. GIC and NORMAN annotations are outside the B/T input
+allowlist. A GIC association issue does not invalidate independent structure,
+curated B/T or otherwise eligible QSAR evidence for that compound.
+
+Outputs are written under `results/stage5/5b/`:
+
+| File | Purpose |
+| --- | --- |
+| `compound_pbmt_hazard.csv` | All Stage 5A fields plus isolated B/T dimension results and availability reasons |
+| `bt_historical.csv` | Recomputed historical B/T scores, bases and evidence, for comparison only |
+| `bt_summary.csv` | Availability, missingness and zero counts in both views |
+| `bt_structure_mapping.csv` | Input-to-scoring structure mapping and structural-rule trace |
+| `identity_review_bt_impacts.csv` | Six before/after fields per review compound, with source-change reasons |
+| `bioaccumulation_*_audit.jsonl`, `toxicity_*_audit.jsonl` | Full historical and analysis evidence audits |
+| `bt_curated_source_links.jsonl` | Stage 4A B/T observations and selection/exclusion provenance |
+| `bt_decisions.jsonl` | Model/endpoint/pathway selection, exclusions, unvisited lower-priority models and source links |
+| `identity_review_source_links.jsonl` | All 58 original memberships of the review cohort |
+| `bt_manifest.json` | Policy, implementation, shared policy dependency, model mapping, upstream/output hashes and runtime |
+
+The PBMT analysis table contains four independent dimensions, not an aggregate
+hazard or priority score. `bt_historical.csv` has the role
+`historical_reproduction_only` and is not an eligible downstream analysis input.
+
+Validate against the pinned historical run:
+
+```text
+python -m plastprior.validation --stage hazard-bt --baseline PATH_TO_FROZEN_RUN --results results/stage5/5b --output-dir results/validation_stage5b
+```
+
+Validation recursively checks Stage 5A and all earlier stages, verifies the
+frozen Stage 5 checkpoint/artifact hashes, and compares all six B/T fields plus
+both complete audit lists by full InChIKey. Numeric comparisons are exact;
+JSON comparisons retain nesting, array order and missingness while ignoring
+object-key order and numeric spelling. Nonreview analysis rows must reproduce
+the historical fields exactly. The 15 review rows are checked against separately
+inspected structure/curated expectations, including the three T increases.
+All 90 field-level review effects, structure mappings and source ledgers are
+verified through deterministic reconstruction. Perturbing GIC/NORMAN annotations,
+model-report structures and audit-only toxicological labels must leave B/T
+scores, bases and scoring evidence unchanged. Native Windows validation remains
+outstanding; code uses the existing cross-platform Python and RDKit dependencies.
 
 ## Interpretation and verification
 

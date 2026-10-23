@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "scope": "Stage 5B: bioaccumulation and toxicity only; no aggregate hazard, exposure or priority score",
+  "adi_threshold": 0.5,
+  "constants": {
+    "BCF_MODELS": [
+      {
+        "name": "Arnot-Gobas",
+        "logbcf_col": "BCF model (Arnot-Gobas) | Predicted BCF (up) [log(L/kg)]",
+        "adi_col": "BCF model (Arnot-Gobas) | ADI",
+        "assess_col": "BCF model (Arnot-Gobas) | Assessment"
+      },
+      {
+        "name": "CAESAR",
+        "logbcf_col": "BCF model (CAESAR) | Predicted BCF [log(L/kg)]",
+        "adi_col": "BCF model (CAESAR) | ADI",
+        "assess_col": "BCF model (CAESAR) | Assessment"
+      },
+      {
+        "name": "Meylan",
+        "logbcf_col": "BCF model (Meylan) | Predicted BCF [log(L/kg)]",
+        "adi_col": "BCF model (Meylan) | ADI",
+        "assess_col": "BCF model (Meylan) | Assessment"
+      }
+    ],
+    "STRUCTURAL_HALOGEN_BASIS": "Structural_halogen_rule",
+    "STRUCTURAL_HALOGENS": [
+      "Br",
+      "Cl"
+    ],
+    "TOXICITY_ENDPOINTS": [
+      {
+        "name": "Ames_mutagenicity_consensus",
+        "pred_col": "Mutagenicity (Ames test) CONSENSUS | Predicted Consensus Mutagen activity",
+        "adi_col": null,
+        "assess_col": "Mutagenicity (Ames test) CONSENSUS | Assessment",
+        "kind": "binary",
+        "severity": "high"
+      },
+      {
+        "name": "Carcinogenicity_CAESAR",
+        "pred_col": "Carcinogenicity model (CAESAR) | Predicted Carcinogen activity",
+        "adi_col": "Carcinogenicity model (CAESAR) | ADI",
+        "assess_col": "Carcinogenicity model (CAESAR) | Assessment",
+        "kind": "binary",
+        "severity": "high"
+      },
+      {
+        "name": "Carcinogenicity_ISS",
+        "pred_col": "Carcinogenicity model (ISS) | Predicted Carcinogen activity",
+        "adi_col": "Carcinogenicity model (ISS) | ADI",
+        "assess_col": "Carcinogenicity model (ISS) | Assessment",
+        "kind": "binary",
+        "severity": "high"
+      },
+      {
+        "name": "DevelopmentalToxicity_CAESAR",
+        "pred_col": "Developmental Toxicity model (CAESAR) | Predicted developmental toxicity activity",
+        "adi_col": "Developmental Toxicity model (CAESAR) | ADI",
+        "assess_col": "Developmental Toxicity model (CAESAR) | Assessment",
+        "kind": "binary",
+        "severity": "high"
+      },
+      {
+        "name": "ER_mediated_effect_IRFMN_CERAPP",
+        "pred_col": "Estrogen Receptor-mediated effect (IRFMN-CERAPP) | Predicted ER-mediated effect",
+        "adi_col": "Estrogen Receptor-mediated effect (IRFMN-CERAPP) | ADI",
+        "assess_col": "Estrogen Receptor-mediated effect (IRFMN-CERAPP) | Assessment",
+        "kind": "binary",
+        "severity": "medium"
+      },
+      {
+        "name": "FishAcute_LC50_IRFMN",
+        "pred_col": "Fish Acute (LC50) Toxicity model (IRFMN) | Predicted LC50 [mg/l]",
+        "adi_col": "Fish Acute (LC50) Toxicity model (IRFMN) | ADI",
+        "assess_col": "Fish Acute (LC50) Toxicity model (IRFMN) | Assessment",
+        "kind": "fish_lc50_mgL",
+        "severity": null
+      }
+    ]
+  },
+  "bcf_bins": [
+    {
+      "lower_inclusive": 3.7,
+      "score": 2.0
+    },
+    {
+      "lower_inclusive": 3.0,
+      "score": 1.0
+    },
+    {
+      "lower_inclusive": 2.0,
+      "score": 0.5
+    }
+  ],
+  "fish_bins": [
+    {
+      "upper_inclusive": 1,
+      "score": 2.0
+    },
+    {
+      "upper_inclusive": 10,
+      "score": 1.0
+    },
+    {
+      "upper_inclusive": 100,
+      "score": 0.5
+    }
+  ],
+  "structural_bins": [
+    {
+      "total_cl_br_min": 4,
+      "benzene_bound_cl_br_min": 2,
+      "score": 2.0
+    },
+    {
+      "total_cl_br_min": 2,
+      "benzene_bound_cl_br_min": 1,
+      "score": 1.0
+    }
+  ],
+  "rules": {
+    "bcf": "First usable model in Arnot-Gobas, CAESAR, Meylan order; require prediction and ADI >= 0.5.",
+    "structure": "Use locally generated Stage 3 qsar_smiles, never the model-report Basic | Smile_std. Count Cl/Br and attachment to six-member all-carbon aromatic rings. No trigger is unavailable, not zero.",
+    "bioaccumulation": "Maximum of selected BCF and structural score; BCF wins ties, retaining all tied bases.",
+    "toxicity": "Maximum usable endpoint; first endpoint wins ties. Ames has no ADI field; all endpoints remain subject to the identity gate.",
+    "curated": "Usable independent score, including zero, precedes curated fallback. PlastChem then alphabetical database order; retain the first numeric value, including 0.25.",
+    "isolation": "Reject leaked identity-review predictions; mask all B/T predictions when QSAR evidence is unavailable. Local structure and independent curated evidence remain eligible.",
+    "annotations": "GIC, NORMAN and toxicological labels are not scoring inputs; toxicological labels are retained only as audit context.",
+    "historical": "Restore predictions only from verified local Stage 3 artifacts; historical reproduction is never an eligible downstream result.",
+    "missing": "Unavailable evidence is not zero. Historical screening rules are not a new regulatory classification."
+  },
+  "units": {
+    "logBCF": "log10(L/kg)",
+    "fish_LC50": "mg/L",
+    "ADI": "dimensionless"
+  },
+  "historical_sources": [
+    {
+      "path": "Algorithm/step18_bioaccumulation.py",
+      "sha256": "d7fc9c3ed67cf85067c7929737a3d67fb7d4c4fda0ce27b775fb69dc5635a4c8"
+    },
+    {
+      "path": "Algorithm/step19_toxicity.py",
+      "sha256": "43e8de3a16adafdffa76b63afc715a8fd4092554bea5faeaa526f4dc03dfefa1"
+    }
+  ]
+}

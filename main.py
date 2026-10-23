@@ -31,7 +31,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="Also attach NORMAN and GIC annotations (4C); no downstream scoring.")
     parser.add_argument("--assess-pm", action="store_true",
                         help="Also assess persistence and mobility (5A); no B/T, exposure or prioritisation.")
+    parser.add_argument("--assess-bt", action="store_true",
+                        help="Also assess bioaccumulation and toxicity (5B); no aggregate hazard, exposure or priority scores.")
     args = parser.parse_args(argv)
+    if args.assess_bt:
+        args.assess_pm = True
     if args.assess_pm:
         args.integrate_annotations = True
     if args.integrate_annotations:
@@ -119,6 +123,14 @@ def main(argv: list[str] | None = None) -> int:
         hazard.write_reports(output_dir / "stage5")
         print(hazard.summary.to_string(index=False))
         print("Historical reproduction is separate from eligible analysis. GIC annotations do not enter scoring.")
+    if passed and args.assess_bt:
+        from plastprior.hazard_bt import integrate_bt_hazard
+
+        print("\nStage 5B: bioaccumulation and toxicity with identity isolation", flush=True)
+        hazard_bt = integrate_bt_hazard(output_dir / "stage5")
+        hazard_bt.write_reports(output_dir / "stage5" / "5b")
+        print(hazard_bt.summary.to_string(index=False))
+        print("Independent structure and curated evidence remain eligible. No aggregate scores calculated.")
     return 0 if passed else 1
 
 

@@ -1330,18 +1330,177 @@ def compare_pm_hazard(baseline, results, output_dir, upstream_results=None):
     return summary
 
 
+def compare_bt_hazard(baseline, results, output_dir, upstream_results=None):
+    """Validate historical B/T values, source lineage and permitted isolation effects."""
+    from .hazard_bt import DEFAULT_POLICY, MODEL_FIELDS, OUTPUT_COLUMNS, SCORE_COLUMNS, integrate_bt_hazard, score_bt, _read_jsonl
+    from .evidence_specialists import require_prediction_isolation
+    from .lrtp import _verify_outputs
+    from rdkit import rdBase
+
+    baseline, results, output_dir = Path(baseline), Path(results), Path(output_dir)
+    upstream = Path(upstream_results) if upstream_results is not None else results.parent
+    output_dir.mkdir(parents=True, exist_ok=True)
+    differences, checks, counts = [], [], {}
+
+    def compare_json(a, b, key, scope):
+        for diff in _compare_evidence(json.dumps(a), json.dumps(b), key):
+            diff.update(scope=scope, field=diff['field'].replace('LRTP_evidence', scope, 1))
+            differences.append(diff)
+
+    def compare_frame(a, b, fields, scope, numeric=()):
+        plain = [c for c in fields if c != 'inchikey' and not c.endswith('_evidence')]
+        differences.extend(_compare_qsar_frame(a, b, 'inchikey', {c: c for c in plain}, set(numeric), scope))
+        left, right = a.set_index('inchikey'), b.set_index('inchikey')
+        for key in left.index.intersection(right.index):
+            for field in fields:
+                if field.endswith('_evidence'):
+                    compare_json(json.loads(left.at[key, field]), json.loads(right.at[key, field]), key, scope + '.' + field)
+        checks.append({'scope': scope, 'rows': len(a), 'fields': len(fields)})
+
+    try:
+        previous = compare_pm_hazard(baseline, upstream, output_dir / 'stage5a')
+        if previous['status'] != 'passed':
+            raise ValueError('Upstream Stage 5A regression failed.')
+        manifest = _read_json(results / 'bt_manifest.json')
+        _verify_outputs(results, manifest)
+        for file, field in [(DEFAULT_POLICY, 'policy_sha256'), (Path(__file__).with_name('hazard_bt.py'), 'implementation_sha256'),
+                            (Path(__file__).with_name('hazard.py'), 'shared_pm_implementation_sha256'),
+                            (Path(__file__).with_name('qsar_models.json'), 'qsar_model_mapping_sha256')]:
+            _verify_hash(file, manifest[field])
+        if manifest['runtime']['rdkit'] != rdBase.rdkitVersion:
+            raise ValueError('RDKit version differs from the B/T calculation.')
+        if manifest['scoring_input_columns'] != MODEL_FIELDS + ['qsar_smiles'] or manifest['scoring_evidence_paths'] != ['hazard.B', 'hazard.T']:
+            raise ValueError('B/T scoring input allowlist changed.')
+        run = _read_json(baseline / 'run_manifest.json')
+        checkpoint = baseline / run['stages']['5']['checkpoint']
+        _verify_hash(checkpoint, run['stages']['5']['checkpoint_sha256'])
+        artifacts = {}
+        for record in _read_json(checkpoint)['artifacts']:
+            if record['artifact_id'] in ['compound_inventory_with_pbmt_hazard_csv', 'bioaccumulation_audit_json', 'toxicity_audit_json']:
+                path = baseline / record['path']
+                _verify_hash(path, record['sha256'])
+                artifacts[record['artifact_id']] = path
+        old = _read_csv(artifacts['compound_inventory_with_pbmt_hazard_csv']).rename(columns={'Inchikey_std': 'inchikey'})
+        prior = _read_csv(upstream / 'compound_pm_hazard.csv')
+        actual = _read_csv(results / 'compound_pbmt_hazard.csv')
+        historical = _read_csv(results / 'bt_historical.csv')
+        compare_frame(old, historical, OUTPUT_COLUMNS, 'historical_BT_fields', SCORE_COLUMNS)
+        compare_frame(prior, actual, list(prior.columns), 'unchanged_stage5a_fields')
+        require_prediction_isolation(actual)
+        review = actual['qsar_identity_status'].eq('review_required')
+        keys = set(actual.loc[review, 'inchikey'])
+        clean = actual.loc[~review]
+        compare_frame(old.loc[old['inchikey'].isin(clean['inchikey'])], clean, OUTPUT_COLUMNS, 'nonreview_BT_fields', SCORE_COLUMNS)
+        if not historical['result_role'].eq('historical_reproduction_only').all() or not actual['bt_result_role'].eq('analysis_after_identity_isolation').all():
+            raise ValueError('B/T output roles are not explicit.')
+        allowed = set(prior.columns) | set(OUTPUT_COLUMNS) | {'bioaccumulation_available', 'toxicity_available', 'bioaccumulation_unavailable_reason', 'toxicity_unavailable_reason', 'bt_result_role'}
+        if set(actual.columns) != allowed:
+            raise ValueError('Unexpected fields outside B/T dimension assessment.')
+        # Independently inspected frozen-cohort expectations, not derived from the new scoring kernel.
+        expected_b = {'MQQRASSGRAFRIQ-UHFFFAOYSA-N': 1}
+        expected_t = {'KXGFMDJXCMQABM-UHFFFAOYSA-N': 2, 'PSEGVHKUPXNGGJ-UHFFFAOYSA-N': 1,
+                      'UZFMOKQJFYMBGY-UHFFFAOYSA-N': 2, 'WSGDRFHJFJRSFY-UHFFFAOYSA-N': 2,
+                      'XVJWWMHPPKXKRU-UHFFFAOYSA-N': 0.5}
+        if len(keys) != 15 or not (set(expected_b) | set(expected_t)) <= keys:
+            raise ValueError('Identity-review cohort differs from the reviewed baseline.')
+        for row in actual.loc[review].to_dict('records'):
+            for dimension, expected in [('Bioaccumulation', expected_b), ('Toxicity', expected_t)]:
+                value = row[dimension + '_score']
+                want = expected.get(row['inchikey'])
+                if (value == '') != (want is None) or (want is not None and Decimal(value) != Decimal(str(want))):
+                    raise ValueError('Unexpected isolated B/T score: ' + row['inchikey'] + ' ' + dimension)
+                if row[dimension.lower() + '_available'] != str(want is not None):
+                    raise ValueError('Incorrect isolated B/T availability.')
+                expected_reason = '' if want is not None else 'identity_review_required_no_independent_or_curated_fallback'
+                if row[dimension.lower() + '_unavailable_reason'] != expected_reason:
+                    raise ValueError('Missing isolated B/T availability reason.')
+                evidence = json.loads(row[dimension + '_evidence'])
+                expected_class = 'unavailable' if want is None else 'curated_fallback' if dimension == 'Toxicity' else 'independent_computation'
+                if evidence['final_selection']['selected']['source_class'] != expected_class:
+                    raise ValueError('Isolated score uses an unexpected evidence class.')
+                block, entries = ('qsar_bcf_models', 'models') if dimension == 'Bioaccumulation' else ('qsar_toxicity', 'endpoints')
+                if evidence[block]['selected'] is not None or any(r['usable'] or r['exclude_reason'] != 'identity_review_required' for r in evidence[block][entries]):
+                    raise ValueError('Model evidence bypassed identity isolation.')
+        for dimension in ['bioaccumulation', 'toxicity']:
+            expected = _read_json(artifacts[dimension + '_audit_json'])
+            observed = _read_jsonl(results / (dimension + '_historical_audit.jsonl'))
+            analysis_audit = _read_jsonl(results / (dimension + '_analysis_audit.jsonl'))
+            for rows in [expected, observed, analysis_audit]:
+                if len(rows) != len(actual) or {r['compound_key'] for r in rows} != set(actual['inchikey']):
+                    raise ValueError('Incomplete or duplicate B/T audit identities.')
+            old_map = {r['compound_key']: r for r in expected}
+            for row in observed:
+                compare_json(old_map[row['compound_key']], row, row['compound_key'], dimension + '_historical_audit')
+            for row in analysis_audit:
+                if row['compound_key'] not in keys:
+                    compare_json(old_map[row['compound_key']], row, row['compound_key'], dimension + '_nonreview_audit')
+                elif row[dimension + '_from_qsar']:
+                    raise ValueError('Unverified model values leaked into analysis audits.')
+            checks.append({'scope': dimension + '_audit', 'historical_rows': len(observed), 'nonreview_rows': len(clean)})
+        structures = _read_csv(results / 'bt_structure_mapping.csv')
+        differences.extend(_compare_qsar_frame(old, structures, 'inchikey', {'Smile_std': 'scoring_smiles'}, set(), 'historical_structural_representation'))
+        differences.extend(_compare_qsar_frame(prior, structures, 'inchikey', {'qsar_smiles': 'scoring_smiles', 'smiles_standard': 'source_smiles_standard', 'representative_record_id': 'representative_record_id'}, set(), 'local_structural_mapping'))
+        if not structures['model_report_structure_used'].eq('False').all():
+            raise ValueError('Model-report structure entered the B/T structural pathway.')
+        checks.append({'scope': 'structural_mapping', 'rows': len(structures), 'text_changes': int(structures['text_changed_by_local_screening'].eq('True').sum())})
+        replay = integrate_bt_hazard(upstream)
+        with tempfile.TemporaryDirectory(prefix='PlastPrior BT validation ') as directory:
+            replay.write_reports(directory)
+            if _read_json(Path(directory) / 'bt_manifest.json') != manifest:
+                raise ValueError('B/T outputs differ from deterministic reconstruction.')
+        checks.append({'scope': 'deterministic_reconstruction', 'files': len(manifest['output_sha256']) + 1})
+        curated = [r for r in _read_jsonl(upstream.parent / 'stage4' / 'basic_evidence_audit.jsonl') if r.get('field_path') in ['hazard.B', 'hazard.T']]
+        for filename, expected in [('bt_curated_source_links.jsonl', curated), ('identity_review_source_links.jsonl', _read_jsonl(upstream / 'identity_review_source_links.jsonl'))]:
+            if Counter(_semantic_digest(x) for x in expected) != Counter(_semantic_digest(x) for x in _read_jsonl(results / filename)):
+                raise ValueError('B/T source lineage changed: ' + filename)
+        altered = prior.copy()
+        for column in altered.columns:
+            if column.lower().startswith(('gic_', 'norman_')) or column == 'Basic | Smile_std':
+                altered[column] = 'annotation_invariance_probe'
+        payloads = []
+        for text in altered['db_extract_info']:
+            value = json.loads(text)
+            value['analytical_detectability'] = {'probe': 999}
+            value['regulatory'] = {'GIC': {'probe': 999}}
+            value.setdefault('hazard', {})['toxicological_labels'] = {'probe': [999]}
+            payloads.append(json.dumps(value))
+        altered['db_extract_info'] = payloads
+        probe, _ = score_bt(altered)
+        probe = pd.read_csv(io.StringIO(probe.to_csv(index=False)), dtype=str, keep_default_na=False)
+        compare_frame(actual, probe, OUTPUT_COLUMNS, 'annotation_and_report_structure_invariance', SCORE_COLUMNS)
+        impacts = _read_csv(results / 'identity_review_bt_impacts.csv')
+        pairs = {(key, field) for key in keys for field in OUTPUT_COLUMNS}
+        if len(impacts) != len(pairs) or set(zip(impacts['inchikey'], impacts['field'])) != pairs or impacts['change_reason'].eq('').any():
+            raise ValueError('B/T isolation impact ledger is incomplete.')
+        counts = {**manifest['counts'], 'unaffected_compounds': len(clean), 'field_impact_rows': len(impacts)}
+        for column in SCORE_COLUMNS:
+            old_review = historical.set_index('inchikey').loc[sorted(keys), column]
+            new_review = actual.set_index('inchikey').loc[sorted(keys), column]
+            counts[column] = {'historical_available': int(historical[column].ne('').sum()), 'analysis_available': int(actual[column].ne('').sum()),
+                              'review_available': int(new_review.ne('').sum()), 'newly_unavailable': int((old_review.ne('') & new_review.eq('')).sum()),
+                              'increased_review_scores': sum(Decimal(b) > Decimal(a) for a, b in zip(old_review, new_review) if a and b)}
+    except (ValueError, KeyError, OSError, TypeError) as exc:
+        differences.append({'scope': 'validation', 'key': '', 'field': 'precondition', 'expected': 'valid pinned B/T inputs and outputs', 'actual': str(exc)})
+    summary = {'status': 'passed' if not differences else 'failed', 'stage': '5B', 'counts': counts,
+               'difference_count': len(differences), 'checks': checks,
+               'comparison': 'Exact numeric values, basis strings and recursive evidence/audit JSON by full InChIKey; permitted identity-isolation effects are reported separately.'}
+    pd.DataFrame(differences, columns=['scope', 'key', 'field', 'expected', 'actual']).to_csv(output_dir / 'bt_differences.csv', index=False, encoding='utf-8', lineterminator='\n')
+    (output_dir / 'bt_validation_summary.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, required=True, help="Frozen historical run directory.")
     parser.add_argument("--results", type=Path, required=True, help="Current report directory for the selected stage.")
     parser.add_argument("--output-dir", type=Path, required=True, help="Validation report directory.")
-    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists", "annotations", "hazard-pm"], default="identity")
-    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence, Stage 4A for specialists, Stage 4B for annotations, Stage 4C for hazard-pm; inferred from the standard layout by default.")
+    parser.add_argument("--stage", choices=["identity", "qsar", "lrtp", "evidence", "specialists", "annotations", "hazard-pm", "hazard-bt"], default="identity")
+    parser.add_argument("--upstream-results", type=Path, help="Upstream outputs: Stage 2 for QSAR, Stage 3A for LRTP, Stage 3B for evidence, Stage 4A for specialists, Stage 4B for annotations, Stage 4C for hazard-pm, Stage 5A for hazard-bt; inferred from the standard layout by default.")
     args = parser.parse_args(argv)
     if args.stage == "identity":
         report = compare_identity(args.baseline, args.results, args.output_dir)
     else:
-        validator = {"qsar": compare_qsar, "lrtp": compare_lrtp, "evidence": compare_basic_evidence, "specialists": compare_specialist_evidence, "annotations": compare_annotations, "hazard-pm": compare_pm_hazard}[args.stage]
+        validator = {"qsar": compare_qsar, "lrtp": compare_lrtp, "evidence": compare_basic_evidence, "specialists": compare_specialist_evidence, "annotations": compare_annotations, "hazard-pm": compare_pm_hazard, "hazard-bt": compare_bt_hazard}[args.stage]
         report = validator(args.baseline, args.results, args.output_dir, args.upstream_results)
     print(json.dumps(report, indent=2))
     return 0 if report["status"] == "passed" else 1
