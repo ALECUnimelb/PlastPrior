@@ -48,7 +48,7 @@ def fixture(root):
                    qsar_identity_reason='identity_review_required' if key == 'missing' else '',
                    gic_name_review_required='True' if key == 'missing' else 'False',
                    Ranking_exclusion_reasons='[{"domain":"hazard","dimension":"Persistence","reason":"missing_evidence"}]' if key == 'missing' else '[]',
-                   source_tables_json='["plastchem","fccmigex"]',
+                   source_tables_json='["plastchem"]',
                    exposure_human_biomonitoring_available='True',
                    Priority_data_status='Insufficient evidence' if key == 'missing' else 'Complete')
         rows.append(row)
@@ -56,9 +56,18 @@ def fixture(root):
     write_csv(paths['compounds'], INPUT_FIELDS, rows)
     write_csv(paths['historical_results'], ['inchikey', 'Historical_sort_position', 'Priority_score'],
               [{'inchikey': row['inchikey'], 'Historical_sort_position': str(i), 'Priority_score': '2.0'} for i, row in enumerate(rows, 1)])
-    write_csv(paths['source_records'], ['record_id', 'source_id', 'reported_fields_json'],
-              [{'record_id': 'source-' + row['inchikey'], 'source_id': 'test',
-                'reported_fields_json': '{"Name":"NA"}'} for row in rows])
+    from plastprior.source_details import LOCATORS, REPORTED, RESOLUTION
+    sources = [dict(record_id='source-' + row['inchikey'],
+                    **dict.fromkeys([*LOCATORS, *REPORTED.values()], ''),
+                    reported_fields_json='{"Name":"NA"}') for row in rows]
+    for number, source in enumerate(sources, 1):
+        source.update(source_id='PlastChem', table_id='plastchem', source_record_number=str(number),
+                      source_filename='test.csv', name_reported='NA', cas_reported='001-01-1')
+    write_csv(paths['source_records'], list(sources[0]), sources)
+    resolved = [dict(source, **dict.fromkeys(RESOLUTION, ''), inchikey=row['inchikey'],
+                     resolution_route='plastchem_cas', attempts_json='[]')
+                for source, row in zip(sources, rows)]
+    write_csv(root / 'stage2' / 'resolved_records.csv', list(resolved[0]), resolved)
     write_csv(paths['compound_memberships'], ['inchikey', 'record_id', 'is_representative'],
               [{'inchikey': row['inchikey'], 'record_id': 'source-' + row['inchikey'],
                 'is_representative': 'True'} for row in rows])
@@ -106,7 +115,7 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(rows[2]['Priority_score'], '0.0')
         self.assertEqual(rows[0]['Name'], 'NA')
         self.assertEqual(rows[0]['CAS'], '001-01-1')
-        self.assertEqual(rows[0]['source_dbs'], 'PlastChem; FCCmigex')
+        self.assertEqual(rows[0]['source_dbs'], 'PlastChem')
         self.assertEqual(list(rows[0]), list(PUBLICATION_FIELDS))
         self.assertEqual(rows[-1]['Ranking_exclusion_reasons'], 'hazard/Persistence: missing_evidence')
         with sqlite3.connect(package['dashboard_sqlite']) as detail:

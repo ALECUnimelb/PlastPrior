@@ -116,11 +116,14 @@ def write_publication(db, directory, run_id):
         detail.execute(family_schema.replace(' REFERENCES compounds(inchikey)', ''))
         family_rows = db.execute('SELECT * FROM chemical_family_audit')
         detail.executemany('INSERT INTO chemical_family_audit VALUES (' + ','.join('?' for _ in family_rows.description) + ')', family_rows)
+        from .source_details import add_source_details, SCOPE
+        source_summary = add_source_details(db, detail)
         detail_metadata = {
             'format': DETAIL_FORMAT, 'schema_version': '1', 'run_id': run_id,
             'row_count': str(n), 'csv_sha256': _hash(csv_path),
             'publication_format': FORMAT, 'priority_policy': 'priority-complete-domains-v1',
-            'scope': 'All final compound fields and family annotations; full source occurrences and intermediate records remain in the separately archived PlastPrior_results.sqlite.',
+            'scope': SCOPE,
+            'source_details': json.dumps(source_summary),
             'chemical_families': json.dumps(family_summary),
             'readme': _readme(run_id, n),
         }
@@ -131,7 +134,7 @@ def write_publication(db, directory, run_id):
         # Verify every final field and every display alias, not only row counts.
         for row in _rows(db):
             expected = {**project(row), **row, 'inchikey_std': row['inchikey']}
-            actual = detail.execute('SELECT * FROM compound_audit WHERE inchikey_std=?',
+            actual = detail.execute('SELECT ' + ','.join(map(_quote, detail_fields)) + ' FROM compound_audit WHERE inchikey_std=?',
                                     (row['inchikey'],)).fetchone()
             if actual != tuple(None if expected.get(f) is None else str(expected[f]) for f in detail_fields):
                 raise ValueError('Dashboard final-field round trip failed: ' + row['inchikey'])
@@ -160,12 +163,14 @@ def write_publication(db, directory, run_id):
     summary = {
         'format': FORMAT, 'schema_version': 1, 'run_id': run_id, 'rows': n,
         'chemical_families': family_summary,
+        'source_details': source_summary,
         'columns': len(FIELDS), 'csv_sha256': _hash(csv_path),
         'dictionary_sha256': _hash(dictionary_path),
         'dashboard_path': 'dashboard/' + detail_path.name,
         'dashboard_bytes': detail_path.stat().st_size, 'dashboard_sha256': _hash(detail_path),
         'checks': ['all publication fields and order', 'all dashboard final fields and aliases',
-                   'CSV/archive projection equality', 'dashboard SQLite integrity'],
+                   'CSV/archive projection equality', 'dashboard SQLite integrity',
+                   'all linked source identities and resolution routes'],
     }
     db.execute('INSERT INTO run_metadata VALUES (?,?)', ('publication', json.dumps(summary)))
     (directory / 'README.md').write_text(_readme(run_id, n), encoding='utf-8')
@@ -185,7 +190,10 @@ Run: `{run_id}`. Publication format: `{FORMAT}`. {count:,} compounds, {len(FIELD
 - `PlastPrior_data_dictionary.csv`: definitions, units, missingness and archive field mappings.
 - `PlastPrior_results.sqlite`: complete compact scientific archive and source traceability.
 - `dashboard/PlastPrior_dashboard.sqlite`: browser detail projection, containing every final
-  compound field. Load the publication CSV first, then this smaller SQLite in the updated
+  compound field, family annotations, and linked source identity details. Resolution tiers
+  describe lookup precedence, not measured identification confidence. Source details retain
+  mapped identity fields and row locators, not every native database column.
+  Load the publication CSV first, then this smaller SQLite in the updated
   ChemicalPrioDashboard. CSV bytes are paired by SHA-256; editing/re-saving the CSV invalidates
   that pairing. Do not upload the full archive into the browser's in-memory SQLite reader.
 
