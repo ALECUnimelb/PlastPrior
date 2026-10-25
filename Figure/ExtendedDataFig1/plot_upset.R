@@ -165,7 +165,10 @@ plot_source_database_intersections <- function(overlap, config) {
     ggplot2::scale_fill_identity() +
     ggplot2::coord_cartesian(
       xlim = c(0, set_size_xlim_max),
-      ylim = c(0.4, nrow(set_sizes) + 1.3),
+      # Share the matrix's row centres and range. Keep the heading outside the
+      # panel, rather than stretching only the set-size panel's y coordinates.
+      ylim = c(0.4, nrow(set_sizes) + 0.6),
+      expand = FALSE,
       clip = "off"
     ) +
     ggplot2::theme_void(base_family = font_family) +
@@ -237,16 +240,13 @@ plot_source_database_intersections <- function(overlap, config) {
     )
 
   top_left <- patchwork::plot_spacer()
-  top_row <- top_left + intersection_bar +
-    patchwork::plot_layout(
-      widths = c(set_size_column_weight, matrix_column_weight)
-    )
-  bottom_row <- set_size_plot + matrix_plot +
-    patchwork::plot_layout(
-      widths = c(set_size_column_weight, matrix_column_weight)
-    )
-  panel <- top_row / bottom_row +
-    patchwork::plot_layout(
+  # One grid aligns the actual plotting regions across rows. Nested row
+  # layouts align outer boxes instead, so the bar chart's y-axis gutter shifts
+  # its columns relative to the membership dots even with identical x limits.
+  panel <- patchwork::wrap_plots(
+      top_left, intersection_bar, set_size_plot, matrix_plot,
+      ncol = 2,
+      widths = c(set_size_column_weight, matrix_column_weight),
       heights = c(0.45, 0.55)
     ) +
     patchwork::plot_annotation(

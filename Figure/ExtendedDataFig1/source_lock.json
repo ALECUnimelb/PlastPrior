@@ -12,5 +12,11 @@
     "original_entry.py": "2a86cd489537e20f32c17ff114e84c1b6349f5af834a0ed933aa17526024056a"
   },
   "entrypoint": "original_entry.py -> run_plot.R",
-  "omitted_alternate_entry": "Unused registry build.R requires methods.md; the manuscript convenience route is retained unchanged."
+  "omitted_alternate_entry": "Unused registry build.R requires methods.md; the manuscript convenience route is retained unchanged.",
+  "layout_revision": {
+    "reason": "User-requested alignment fix: one patchwork grid and equal, unexpanded membership/set-size row ranges. Scientific code and data unchanged.",
+    "sha256": {
+      "plot_upset.R": "8b82af53fa37368ae0337bcf1419323f3aaad9e8e73ef0061cb2d404f723d82e"
+    }
+  }
 }
