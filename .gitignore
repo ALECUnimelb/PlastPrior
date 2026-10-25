@@ -236,3 +236,19 @@ Desktop.ini
 
 # Ignore the daily directory link as well as a physical results directory
 /results
+
+# Figure reproduction: commit implementation/configuration, never research inputs
+# or generated images, source tables, comparison reports and rendering caches.
+/Figure/inputs/
+/Figure/**/inputs/
+/Figure/**/reference/
+/Figure/**/output/
+/Figure/**/audit/
+/Figure/**/.building-*/
+/Figure/**/*.png
+/Figure/**/*.pdf
+/Figure/**/*.svg
+/Figure/**/*.tif
+/Figure/**/*.tiff
+/Figure/**/*.jpg
+/Figure/**/*.jpeg
