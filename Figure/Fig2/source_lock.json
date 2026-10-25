@@ -1,0 +1,32 @@
+{
+  "original_module": "3. PBMT_PlastChem_Concordance",
+  "original_sha256": {
+    "assemble.R": "9a12724a9df56fee37eadca781ed09fe0791b693fc776ce5dfd3e234e6e33203",
+    "build.R": "afb77fbecc71e2d343f3e61d9208136e82f01cf0d0d14ee8eee0c5c14a0a74e7",
+    "style.R": "aa885d56df4dbf7c8e47e03f62710046f7acd1b01d5acc00a65b1868909fd791",
+    "figure.yml": "e30db2935959d8ef060607550e88eb14cf79c434e413330d458e00ae996e72ff",
+    "data.R": "1fd53762446d0fd27b1992323a6ac2a31511460e4bba090d83aab596ea8e83cc",
+    "plot_common.R": "0f3fdee219649104a44527691f7e40abeb4be5b39c50c3dea022429cb125177c",
+    "original_entry.py": "a9f0e2b22ca5cc2d91a13ecef9f6394bc9ff073cded1cdd931a7ffe694d3d452",
+    "panels/bioaccumulation/assemble.R": "4b0434a3a2099088c116ffe75aaaf5c6e802f4c476f90c60f4a2d87f229c6580",
+    "panels/bioaccumulation/data.R": "37e39f9ea8bc9e14f5443129f607b6999026c32c4c2d7815f66d84204d42e00d",
+    "panels/bioaccumulation/agreement_severity/plot.R": "85bf645d07981c5f78e1e9657ec1fce339f5e8b894ae15a89595287f83fad80a",
+    "panels/bioaccumulation/score_matrix/plot.R": "561a64697aa7e3acefabaa79c036e6b0417edf6c2a07030f0668ac0737396d43",
+    "panels/toxicity/assemble.R": "a9ef77c4cbcfaec14f4a466a26ebf8120bf09bdae86768176c906817cecfcdb3",
+    "panels/toxicity/data.R": "5a435d48aa978b0c251778b72f18f43b790053ed3930505f8bc9f6797de0e797",
+    "panels/toxicity/agreement_severity/plot.R": "b8d397ce64cbcd0b798f93adda9d6fcd38bbaca7c75b93af0ed8822b6363f7f7",
+    "panels/toxicity/score_matrix/plot.R": "0f846dc781ad1a4177006e3e8d9ec7ef1d62796f3e1759d4e84a90a76da23b78",
+    "panels/mobility/assemble.R": "9553cbdb9e24e72d0da165849d6d5d50635185c0ea37c57b0412d9461d95bb95",
+    "panels/mobility/data.R": "efd674b1cd5197e20fb0f37ef3bc970a3c7f9e9d4c7793b1da52ca40b3350312",
+    "panels/mobility/agreement_severity/plot.R": "3106d2a1ba176b01cf1b21a46f43d71952276fdf90ee5d3c2f4d55c28d8ada7a",
+    "panels/mobility/score_matrix/plot.R": "f67785f8bbcfafedb7c9589e98936c8a61aa377feb7c0588135f9e4d4ef8f301",
+    "panels/persistence/assemble.R": "baf887e4491b0d29174b812023caf52b0d8d013b938c3eba5872a893afd7b971",
+    "panels/persistence/data.R": "a520b165dbab96fe64627e3ab3ac33bb157c33db66c1be1dea9c55e5e539d52a",
+    "panels/persistence/agreement_severity/plot.R": "800eeb930bb55ebd815263c8d623e586361c221728814c34fb4c82a3c0e7c8b9",
+    "panels/persistence/score_matrix/plot.R": "ee548b9e11896d58239d9e1c9ac969a65828d31a8b9479ae0f527f25f568acd4",
+    "panels/coverage/plot.R": "b7b95201f1e56ce8946e00d2a2f96b980b4e679cc2984b6fbee6b3c78723c038",
+    "panels/coverage/data.R": "4131e32cdc7caead850584e1d205b24a748af433ecb316c26461e67cc767e09a",
+    "diagnostics/cross_dimension_summary/plot.R": "16d6c1878883e89cb26203aef1489d058328dbbe519f5cdffa2fabd67d017d0e",
+    "diagnostics/combined_score_matrices/plot.R": "6f116fb85864d32c324e43858ae93ad8c6b41daeee19c838fc6a4453ad0dc718"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "module_id": "pbmt_plastchem_concordance",
+  "backend": "r",
+  "manuscript_slot": "main_04",
+  "destination": "main",
+  "parity_status": "pending_visual_review",
+  "title": "Computational PBMT coverage and PlastChem concordance",
+  "dimensions": [
+    {
+      "dimension_id": "toxicity",
+      "label": "Toxicity",
+      "order": 1,
+      "panel_tag": "b",
+      "method_label": "Toxicity QSAR"
+    },
+    {
+      "dimension_id": "bioaccumulation",
+      "label": "Bioaccumulation",
+      "order": 2,
+      "panel_tag": "c",
+      "method_label": "Selected QSAR BCF"
+    },
+    {
+      "dimension_id": "mobility",
+      "label": "Mobility",
+      "order": 3,
+      "panel_tag": "d",
+      "method_label": "OPERA/LRTP maximum"
+    },
+    {
+      "dimension_id": "persistence",
+      "label": "Persistence",
+      "order": 4,
+      "panel_tag": "e",
+      "method_label": "ADI-filtered VEGA maximum"
+    }
+  ],
+  "export": {
+    "width_mm": 183,
+    "height_mm": 170,
+    "dpi": 600,
+    "formats": ["svg", "pdf", "png", "tiff"],
+    "coverage_width_mm": 183,
+    "coverage_height_mm": 55,
+    "severity_width_mm": 88,
+    "severity_height_mm": 24,
+    "matrix_width_mm": 88,
+    "matrix_height_mm": 54,
+    "dimension_width_mm": 88,
+    "dimension_height_mm": 76,
+    "diagnostic_width_mm": 183,
+    "diagnostic_height_mm": 92
+  },
+  "layout": {
+    "main_heights": [0.42, 1.58],
+    "content_width_fraction": 0.70,
+    "agreement_grid_hjust": 0.667,
+    "severity_panel_aspect": 0.09,
+    "dimension_grid_heights": [1.0, 1.0],
+    "tag_size_pt": 8.0
+  },
+  "thresholds": {
+    "exact_tolerance": 1e-9,
+    "near_difference_max": 0.5,
+    "moderate_difference_max": 1.0,
+    "coverage_label_min_fraction": 0.055,
+    "severity_label_min_fraction": 0.075,
+    "matrix_label_min_count": 2,
+    "matrix_label_min_max_fraction": 0.025
+  },
+  "coverage_palette": {
+    "Computational only": "#3F7C9E",
+    "Shared": "#7564A8",
+    "PlastChem only": "#D3943D",
+    "Neither": "#D5D8DC"
+  },
+  "agreement_palette": {
+    "Exact": "#3F8D68",
+    "Near non-exact (<=0.5)": "#78B5A2",
+    "Moderate (0.5-1)": "#D7A84F",
+    "Large (>1)": "#B95353"
+  },
+  "score_pair_palette": {
+    "low": "#F3F6F8",
+    "high": "#365F7D"
+  },
+  "reference": {
+    "analysis_run_id": "20260821T065339Z-phase3-acceptance",
+    "population_total": 15125,
+    "dimensions": {
+      "Toxicity": {
+        "computational_total": 11234,
+        "plastchem_total": 4619,
+        "shared_count": 2968
+      },
+      "Bioaccumulation": {
+        "computational_total": 9573,
+        "plastchem_total": 364,
+        "shared_count": 270
+      },
+      "Mobility": {
+        "computational_total": 11075,
+        "plastchem_total": 180,
+        "shared_count": 135
+      },
+      "Persistence": {
+        "computational_total": 8800,
+        "plastchem_total": 518,
+        "shared_count": 234
+      }
+    }
+  }
+}
