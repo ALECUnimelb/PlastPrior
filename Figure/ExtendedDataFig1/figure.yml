@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "module_id": "source_assembly_and_overlap",
+  "backend": "r",
+  "manuscript_slot": "main_02",
+  "destination": "main",
+  "parity_status": "pending_visual_review",
+  "title": "Source assembly, identity resolution, and database overlap",
+  "panels": [
+    {
+      "panel_id": "identity_resolution_flow",
+      "panel_tag": "a",
+      "title": "Record resolution and compound-level QSAR eligibility"
+    },
+    {
+      "panel_id": "source_database_intersections",
+      "panel_tag": "b",
+      "title": "Exact overlap of source-database membership"
+    }
+  ],
+  "export": {
+    "width_mm": 183,
+    "height_mm": 218,
+    "dpi": 600,
+    "formats": ["svg", "pdf", "png", "tiff"]
+  },
+  "sankey": {
+    "panel_height_mm": 108,
+    "flow_height_mm": 83,
+    "node_gap_fraction": 0.006,
+    "node_width": 0.075,
+    "label_font_size_pt": 5.2,
+    "label_line_height": 0.92,
+    "label_padding_mm": 0.7,
+    "label_gap_mm": 0.8,
+    "label_wrap_characters": 18,
+    "label_side_by_layer": {
+      "1": "left",
+      "2": "left",
+      "3": "right",
+      "4": "right",
+      "5": "right",
+      "6": "right"
+    },
+    "connector_span_mm_by_layer": {
+      "1": 6.0,
+      "2": 3.0,
+      "3": 4.75,
+      "4": 3.0,
+      "5": 3.0,
+      "6": 5.0
+    },
+    "connector_linewidth_mm": 0.22,
+    "connector_min_ink_clearance_mm": 0.25,
+    "connector_track_edge_margin_mm": 0.25,
+    "direct_label_height_ratio": 1.15
+  },
+  "upset": {
+    "panel_height_mm": 102,
+    "min_intersection_size": 100,
+    "comparison": "gte",
+    "max_intersections": null,
+    "intersection_sort": "size_desc_degree_desc_pattern",
+    "database_sort": "size_desc",
+    "set_size_column_weight": 0.27,
+    "matrix_column_weight": 0.73,
+    "set_size_label_x": 0.30,
+    "set_size_bar_xmin": 0.33,
+    "set_size_bar_max_width": 0.31,
+    "set_size_count_x": 0.67,
+    "set_size_xlim_max": 0.79,
+    "set_size_matrix_gap_mm": 0.25
+  },
+  "source_palette": {
+    "PlastChem": "#E64B35",
+    "UNEP": "#4DBBD5",
+    "PlasticMAP": "#00A087",
+    "UCSF": "#3C5488",
+    "FCCmigex": "#F39B7F",
+    "LitChemPlast": "#8491B4",
+    "ICCA": "#91D1C2",
+    "FCCprio": "#DC0000",
+    "Norman133": "#7E6148",
+    "FCChumon_S1": "#B09C85",
+    "FCChumon_S2": "#6F8FAE"
+  },
+  "fallback_source_palette": [
+    "#5B8E7D",
+    "#A17C6B",
+    "#6D7EA8",
+    "#B38B3D",
+    "#8B6C9C",
+    "#4F7C91"
+  ],
+  "recovery_palette": {
+    "reported_smile": "#4E7896",
+    "plastchem_inchikey": "#C56F50",
+    "plastchem_cas": "#E3A084",
+    "pubchemlite_inchikey": "#4F9C95",
+    "norman_inchikey": "#806A9B",
+    "norman_cas": "#AA98BD",
+    "unresolved": "#B8BEC4"
+  },
+  "fallback_recovery_palette": [
+    "#6D7EA8",
+    "#7B9E87",
+    "#B38B3D",
+    "#8B6C9C",
+    "#A17C6B"
+  ]
+}
