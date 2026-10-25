@@ -260,6 +260,28 @@ class ExportTests(unittest.TestCase):
                 export_results(self.root, destination)
         self.assertFalse(destination.exists())
 
+    def test_structural_annotations_reach_csv_and_both_databases_without_rescoring(self):
+        smiles = 'Brc1c(Br)c(Br)c(Oc2c(Br)c(Br)c(Br)c(Br)c2Br)c(Br)c1Br'
+        for path in (self.root / 'stage7' / '7b').glob('*.csv'):
+            with path.open(newline='') as stream:
+                reader = csv.DictReader(stream)
+                fields, rows = reader.fieldnames, list(reader)
+            if 'smiles_isomeric' in fields:
+                for row in rows:
+                    if row['inchikey'] == 'b':
+                        row['smiles_isomeric'] = smiles
+                write_csv(path, fields, rows)
+        self.refresh_manifest(('stage7', '7b', 'ranking_manifest.json'))
+        package = export_results(self.root)
+        with package['csv'].open() as stream:
+            row = next(r for r in csv.DictReader(stream) if r['inchikey'] == 'b')
+        self.assertEqual(row['category_labels'], 'PBDE')
+        self.assertEqual((row['Priority_score'], row['Priority_rank']), ('2.0', '1'))
+        for database in (package['sqlite'], package['dashboard_sqlite']):
+            with sqlite3.connect(database) as db:
+                self.assertEqual(db.execute("SELECT category_labels,original_smiles FROM chemical_family_audit WHERE inchikey='b'").fetchone(), ('PBDE', smiles))
+                self.assertEqual(db.execute("SELECT classification_status FROM chemical_family_audit WHERE inchikey='zero'").fetchone()[0], 'unclassified')
+
 
 if __name__ == '__main__':
     unittest.main()

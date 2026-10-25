@@ -32,6 +32,14 @@
     "missing": "Blank means unavailable."
   },
   {
+    "field": "category_labels",
+    "source_field": "category_labels",
+    "type": "string",
+    "unit": "",
+    "definition": "Semicolon-separated structure-derived chemical families under chemical_family_smarts_v2.0.0; overlapping labels are allowed. Annotation only; no effect on scoring or rank.",
+    "missing": "Empty means no assigned family; consult SQLite chemical_family_audit for unclassified, invalid or missing structure status."
+  },
+  {
     "field": "source_dbs",
     "source_field": "source_tables_json",
     "type": "text",

@@ -229,3 +229,10 @@ __marimo__/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Local reproducibility archives and browser verification
+/audit_archive/
+/output/
+
+# Ignore the daily directory link as well as a physical results directory
+/results

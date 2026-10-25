@@ -62,8 +62,8 @@ def project(row):
 
 def _rows(db):
     # Numeric/boolean lexemes preserve empty, zero and True/False exactly.
-    cursor = db.execute('SELECT c.*,l.values_json FROM compounds c '
-                        'JOIN compound_lexemes l USING(inchikey) '
+    cursor = db.execute('SELECT c.*,l.values_json,f.category_labels FROM compounds c '
+                        'JOIN compound_lexemes l USING(inchikey) JOIN chemical_family_audit f USING(inchikey) '
                         'ORDER BY c.Ranking_eligible DESC,c.Priority_rank,c.inchikey')
     fields = [c[0] for c in cursor.description]
     for values in cursor:
@@ -76,6 +76,8 @@ def _rows(db):
 def write_publication(db, directory, run_id):
     """Called inside the unpublished export staging directory, after archive QA."""
     directory = Path(directory)
+    from .family_export import annotate_archive
+    family_summary = annotate_archive(db)
     csv_path = directory / 'PlastPrior_results.csv'
     db.execute('CREATE TABLE publication_results (' + ','.join(
         _quote(f) + (' TEXT PRIMARY KEY' if f == 'inchikey' else ' TEXT NOT NULL')
@@ -106,11 +108,21 @@ def write_publication(db, directory, run_id):
                 merged = {**projected, **row, 'inchikey_std': row['inchikey']}
                 detail.execute(insert_detail, [merged.get(f) for f in detail_fields])
                 n += 1
+        # Small, queryable documentation and family evidence travel with the daily pair.
+        detail.execute('CREATE TABLE data_dictionary (field TEXT PRIMARY KEY, specification_json TEXT NOT NULL)')
+        detail.executemany('INSERT INTO data_dictionary VALUES (?,?)',
+                           [(item['field'], json.dumps(item, ensure_ascii=False)) for item in CONTRACT])
+        family_schema = db.execute("SELECT sql FROM sqlite_master WHERE name='chemical_family_audit'").fetchone()[0]
+        detail.execute(family_schema.replace(' REFERENCES compounds(inchikey)', ''))
+        family_rows = db.execute('SELECT * FROM chemical_family_audit')
+        detail.executemany('INSERT INTO chemical_family_audit VALUES (' + ','.join('?' for _ in family_rows.description) + ')', family_rows)
         detail_metadata = {
             'format': DETAIL_FORMAT, 'schema_version': '1', 'run_id': run_id,
             'row_count': str(n), 'csv_sha256': _hash(csv_path),
             'publication_format': FORMAT, 'priority_policy': 'priority-complete-domains-v1',
-            'scope': 'All final compound fields; full source occurrences and intermediate audit records remain in PlastPrior_results.sqlite.',
+            'scope': 'All final compound fields and family annotations; full source occurrences and intermediate records remain in the separately archived PlastPrior_results.sqlite.',
+            'chemical_families': json.dumps(family_summary),
+            'readme': _readme(run_id, n),
         }
         detail.executemany('INSERT INTO metadata VALUES (?,?)', detail_metadata.items())
         detail.commit()
@@ -147,6 +159,7 @@ def write_publication(db, directory, run_id):
         writer.writerows(CONTRACT)
     summary = {
         'format': FORMAT, 'schema_version': 1, 'run_id': run_id, 'rows': n,
+        'chemical_families': family_summary,
         'columns': len(FIELDS), 'csv_sha256': _hash(csv_path),
         'dictionary_sha256': _hash(dictionary_path),
         'dashboard_path': 'dashboard/' + detail_path.name,

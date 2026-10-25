@@ -1,3 +1,9 @@
+> Output-layout update: daily files are `results/PlastPrior_results.csv` and
+> `results/PlastPrior_dashboard.sqlite`. Complete archives and temporary stages are
+> separate under `audit_archive/<run>/`. Stage-level paths in historical examples below
+> refer to `<run>/work/`; retain them with `--keep-intermediates` when reproducing checks.
+> See [output layout](results_layout.md) and [family classification](chemical_families.md).
+
 # Methods and stage reference
 
 This reference preserves the implemented scientific rules, field mappings,
@@ -23,7 +29,7 @@ After Stage 7B, the notebook and `python main.py --rank-priority` use the same
 `plastprior.export.export_results()` function. Each successful export creates a
 new directory under `results/final/<run_id>/`:
 
-- `PlastPrior_results.csv`: a 58-field publication table, including incomplete
+- `PlastPrior_results.csv`: a 59-field publication table, including incomplete
   and unranked records. Identity, source memberships, selected hazard pathways,
   exposure quantities/context, scores, ranks and missingness are explicit.
   Internal identity/GIC flags and detailed reasons remain in the archive.

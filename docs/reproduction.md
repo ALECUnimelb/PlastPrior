@@ -29,88 +29,76 @@ not fully lock transitive dependencies. NumPy is not explicitly pinned by the
 current requirements. These observed versions are not a tested portable lock.
 Native Windows and a fresh independent installation remain unverified.
 
-## Choose an output directory
+## Output directories and execution
 
-Use a new directory for each independent run. Existing stage files within a
-reused directory can be replaced. The final exporter alone guarantees a new
-`final/<run_id>/` directory and refuses an existing explicit destination.
+The Notebook uses `DATA_ROOT`, `RESULTS_DIR`, `ARCHIVE_DIR` and `KEEP_INTERMEDIATES`.
+Its setup cell creates a unique `REPORT_DIR` under `audit_archive/<run>/work/`.
+Do not set REPORT_DIR to results. Restart the kernel and execute all 17 code cells.
+The final cell exports and verifies the complete archive, then publishes the daily pair.
 
-The source notebook defaults to `DATA_ROOT = Path("data")` and
-`REPORT_DIR = Path("results")`. For a separate Notebook run, change only these
-configuration values as needed; for example:
+Run the equivalent CLI from the project root:
 
-```python
-DATA_ROOT = Path("data")
-REPORT_DIR = Path("results") / "reproduction_nb_01"
+```sh
+python main.py --rank-priority --top-n 100 --require-supporting-inputs
 ```
 
-Choose another suffix if that directory already exists. The notebook requires
-the project root as its working directory. Command-line paths resolve from the
-project root; absolute paths are also accepted for an external input collection.
+Optional settings:
 
-## Execute all stages
+- `--data-root PATH`: the complete frozen input collection.
+- `--output-dir PATH`: daily pair location, default `results`.
+- `--archive-dir PATH`: separate archive root, default `audit_archive`.
+- `--keep-intermediates`: retain successful stage files for stage-level checks.
+- `--baseline-csv PATH`: explicitly compare previous publication values before publishing.
 
-**Interactive Notebook:** launch `python -m jupyterlab`, open `PlastPrior.ipynb`,
-select the project kernel, set an unused `REPORT_DIR`, restart the kernel and
-run all cells in order. There are 17 code cells, including final export. Do not
-skip directly to export after intermediate files have been cleaned up.
+Relative data/output/archive paths resolve from the project root. Without ranking,
+partial or inspection runs retain their workspaces and do not replace the daily pair.
+Full runs automatically compare against an existing daily CSV. Differences in existing
+scientific fields stop publication for investigation; family labels are separate annotations.
 
-**Unattended Notebook:** first set `REPORT_DIR` in the notebook configuration as
-described above. The following commands assume `results/reproduction_nb_01` is
-the selected directory. They save an executed copy and an optional HTML view:
+For unattended Notebook execution, keep its executed copy outside the daily folder:
 
-```text
-python -m jupyter nbconvert --execute --to notebook --ExecutePreprocessor.kernel_name=plastprior --ExecutePreprocessor.timeout=1800 --output PlastPrior.executed --output-dir results/reproduction_nb_01 PlastPrior.ipynb
-python -m jupyter nbconvert --to html --output PlastPrior --output-dir results/reproduction_nb_01 results/reproduction_nb_01/PlastPrior.executed.ipynb
+```sh
+mkdir -p audit_archive/notebook_execution
+python -m jupyter nbconvert --execute --to notebook --ExecutePreprocessor.kernel_name=plastprior --ExecutePreprocessor.timeout=1800 --output PlastPrior.executed --output-dir audit_archive/notebook_execution PlastPrior.ipynb
 ```
 
-`--output-dir` here controls the executed Notebook/HTML location; it does not
-override the pipeline's `REPORT_DIR`. The timeout is **per code cell**. The last
-verified export cell took approximately 436 seconds; allow more time on slower
-machines rather than interpreting a timeout as a scientific mismatch. The
-example timeout is a configurable execution allowance, not a runtime guarantee.
-
-**Command line:** run the full pipeline into a separate directory:
-
-```text
-python main.py --rank-priority --top-n 100 --require-supporting-inputs --output-dir results/reproduction_cli_01
-```
-
-The ranking flag enables prerequisite stages automatically. `python main.py`
-without a stage flag performs input inspection only. No live source queries or
-VEGA calculation are invoked by either full-run interface.
-
-The seven scientific stages are input inspection, identity assembly, QSAR/
-Pov-LRTP integration, evidence assembly, hazard assessment, exposure assessment,
-and prioritisation/ranking. Lettered subdivisions describe evidence boundaries
-within those stages. [Methods](methods.md) documents individual stage commands.
+The timeout is per cell. Export can take several minutes. Original frozen queries and
+VEGA outputs are read; no live query or new VEGA prediction is invoked.
 
 ## Expected artifacts and resource use
 
-The complete run writes inspection reports, stage files and a final package:
-
 ```text
-<REPORT_DIR>/
-  source_inventory.csv
-  table_dimensions.csv
-  supporting_inputs.csv
-  stage2/ ... stage7/
-  final/<run_id>/
+results/                              # POSIX directory link to verified daily pair
+  PlastPrior_results.csv
+  PlastPrior_dashboard.sqlite
+audit_archive/<run>/
+  work/                               # retained on failure or --keep-intermediates
+  package/
+    PlastPrior_results.sqlite         # full audit archive, for offline use
     PlastPrior_results.csv
-    PlastPrior_results.sqlite
+    PlastPrior_data_dictionary.csv
+    README.md
+    dashboard/PlastPrior_dashboard.sqlite
+    delivery_manifest.json
+    daily/                            # two files exposed through results
 ```
 
-The final cell prints paths and a verification summary. The two final files are
-published only after the exporter validates retained records, field values,
-references, ranking selections and source-file preservation. SQLite stores all
-251 final fields for the verified collection; CSV provides 53 summary fields.
+The CSV has 59 publication fields. The small SQLite contains all final details,
+family audit, embedded dictionary and interpretation guide. The complete archive
+retains all 251 original final fields and retained intermediate evidence. Scores
+and ranks remain independent of structural family annotations.
 
-The last local test took about 13 minutes including independent comparisons and
-file-preservation checks. Stage outputs were about 5.87 GB, and the final files
-about 3.32 GB, excluding inputs, journals and other temporary files. Plan for
-more than this combined output size in free space. Peak memory requirements
-have not been established across machines; do not interpret these observations
-as minimum hardware specifications. Each full run creates stage outputs again.
+On POSIX, a single directory-link replacement switches both daily files together.
+Existing physical results directories are preserved whole in `legacy-results-*`.
+Windows users can call the cross-platform `export_results` on completed stage files;
+atomic daily-link publication is currently POSIX-only. Native Windows end-to-end
+execution remains unverified.
+
+Successful managed workspaces are removed only after validation and publication.
+Original source files and existing archives are retained. Stage data occupy several
+GB and the full archive roughly 3 GB; peak storage exceeds the two visible daily files.
+An earlier local full run took about 13 minutes. This is not a portable runtime guarantee.
+See [output layout](results_layout.md) for recovery and preservation details.
 
 ## Verification
 
@@ -160,7 +148,7 @@ from pathlib import Path
 import hashlib
 import sqlite3
 
-reference = Path("results") / "final" / "20261023T191130Z-0fa717ee"
+reference = Path("path-to-previous-publication-package")
 candidate = Path("path-to-new-export-directory")
 
 def digest(path):
@@ -172,7 +160,8 @@ def readonly(path):
     connection.execute("PRAGMA query_only=ON")
     return connection
 
-assert digest(reference / "PlastPrior_results.csv") == digest(candidate / "PlastPrior_results.csv")
+from plastprior.delivery import compare_csv
+compare_csv(reference / "PlastPrior_results.csv", candidate / "PlastPrior_results.csv")
 with closing(readonly(reference / "PlastPrior_results.sqlite")) as old, closing(readonly(candidate / "PlastPrior_results.sqlite")) as new:
     for table in ("compounds", "historical_results", "source_records", "compound_memberships"):
         assert old.execute(f"PRAGMA table_info({table})").fetchall() == new.execute(f"PRAGMA table_info({table})").fetchall(), table
@@ -192,10 +181,10 @@ remain identical.
 
 Historical regression additionally needs the separately supplied historical
 run directory, including its manifests and checkpoints. For example, after a
-fresh CLI run and with that baseline available:
+fresh CLI run with `--keep-intermediates` and with that baseline available:
 
 ```text
-python -m plastprior.validation --stage ranking --baseline "path to the frozen historical run" --results results/reproduction_cli_01/stage7/7b --output-dir results/historical_check_01
+python -m plastprior.validation --stage ranking --baseline "path to the frozen historical run" --results audit_archive/RUN_ID/work/stage7/7b --output-dir audit_archive/historical_check_01
 ```
 
 Do not pass the compact SQLite file as `--baseline`. The validator expects a

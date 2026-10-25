@@ -645,6 +645,7 @@ def export_results(results_dir, output_dir=None, *, progress=None):
     stage_count = len(artifacts)
     # Preserve the actual local implementation/configuration, including uncommitted changes.
     software = sorted(p for p in (project / 'plastprior').iterdir() if p.suffix in ('.py', '.json'))
+    software += [project / name for name in ('main.py', 'PlastPrior.ipynb', 'requirements.txt')]
     for path in software:
         artifacts[path] = _hash(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -665,7 +666,7 @@ def export_results(results_dir, output_dir=None, *, progress=None):
             for index, path in enumerate(ordered, 1):
                 digest = artifacts[path]
                 is_software = path in software
-                relative = (Path('software') / 'plastprior' / path.name if is_software else path.relative_to(root)).as_posix()
+                relative = (Path('software') / path.relative_to(project) if is_software else path.relative_to(root)).as_posix()
                 notify(f'Packaging {index}/{len(ordered)}: {relative}')
                 embedded = is_software or path.suffix in ('.json', '.txt')
                 content_id = _register_artifact(db, path, digest, embedded)

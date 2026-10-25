@@ -104,22 +104,25 @@ guarantees. Allow additional disk space and time on other systems.
 
 ## Read the results
 
-The last Notebook cell prints the output paths. Each successful export creates:
+The last Notebook cell prints the daily pair and separate archive paths:
 
 ```text
-<output directory>/final/<run_id>/
+results/                         # directory link switched after verification (POSIX)
   PlastPrior_results.csv
-  PlastPrior_results.sqlite
-  PlastPrior_data_dictionary.csv
-  README.md
-  dashboard/PlastPrior_dashboard.sqlite
+  PlastPrior_dashboard.sqlite
+audit_archive/<run>/package/      # complete scientific archive and documentation
 ```
+
+Stage files use `audit_archive/<run>/work/`. Successful temporary stages are removed
+only after archive validation and pair publication; `--keep-intermediates` retains
+them. Failed and partial runs retain their workspace. Existing physical results
+folders are moved whole into the archive. See [output layout](docs/results_layout.md).
 
 | File or SQLite view | Purpose |
 | --- | --- |
-| CSV | 58-field publication table: identity, source memberships, selected evidence, scores, ranks and missingness |
+| CSV | 59-field publication table, including structural family labels: identity, source memberships, selected evidence, scores, ranks and missingness |
 | Data dictionary and README | Definitions, units, null conventions, policy, source tracing and usage |
-| `dashboard/PlastPrior_dashboard.sqlite` | Browser-sized projection of every final compound field, paired with the CSV by SHA-256 |
+| `PlastPrior_dashboard.sqlite` | Browser-sized projection of every final compound field, paired with the CSV by SHA-256 |
 | `publication_results` | Exact text projection of the publication CSV in the full archive |
 | `compounds` | All 251 final fields in the verified collection |
 | `eligible_ranking` | Complete assessments eligible for ranking |
@@ -136,11 +139,10 @@ which parsed records can be reconstructed and which source bytes are external.
 The frozen-input validation yielded **15,125 compounds**, **4,244 ranked**,
 **107 in the inclusive Top-100**, and **10,881 unranked**. These counts are
 checks for the specified inputs and policies, not targets for other datasets.
-Final directories are never overwritten by export. Intermediate files in a
-reused output directory can be replaced; cleanup is not automatic.
+Final directories are never overwritten by export. Temporary stages are cleaned only after verified publication; archives are retained.
 
 For the updated ChemicalPrioDashboard, load `PlastPrior_results.csv` followed by
-`dashboard/PlastPrior_dashboard.sqlite` from the same export. The full archive
+`PlastPrior_dashboard.sqlite` from the same export. The full archive
 is for offline audit, not browser import. The display adapter preserves absent
 formal scores and uses the selected literature source. The scientific archive
 remains compact-v2; the separate publication and browser-detail contracts are
