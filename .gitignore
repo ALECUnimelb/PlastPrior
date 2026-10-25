@@ -253,3 +253,9 @@ Desktop.ini
 /Figure/**/*.jpg
 /Figure/**/*.jpeg
 /Figure/**/methods.md
+
+# Local figure review presentation
+/Figure/Final_Figures.pptx
+/Figure/~$*.pptx
+/Figure/.history/
+/Figure/*/.building-*/

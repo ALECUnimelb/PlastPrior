@@ -46,13 +46,6 @@ plot_policy_strong_action_prevalence <- function(source_data, config) {
       expand = ggplot2::expansion(mult = c(0, 0))
     ) +
     ggplot2::labs(
-      title = "Strong-action prevalence rises with priority",
-      subtitle = paste0(
-        "High versus low priority: OR ",
-        scales::number(high$odds_ratio, accuracy = 0.01),
-        " (95% CI ", scales::number(high$or_ci_low, accuracy = 0.01),
-        "\u2013", scales::number(high$or_ci_high, accuracy = 0.01), ")"
-      ),
       x = "Chemicals in strong-action GIC categories",
       y = NULL
     ) +

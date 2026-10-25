@@ -15,10 +15,10 @@ plot_priority_score_distribution <- function(panel_data, config, variant = "publ
     distribution,
     ggplot2::aes(x = score_bin, y = compound_count, fill = Priority_tier)
   ) +
-    ggplot2::geom_col(width = 0.82, colour = "white", linewidth = 0.15) +
+    ggplot2::geom_col(show.legend = TRUE, width = 0.82, colour = "white", linewidth = 0.15) +
     ggplot2::scale_fill_manual(
       values = priority_palette,
-      breaks = c("Low priority", "Moderate priority", "High priority"),
+      breaks = c("Low priority", "Moderate priority", "High priority", "Insufficient evidence"),
       drop = FALSE
     ) +
     ggplot2::scale_x_continuous(
@@ -42,7 +42,7 @@ plot_priority_score_distribution <- function(panel_data, config, variant = "publ
     ggplot2::guides(fill = ggplot2::guide_legend(
       override.aes = list(
         fill = unname(priority_palette[c(
-          "Low priority", "Moderate priority", "High priority"
+          "Low priority", "Moderate priority", "High priority", "Insufficient evidence"
         )])
       )
     ))

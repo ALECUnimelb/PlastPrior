@@ -35,7 +35,7 @@ plot_pbmt_coverage <- function(source_data, config, variant) {
     )
   }
   coverage$label_colour <- ifelse(
-    coverage$category %in% c("Computational only", "Shared"),
+    coverage$category %in% c("Independent only", "Shared"),
     "white", "#222222"
   )
   coverage$dimension_index <- as.numeric(coverage$dimension)
@@ -154,11 +154,6 @@ plot_pbmt_coverage <- function(source_data, config, variant) {
       expand = ggplot2::expansion(add = c(0.30, 0.68))
     ) +
     ggplot2::labs(
-      title = "Computational evidence broadens PBMT score coverage",
-      subtitle = paste0(
-        "Bars partition all ", scales::comma(population_values),
-        " compounds into mutually exclusive score-coverage categories."
-      ),
       x = "Share of full inventory",
       y = NULL
     ) +

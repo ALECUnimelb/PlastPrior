@@ -63,12 +63,6 @@ plot_policy_stable_review_context <- function(source_data, config) {
       )
     ) +
     ggplot2::labs(
-      title = paste0(
-        scales::comma(stable_count),
-        " stable priorities remain outside strong action"
-      ),
-      subtitle = paste0("Baseline \u2265 13; four perturbations",
-        if (config$thresholds$high_component_min > 0) "; H and E \u2265 4 throughout" else ""),
       x = "Chemicals",
       y = NULL
     ) +

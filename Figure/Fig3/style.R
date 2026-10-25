@@ -1,5 +1,5 @@
 priority_levels <- c(
-  "No data", "Low priority", "Moderate priority", "High priority"
+  "Insufficient evidence", "Low priority", "Moderate priority", "High priority"
 )
 
 regulatory_levels <- c(
@@ -21,7 +21,7 @@ hazard_profile_levels <- c(
 )
 
 exposure_profile_levels <- c(
-  "Score 0", "Low (0.5)", "Moderate (1)", "High (2)"
+  "No usable evidence", "Score 0", "Low (0.5)", "Moderate (1)", "High (2)"
 )
 
 named_palette <- function(config, key) {

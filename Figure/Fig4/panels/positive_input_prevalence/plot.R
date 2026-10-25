@@ -36,7 +36,6 @@ plot_priority_positive_input_prevalence <- function(source_data, config) {
       expand = ggplot2::expansion(add = c(0.015, 0.015))
     ) +
     ggplot2::labs(
-      title = "Positive-input prevalence differs by tier",
       x = "Compounds with positive contribution",
       y = NULL,
       colour = NULL

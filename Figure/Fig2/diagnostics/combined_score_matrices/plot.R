@@ -62,7 +62,7 @@ plot_pbmt_combined_score_matrices <- function(source_data, config, variant) {
         "Fill is normalized within each dimension's shared set; cell labels are true counts. ",
         "Outlined diagonal cells denote exact agreement."
       ),
-      x = "PlastChem score", y = "Computational score"
+      x = "PlastChem score", y = "Independent score"
     ) +
     pbmt_theme(base_size = 7) +
     ggplot2::theme(

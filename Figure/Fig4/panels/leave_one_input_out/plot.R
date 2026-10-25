@@ -42,8 +42,6 @@ plot_priority_leave_one_input_out <- function(source_data, config) {
       expand = ggplot2::expansion(add = c(0.015, 0.015))
     ) +
     ggplot2::labs(
-      title = "Deletion stress test identifies dominant inputs",
-      subtitle = "One weighted input removed; fixed thresholds; no rescaling",
       x = "Retention or rank correlation",
       y = NULL,
       colour = NULL

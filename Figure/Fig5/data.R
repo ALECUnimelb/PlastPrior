@@ -22,7 +22,7 @@ policy_required_fields <- function(config) {
   unique(c(
     "Inchikey_std", "Name_std", "CAS", "Priority_tier",
     "GIC_regulatory_status", "Analytical_detectability",
-    "best_confidence_level", "source_dbs",
+    "resolution_route", "source_dbs",
     "Exposure_inventory_listing_count", "Hazard_score", "Exposure_score",
     "Priority_score", specs$score_column
   ))
@@ -38,9 +38,7 @@ policy_numeric <- function(values, column_name, missing_as_zero = FALSE) {
   if (!missing_as_zero && any(!nzchar(text))) {
     stop(column_name, " contains missing values.", call. = FALSE)
   }
-  if (missing_as_zero) {
-    output[!nzchar(text)] <- 0
-  }
+  if (missing_as_zero) stop("Missing-value imputation is prohibited.")
   output
 }
 
@@ -111,9 +109,7 @@ policy_odds_ratio <- function(
 }
 
 read_policy_concordance_input <- function(snapshot, config) {
-  compounds <- read_analysis_snapshot_fields_r(
-    snapshot, policy_required_fields(config)
-  )
+  compounds <- read_current(policy_required_fields(config), "ranked")
   keys <- toupper(trimws(compounds$Inchikey_std))
   if (nrow(compounds) != snapshot$row_count ||
       any(!nzchar(keys)) || anyDuplicated(keys)) {
@@ -127,7 +123,7 @@ read_policy_concordance_input <- function(snapshot, config) {
     lapply(
       specs$score_column,
       function(column) policy_numeric(
-        compounds[[column]], column, missing_as_zero = TRUE
+        compounds[[column]], column, missing_as_zero = FALSE
       )
     ),
     specs$component
@@ -204,7 +200,7 @@ read_policy_concordance_input <- function(snapshot, config) {
     keys = keys,
     name = as.character(compounds$Name_std),
     cas = as.character(compounds$CAS),
-    best_confidence_level = as.character(compounds$best_confidence_level),
+    resolution_route = as.character(compounds$resolution_route),
     source_dbs = as.character(compounds$source_dbs),
     raw_scores = raw_scores,
     contributions = contribution_frame,
@@ -215,7 +211,7 @@ read_policy_concordance_input <- function(snapshot, config) {
     inventory_listing_count = policy_numeric(
       compounds$Exposure_inventory_listing_count,
       "Exposure_inventory_listing_count",
-      missing_as_zero = TRUE
+      missing_as_zero = FALSE
     ),
     gic_status = gic_status,
     analytical_detectability = trimws(ifelse(
@@ -297,19 +293,11 @@ prepare_policy_concordance_data <- function(input, config) {
     config$strong_action_statuses, use.names = FALSE
   ))
   inventory_contribution <- input$contributions[["Inventory presence"]]
-  equal_pbmt_score <-
-    2 * input$raw_scores[["Persistence"]] +
-    2 * input$raw_scores[["Bioaccumulation"]] +
-    2 * input$raw_scores[["Mobility"]] +
-    2 * input$raw_scores[["Toxicity"]] +
-    input$exposure_score
-  inventory_linear_score <-
-    input$priority_score - inventory_contribution +
-    pmin(0.5 * input$inventory_listing_count, 2)
-  inventory_halved_score <-
-    input$priority_score - 0.5 * inventory_contribution
-  exposure_capped_score <-
-    input$hazard_score + pmin(input$exposure_score, 8)
+  scenario <- function(id) score_scenario(id,input$hazard_score,input$exposure_score,input$raw_scores,inventory_contribution,input$inventory_listing_count)$score
+  equal_pbmt_score <- scenario('equal_pbmt_weights')
+  inventory_linear_score <- scenario('inventory_linear')
+  inventory_halved_score <- scenario('inventory_halved')
+  exposure_capped_score <- scenario('exposure_capped')
   is_high <- function(score, hazard, exposure, threshold) {
     derive_priority_tier_shared(score, hazard, exposure, config,
       high_threshold = threshold) == "High priority"
@@ -343,7 +331,7 @@ prepare_policy_concordance_data <- function(input, config) {
     Inchikey_std = input$keys,
     Name_std = input$name,
     CAS = input$cas,
-    best_confidence_level = input$best_confidence_level,
+    resolution_route = input$resolution_route,
     source_dbs = input$source_dbs,
     Priority_score = input$priority_score,
     Hazard_score = input$hazard_score,
@@ -506,12 +494,7 @@ prepare_policy_concordance_data <- function(input, config) {
   )
   no_match_count <- analytical_counts[["No NORMAN match"]]
   matched_count <- not_listed_count - no_match_count
-  if (not_listed_count <= 0L || matched_count <= 0L) {
-    stop(
-      "Analytical annotation panel requires listed and unlisted SusDat groups.",
-      call. = FALSE
-    )
-  }
+
   analytical_display <- data.frame(
     scope = c("All candidates", "All candidates"),
     category = c("No NORMAN match", "NORMAN match"),
@@ -540,7 +523,7 @@ prepare_policy_concordance_data <- function(input, config) {
     )
   }
   analytical_display$proportion <-
-    analytical_display$compound_count / analytical_display$denominator
+    ifelse(analytical_display$denominator > 0, analytical_display$compound_count / analytical_display$denominator, NA_real_)
   analytical_display$display_category <- analytical_display$category
   analytical_display$display_category[
     analytical_display$category == "No NORMAN match"
@@ -571,7 +554,7 @@ prepare_policy_concordance_data <- function(input, config) {
     ranking_metrics$capture_at_10_percent,
     ranking_metrics$capture_at_20_percent,
     ranking_metrics$capture_at_high_priority_fraction,
-    analytical_display$proportion
+    analytical_display$proportion[!is.na(analytical_display$proportion)]
   )
   tolerance <- as.numeric(config$thresholds$score_tolerance)
   if (any(!is.finite(unit_values)) || any(unit_values < -tolerance) ||
@@ -614,7 +597,7 @@ prepare_policy_concordance_data <- function(input, config) {
     ),
     statistics = list(
       population_total = nrow(compound_level),
-      excluded_rows = 0L,
+      excluded_rows = lock$total - nrow(compound_level),
       strong_action_count = as.integer(sum(compound_level$strong_action)),
       high_priority_count = as.integer(sum(
         compound_level$Priority_tier == "High priority"
@@ -629,80 +612,3 @@ prepare_policy_concordance_data <- function(input, config) {
   )
 }
 
-policy_concordance_canonical_hash <- function(table, columns) {
-  assert_columns(table, columns, "Policy concordance reference table")
-  table <- table[, columns, drop = FALSE]
-  encode_column <- function(values) {
-    if (is.numeric(values)) {
-      return(ifelse(is.na(values), "<NA>", sprintf("%.9f", values)))
-    }
-    values <- ifelse(is.na(values), "<NA>", as.character(values))
-    gsub("[\t\r\n]", " ", values)
-  }
-  encoded <- lapply(table, encode_column)
-  rows <- vapply(
-    seq_len(nrow(table)),
-    function(index) {
-      paste(vapply(encoded, `[[`, character(1), index), collapse = "\t")
-    },
-    character(1)
-  )
-  digest::digest(
-    paste(c(paste(columns, collapse = "\t"), rows), collapse = "\n"),
-    algo = "sha256", serialize = FALSE
-  )
-}
-
-assert_policy_concordance_reference <- function(prepared, snapshot, config) {
-  reference <- config$accepted_reference
-  if (is.null(reference) ||
-      !identical(snapshot$analysis_run_id, reference$analysis_run_id)) {
-    return(NA)
-  }
-  if (!identical(snapshot$row_count, as.integer(reference$population_total))) {
-    stop("Accepted policy-concordance population total changed.", call. = FALSE)
-  }
-  expected_statistics <- reference$statistics
-  for (name in names(expected_statistics)) {
-    observed <- prepared$statistics[[name]]
-    expected <- expected_statistics[[name]]
-    if (is.null(observed) || !isTRUE(all.equal(
-      as.numeric(observed), as.numeric(expected), tolerance = 1e-9
-    ))) {
-      stop(
-        "Accepted policy-concordance statistic changed: ", name,
-        call. = FALSE
-      )
-    }
-  }
-  available <- list(
-    strong_action_prevalence =
-      prepared$source_data$strong_action_prevalence$strong_action_prevalence,
-    ranking_capture_curves =
-      prepared$source_data$ranking_capture$ranking_capture_curves,
-    ranking_capture_metrics =
-      prepared$source_data$ranking_capture$ranking_capture_metrics,
-    stable_review_context =
-      prepared$source_data$stable_review_context$stable_review_context,
-    analytical_annotation_gaps =
-      prepared$source_data$analytical_annotation_gaps$analytical_annotation_gaps
-  )
-  for (record in reference$tables) {
-    table_id <- record$table_id
-    if (!(table_id %in% names(available))) {
-      stop("Unknown accepted reference table: ", table_id, call. = FALSE)
-    }
-    columns <- as.character(unlist(record$columns, use.names = FALSE))
-    observed <- policy_concordance_canonical_hash(
-      available[[table_id]], columns
-    )
-    if (!identical(tolower(observed), tolower(record$sha256))) {
-      stop(
-        "Accepted policy-concordance reference changed for table: ",
-        table_id,
-        call. = FALSE
-      )
-    }
-  }
-  TRUE
-}

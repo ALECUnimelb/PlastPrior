@@ -9,6 +9,12 @@ plot_policy_analytical_annotation_gaps <- function(source_data, config) {
   matched_count <- all_candidates$compound_count[
     all_candidates$display_category == "SusDat matched"
   ]
+  if (length(not_listed_count)==1L && (not_listed_count==0 || matched_count==0)) {
+    labels <- c(paste0('No linked GIC listing\nn = ',not_listed_count),paste0('No SusDat match\nn = ',no_match_count),paste0('SusDat matched\nn = ',matched_count))
+    return(ggplot()+annotate('segment',x=.28,xend=.50,y=.5,yend=c(.72,.28),colour='#8793A0')+
+      geom_rect(data=data.frame(x=c(.15,.72,.72),y=c(.5,.72,.28),fill=c('#F0F3F6','#D7DDE4','#39798B')),aes(xmin=x-.14,xmax=x+.14,ymin=y-.12,ymax=y+.12,fill=fill))+
+      annotate('text',x=c(.15,.72,.72),y=c(.5,.72,.28),label=labels,size=2.1,fontface='bold',colour=c('#1C2633','#1C2633','white'))+scale_fill_identity()+coord_cartesian(xlim=c(0,1),ylim=c(0,1),expand=FALSE)+theme_void(base_family='Arial'))
+  }
   if (length(not_listed_count) != 1L || length(no_match_count) != 1L ||
       length(matched_count) != 1L || nrow(matched_platforms) < 1L) {
     stop("Analytical annotation flow inputs are invalid.", call. = FALSE)
@@ -156,8 +162,6 @@ plot_policy_analytical_annotation_gaps <- function(source_data, config) {
       xlim = c(0, 1), ylim = c(0, 1), expand = FALSE, clip = "off"
     ) +
     ggplot2::labs(
-      title = "Most GIC-unlisted candidates lack a SusDat match",
-      subtitle = "Absolute counts are shown at each step",
       x = NULL,
       y = NULL
     ) +

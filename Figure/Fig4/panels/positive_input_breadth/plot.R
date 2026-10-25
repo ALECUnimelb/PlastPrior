@@ -35,12 +35,6 @@ plot_priority_positive_input_breadth <- function(source_data, config) {
       name = "Within-tier\nproportion"
     ) +
     ggplot2::labs(
-      title = "Positive-scoring input breadth rises with priority",
-      subtitle = paste0(
-        "Median positive inputs: low ", median_values[["Low priority"]],
-        ", moderate ", median_values[["Moderate priority"]],
-        ", high ", median_values[["High priority"]]
-      ),
       x = "Number of positive-scoring inputs (4 hazard + 6 exposure)",
       y = NULL
     ) +

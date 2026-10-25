@@ -141,11 +141,6 @@ prepare_hazard_overlap <- function(compounds, source_data_dir) {
       labels = scales::comma
     ) +
     ggplot2::labs(
-      title = "Effective hazard-data overlap",
-      subtitle = paste0(
-        "Full inventory n = ", scales::comma(nrow(membership)),
-        "; no effective PBMT data = ", scales::comma(none_count)
-      ),
       fill = "Compounds"
     ) +
     ggplot2::theme_void(base_size = 7, base_family = resolve_manuscript_font()) +

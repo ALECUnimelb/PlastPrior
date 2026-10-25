@@ -2,9 +2,8 @@
   "schema_version": 1,
   "module_id": "priority_landscape",
   "backend": "r",
-  "manuscript_slot": "main_03",
+  "manuscript_slot": "main_3",
   "destination": "main",
-  "parity_status": "pending_visual_review",
   "title": "Priority landscape and score composition",
   "panels": [
     {
@@ -54,12 +53,27 @@
     "width_mm": 183,
     "height_mm": 215,
     "dpi": 600,
-    "formats": ["svg", "pdf", "png", "tiff"]
+    "formats": [
+      "svg",
+      "pdf",
+      "png",
+      "tiff"
+    ]
   },
   "layout": {
-    "row_heights": [0.82, 1.0, 0.92],
-    "middle_widths": [1.0, 1.0],
-    "bottom_widths": [1.0, 1.0],
+    "row_heights": [
+      0.82,
+      1.0,
+      0.92
+    ],
+    "middle_widths": [
+      1.0,
+      1.0
+    ],
+    "bottom_widths": [
+      1.0,
+      1.0
+    ],
     "inset": {
       "left": 0.58,
       "bottom": 0.18,
@@ -87,13 +101,8 @@
     "hazard_theoretical_max": 16,
     "exposure_theoretical_max": 10
   },
-  "formal_policies": {
-    "human_biomonitoring": "fcchumon-human-detection-one-to-one-cas-v1",
-    "literature": "pubmed-title-abstract-scoring-v1",
-    "patent": "pubchem-patent-zero-correction-v1"
-  },
   "priority_palette": {
-    "No data": "#C8CED6",
+    "Insufficient evidence": "#C8CED6",
     "Low priority": "#36495D",
     "Moderate priority": "#C88736",
     "High priority": "#A9463E"
@@ -119,6 +128,7 @@
     "High (2)": "#A9463E"
   },
   "exposure_profile_palette": {
+    "No usable evidence": "#E3E7EB",
     "Score 0": "#C8D0D8",
     "Low (0.5)": "#6F92AA",
     "Moderate (1)": "#C88736",

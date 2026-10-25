@@ -4,7 +4,6 @@
   "backend": "r",
   "manuscript_slot": "main_02",
   "destination": "main",
-  "parity_status": "pending_visual_review",
   "title": "Source assembly, identity resolution, and database overlap",
   "panels": [
     {
@@ -22,7 +21,12 @@
     "width_mm": 183,
     "height_mm": 218,
     "dpi": 600,
-    "formats": ["svg", "pdf", "png", "tiff"]
+    "formats": [
+      "svg",
+      "pdf",
+      "png",
+      "tiff"
+    ]
   },
   "sankey": {
     "panel_height_mm": 108,
@@ -64,7 +68,7 @@
     "database_sort": "size_desc",
     "set_size_column_weight": 0.27,
     "matrix_column_weight": 0.73,
-    "set_size_label_x": 0.30,
+    "set_size_label_x": 0.3,
     "set_size_bar_xmin": 0.33,
     "set_size_bar_max_width": 0.31,
     "set_size_count_x": 0.67,
@@ -80,7 +84,7 @@
     "LitChemPlast": "#8491B4",
     "ICCA": "#91D1C2",
     "FCCprio": "#DC0000",
-    "Norman133": "#7E6148",
+    "NORMAN_MPLEACH": "#7E6148",
     "FCChumon_S1": "#B09C85",
     "FCChumon_S2": "#6F8FAE"
   },

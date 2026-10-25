@@ -1,5 +1,9 @@
 # Data access and provenance review
 
+Follow-up: the [current P0 distribution checklist](data_distribution_checklist.md)
+adds source-specific acquisition, citation and distribution decisions. The dated
+findings below are preserved; use the follow-up for the latest assessment.
+
 Current local storage: see [retained results and verification records](results_layout.md). Evidence files were relocated without changing their bytes. Historical paths and removed stage-output locations are documented in the migration manifest; the review findings below remain unchanged.
 
 Review date: **23 October 2026 (Australia/Melbourne)**.
