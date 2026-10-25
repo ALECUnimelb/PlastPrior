@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "module_id": "priority_landscape",
+  "backend": "r",
+  "manuscript_slot": "main_03",
+  "destination": "main",
+  "parity_status": "pending_visual_review",
+  "title": "Priority landscape and score composition",
+  "panels": [
+    {
+      "panel_id": "priority_score_distribution",
+      "panel_tag": "a",
+      "title": "Priority-score distribution",
+      "width_mm": 183,
+      "height_mm": 66
+    },
+    {
+      "panel_id": "regulatory_context_inset",
+      "panel_tag": null,
+      "title": "GIC regulatory context",
+      "width_mm": 94,
+      "height_mm": 58
+    },
+    {
+      "panel_id": "hazard_exposure_landscape",
+      "panel_tag": "b",
+      "title": "Exact hazard and exposure score combinations",
+      "width_mm": 92,
+      "height_mm": 82
+    },
+    {
+      "panel_id": "score_decomposition",
+      "panel_tag": "c",
+      "title": "Mean hazard and exposure contribution",
+      "width_mm": 88,
+      "height_mm": 82
+    },
+    {
+      "panel_id": "hazard_component_profiles",
+      "panel_tag": "d",
+      "title": "Hazard-component score profiles",
+      "width_mm": 92,
+      "height_mm": 72
+    },
+    {
+      "panel_id": "exposure_component_profiles",
+      "panel_tag": "e",
+      "title": "Exposure-component score profiles",
+      "width_mm": 88,
+      "height_mm": 72
+    }
+  ],
+  "export": {
+    "width_mm": 183,
+    "height_mm": 215,
+    "dpi": 600,
+    "formats": ["svg", "pdf", "png", "tiff"]
+  },
+  "layout": {
+    "row_heights": [0.82, 1.0, 0.92],
+    "middle_widths": [1.0, 1.0],
+    "bottom_widths": [1.0, 1.0],
+    "inset": {
+      "left": 0.58,
+      "bottom": 0.18,
+      "right": 1.0,
+      "top": 1.0,
+      "align_to": "full"
+    },
+    "tag_size_pt": 8.5
+  },
+  "display": {
+    "priority_distribution_label_min_count": 1,
+    "priority_distribution_label_min_fraction": 0.0,
+    "hazard_exposure_label_min_count": 100,
+    "score_decomposition_label_min_contribution": 0.5,
+    "hazard_profile_label_min_fraction": 0.03,
+    "exposure_profile_label_min_fraction": 0.03,
+    "audit_profile_label_min_fraction": 0.0,
+    "regulatory_internal_label_min_fraction": 0.04,
+    "regulatory_show_small_callouts": false,
+    "regulatory_callout_min_separation_degrees": 6.0
+  },
+  "thresholds": {
+    "low_priority_upper": 6,
+    "high_priority_lower": 12,
+    "hazard_theoretical_max": 16,
+    "exposure_theoretical_max": 10
+  },
+  "formal_policies": {
+    "human_biomonitoring": "fcchumon-human-detection-one-to-one-cas-v1",
+    "literature": "pubmed-title-abstract-scoring-v1",
+    "patent": "pubchem-patent-zero-correction-v1"
+  },
+  "priority_palette": {
+    "No data": "#C8CED6",
+    "Low priority": "#36495D",
+    "Moderate priority": "#C88736",
+    "High priority": "#A9463E"
+  },
+  "regulatory_palette": {
+    "Prohibited/phase-out": "#4B247F",
+    "Restricted/authorisation": "#6D4C9B",
+    "Candidate/high concern": "#8F77A8",
+    "Monitoring/reporting/hazard": "#B5A4C7",
+    "Inventory/registration/use": "#D8CFE1",
+    "No matched GIC listing": "#AEB7C2"
+  },
+  "score_component_palette": {
+    "Hazard": "#A65F4B",
+    "Exposure": "#3F7784"
+  },
+  "hazard_profile_palette": {
+    "No usable evidence": "#E3E7EB",
+    "Evidence-supported zero (0)": "#A9B6C1",
+    "Low confidence (0.25)": "#8FA4B5",
+    "Low (0.5)": "#6F92AA",
+    "Moderate (1)": "#C88736",
+    "High (2)": "#A9463E"
+  },
+  "exposure_profile_palette": {
+    "Score 0": "#C8D0D8",
+    "Low (0.5)": "#6F92AA",
+    "Moderate (1)": "#C88736",
+    "High (2)": "#A9463E"
+  }
+}

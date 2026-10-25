@@ -1,0 +1,26 @@
+{
+  "original_module": "2. Priority_Landscape",
+  "original_sha256": {
+    "assemble.R": "7a754ce6c98ca6d243e3c56fcfd4c44a300422fef6eec3a86bafff3361e015ff",
+    "build.R": "ddf8745340b5383b9283aeded2e69dd5eb96cbc9cf567a89bb69ee225e2a94c4",
+    "snapshot_loader.R": "ea5c2ffc746140871dd39fb93a92d22801a05e1a8b1e151e48882784d1f65b08",
+    "style.R": "ea77c027b8497947aba40519037ca595bdf81d5a565f46450101536068d24c51",
+    "figure.yml": "e0f4d123da2a4587e8bc9e7b6fb278354b49a064017d6268b173662c996a20d8",
+    "export_data.R": "8f6bce21c94ec5322e4626aef93984e01f9caf74e77780b5712ba35025efd4ca",
+    "data.R": "3919ea583e742e28dd3c5b16ccc28f993e8882013c6854fdb049fe0b46179dda",
+    "run_plot.R": "0eacf852630f919f7e985d17e0249e744ea013f6b664633b122c9a712a58f1e0",
+    "original_entry.py": "70badbc4a6c97aee6cdc1b68d9ff131fc9c8acb48f8695257f71df5b08085218",
+    "panels/score_decomposition/plot.R": "39f452c7f9a0965454cb7c6e30abd457f9f139cd6890847aeff180884d4bda25",
+    "panels/score_decomposition/data.R": "dd67a845e506a16e8161b45d683e0a07ae389307441b2e0075b7febc8211bdbd",
+    "panels/regulatory_context_inset/plot.R": "671c5fae67a030a3d2d6c2d60d6d496910b0f0efc5ca5f4017d753cf44997a2b",
+    "panels/regulatory_context_inset/data.R": "66fdc420d3fdf0d471086711e116acce8155a40ddbbc02cda91c2676ba842210",
+    "panels/exposure_component_profiles/plot.R": "2f8d5c0d8857d9c71458f979abfb48f29225d0cc50ac65d2a85a602bbd0a07e7",
+    "panels/exposure_component_profiles/data.R": "522bb281e61479e15b74e8b414a49df75a66901982c1aa6388ff233054b47652",
+    "panels/hazard_component_profiles/plot.R": "4ab9767fd86bb05acdbcd080dc1a387299e6fed14f2cc2312c5d3b9b54cbd17d",
+    "panels/hazard_component_profiles/data.R": "7f6df688d86fd94eec809da2a6ffc792369a55e74813704d2545b089433e9d63",
+    "panels/hazard_exposure_landscape/plot.R": "2f2556f2a9e2b3d3e5780d6a9a524ee1e3266e03fa0f2c30dec60ffb0906a0a8",
+    "panels/hazard_exposure_landscape/data.R": "0fa461ca8761a8498a6f1e900994a56416adbe3d457fc165e0ea832d8a5625da",
+    "panels/priority_score_distribution/plot.R": "a8d6afdf775b4ae8e0f401be038e0c1978510e94c24069c5f03d6800c314553a",
+    "panels/priority_score_distribution/data.R": "b88957d41d4a92e6788f1da5322062f86268ff47db9587537164a50ee5b0070c"
+  }
+}
