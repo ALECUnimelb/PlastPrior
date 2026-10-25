@@ -1,0 +1,16 @@
+{
+  "original_module": "4. Priority_Sensitivity_Robustness",
+  "scientific_dependency": "Fig4",
+  "original_sha256": {
+    "../Fig4/assemble.R": "8b7fcfd1d346ff8828062f87311bf2acd71271acf89d6db89a01246425f9e463",
+    "../Fig4/build.R": "c79629831ad943919b0452ae9f10abcd143c0c1693ae27e7fdddc83c4a8582f3",
+    "../Fig4/style.R": "c2b4c8c3c9c3f6a0e37c72724e37d17aa0c1bd9a1c6e3e9485bebea9e3119d66",
+    "../Fig4/figure.yml": "7c438900c0affe9f228572c65560678e7654a3dbe25acaee06fdeb4d27994e6d",
+    "../Fig4/data.R": "ffec79d9b40d296b9d241afe15ce256c7ed3336357e6c2917539d2ecc8932e6b",
+    "../Fig4/original_entry.py": "34f3713f4c76d29772728d587ee95e5800240c867008cca91738e6d0c62bfc07",
+    "../Fig4/panels/leave_one_input_out/plot.R": "d596a644f2bc265fee53ff9ed7936c3a95ba8135781a20ee6aca924cb5e838d9",
+    "../Fig4/panels/positive_input_prevalence/plot.R": "a19268368d5080e07bafa1fd030a50988f917b0c9712bf40b1e1ba1f18f22b0f",
+    "../Fig4/panels/positive_input_breadth/plot.R": "213e046bf19138e56b96ed01f662cfdff011f7834c5000975e37a1291829a622",
+    "../Fig4/panels/scenario_sensitivity/plot.R": "4c8ccf3f4f299c5d79bc6b0d10f23ceee7825c561646a14d21b820077494d228"
+  }
+}
