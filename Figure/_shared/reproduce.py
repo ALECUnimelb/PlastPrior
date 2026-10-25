@@ -109,6 +109,12 @@ def prepare(figure, source):
         baseline = source / "Result" / RUN / "Figures" / module
         if sha256(baseline / relative_png) != expected:
             raise ValueError("Baseline plot differs from the image embedded in the manuscript.")
+        # Some original R builders hash the scientific-methods input as part of
+        # their provenance. Retain it locally, without committing documentation
+        # or changing the original statistical/plotting implementation.
+        methods = source / "Figures" / module / "methods.md"
+        if methods.is_file():
+            freeze_bytes(destination / "methods.md", methods.read_bytes())
         for path in sorted(baseline.rglob("*")):
             if path.is_file() and path.suffix.lower() in (".csv", ".png", ".svg"):
                 freeze_bytes(destination / "reference" / "baseline" / path.relative_to(baseline), path.read_bytes())

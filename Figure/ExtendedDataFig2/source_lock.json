@@ -1,0 +1,11 @@
+{
+  "original_module": "S1. Evidence_Overlap_Patterns",
+  "original_sha256": {
+    "assemble.R": "20622bfb665feec8a0b02b7586ce7bcc150ca0f6c69da5737a29777fcecd4a4b",
+    "build.R": "c53be6e8488100a2bc8de5a5b8cddf7f228ab62330192237673e75a038a8ff9d",
+    "figure.yml": "7e8e40affd983ec07116d9b2dadf6ef3e70948ef9d13c410ae2b7876cf7c5d6d",
+    "original_entry.py": "47fcf6c2a05169c89d5b9f5e39f3d4aec2baabd4895a1843d7633ea250725aa9",
+    "panels/hazard_dimension_overlap/plot.R": "a8c0ed9fb9d3fb914dffb8207be6458fbcdb006bf59aca8e76ac3713cd892b32",
+    "panels/exposure_dimension_overlap/plot.R": "cc2476deb1c29e9befa31134d8a9a1d7430dc5aac81947f4af0f604fd4191467"
+  }
+}
