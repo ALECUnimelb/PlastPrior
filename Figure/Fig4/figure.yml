@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "module_id": "priority_sensitivity_and_robustness",
+  "backend": "r",
+  "manuscript_slot": "main_05",
+  "destination": "main",
+  "parity_status": "pending_visual_review",
+  "title": "Sensitivity and robustness of priority rankings",
+  "panels": [
+    {
+      "panel_id": "leave_one_input_out",
+      "panel_tag": "a",
+      "role": "main",
+      "title": "Leave-one-input-out sensitivity",
+      "width_mm": 95,
+      "height_mm": 78
+    },
+    {
+      "panel_id": "scenario_sensitivity",
+      "panel_tag": "b",
+      "role": "main",
+      "title": "Alternative-scenario robustness",
+      "width_mm": 88,
+      "height_mm": 78
+    },
+    {
+      "panel_id": "positive_input_breadth",
+      "panel_tag": null,
+      "role": "supporting",
+      "title": "Positive-scoring input breadth",
+      "width_mm": 92,
+      "height_mm": 70
+    },
+    {
+      "panel_id": "positive_input_prevalence",
+      "panel_tag": null,
+      "role": "supporting",
+      "title": "Positive-scoring input prevalence",
+      "width_mm": 92,
+      "height_mm": 70
+    }
+  ],
+  "export": {
+    "width_mm": 183,
+    "height_mm": 86,
+    "dpi": 600,
+    "formats": ["svg", "pdf", "png", "tiff"]
+  },
+  "supplementary": {
+    "figure_id": "positive_input_context",
+    "panel_ids": ["positive_input_breadth", "positive_input_prevalence"],
+    "width_mm": 183,
+    "height_mm": 76
+  },
+  "layout": {
+    "main_widths": [1.06, 0.94],
+    "supplementary_widths": [1, 1],
+    "tag_size_pt": 8.5
+  },
+  "thresholds": {
+    "score_tolerance": 1e-9,
+    "low_priority_upper": 6,
+    "high_priority_lower": 12,
+    "expected_total_maximum": 26
+  },
+  "components": [
+    {"component": "Persistence", "family": "Hazard", "score_column": "Persistence_score", "multiplier": 2, "theoretical_maximum": 4},
+    {"component": "Bioaccumulation", "family": "Hazard", "score_column": "Bioaccumulation_score", "multiplier": 2, "theoretical_maximum": 4},
+    {"component": "Mobility", "family": "Hazard", "score_column": "Mobility_score", "multiplier": 1, "theoretical_maximum": 2},
+    {"component": "Toxicity", "family": "Hazard", "score_column": "Toxicity_score", "multiplier": 3, "theoretical_maximum": 6},
+    {"component": "Food contact", "family": "Exposure", "score_column": "Exposure_food_contact_score", "multiplier": 1, "theoretical_maximum": 1},
+    {"component": "Human biomonitoring", "family": "Exposure", "score_column": "Exposure_human_biomonitoring_score", "multiplier": 1, "theoretical_maximum": 1},
+    {"component": "Inventory presence", "family": "Exposure", "score_column": "Exposure_inventory_score", "multiplier": 1, "theoretical_maximum": 2},
+    {"component": "Production", "family": "Exposure", "score_column": "Exposure_production_score", "multiplier": 1, "theoretical_maximum": 2},
+    {"component": "Patents", "family": "Exposure", "score_column": "Exposure_patent_score", "multiplier": 1, "theoretical_maximum": 2},
+    {"component": "Literature", "family": "Exposure", "score_column": "Exposure_literature_score", "multiplier": 1, "theoretical_maximum": 2}
+  ],
+  "scenarios": [
+    {"scenario_id": "baseline", "label": "Baseline", "note": "Published score and thresholds", "low_threshold": 6, "high_threshold": 12},
+    {"scenario_id": "equal_pbmt_weights", "label": "Equal PBMT weights", "note": "All four PBMT dimensions weighted 2; hazard maximum retained at 16", "low_threshold": 6, "high_threshold": 12},
+    {"scenario_id": "inventory_linear", "label": "Inventory linear 0.5/list", "note": "Each listed inventory contributes 0.5 points, capped at 2", "low_threshold": 6, "high_threshold": 12},
+    {"scenario_id": "inventory_halved", "label": "Inventory weight halved", "note": "Inventory-presence contribution multiplied by 0.5", "low_threshold": 6, "high_threshold": 12},
+    {"scenario_id": "exposure_capped", "label": "Exposure capped at 8", "note": "Integrated exposure score capped at 8 points", "low_threshold": 6, "high_threshold": 12},
+    {"scenario_id": "high_threshold_11", "label": "High threshold 11", "note": "High-priority threshold lowered from 12 to 11", "low_threshold": 6, "high_threshold": 11},
+    {"scenario_id": "high_threshold_13", "label": "High threshold 13", "note": "High-priority threshold raised from 12 to 13", "low_threshold": 6, "high_threshold": 13}
+  ],
+  "priority_palette": {
+    "Low priority": "#36495D",
+    "Moderate priority": "#C88736",
+    "High priority": "#A9463E"
+  },
+  "metric_palette": {
+    "High-priority compounds retained": "#B43A35",
+    "Rank correlation (Spearman rho)": "#2F7183"
+  },
+  "heatmap_palette": ["#F7F9FB", "#D7E5ED", "#8BB6C8", "#2D687F"],
+  "accepted_reference": {
+    "analysis_run_id": "20260821T065339Z-phase3-acceptance",
+    "population_total": 15125,
+    "tables": [
+      {
+        "table_id": "leave_one_input_out",
+        "columns": ["component", "family", "removed_maximum_points", "rank_spearman", "tier_agreement", "high_priority_retention", "high_priority_jaccard", "changed_tier_count", "retained_high_count", "perturbed_high_count"],
+        "sha256": "5cd6d888b2fcc16eb14f5014f1b2f46dedcc19148f492c5c94e6b9c3e9f33ae6"
+      },
+      {
+        "table_id": "scenario_sensitivity",
+        "columns": ["scenario", "note", "low_threshold", "high_threshold", "rank_spearman", "tier_agreement", "high_priority_retention", "high_priority_jaccard", "changed_tier_count", "perturbed_high_count"],
+        "sha256": "b45998f439b7e950ec3dd4d8f208252c3699c6929ae5aeaed1a0d5904b4c4dd8"
+      },
+      {
+        "table_id": "positive_input_breadth",
+        "columns": ["priority_tier", "positive_input_count", "compound_count", "tier_total", "within_tier_proportion"],
+        "sha256": "b064b47883cf3147dbd98b91ca079b5364c8fd42c8564c3f607e03a6923e8916"
+      },
+      {
+        "table_id": "positive_input_breadth_metrics",
+        "columns": ["priority_tier", "compound_count", "mean_positive_inputs", "median_positive_inputs", "q1_positive_inputs", "q3_positive_inputs"],
+        "sha256": "40e1a443da2b13e88adc034274e44e45c15462a679c0e786906b369915e608b0"
+      },
+      {
+        "table_id": "positive_input_prevalence",
+        "columns": ["priority_tier", "component", "family", "tier_total", "positive_compounds", "positive_proportion"],
+        "sha256": "8794359e7f0ef48086d0655725f88d596ba5c11666e1fd1c29a6431780aa8c66"
+      }
+    ]
+  }
+}
