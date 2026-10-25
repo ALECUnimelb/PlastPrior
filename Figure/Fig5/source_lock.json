@@ -1,0 +1,15 @@
+{
+  "original_module": "5. Policy_Concordance_Review_Gaps",
+  "original_sha256": {
+    "assemble.R": "48ecb07ed2dbaf8b4359439dc633a8ecba8218a6b69363a8a552e30984e2cc5c",
+    "build.R": "9beca07e4df42abe58f56e5b36ca04db7f07633e67ec721d4b3edeed4ecbdf85",
+    "style.R": "d5535f483160db935aec37e417261681a585c0684468b329d811c695ede579d2",
+    "figure.yml": "f7a0df94faf5da46b1598d0caca28fd3ad7aabcbbd6e295497b66c3981383eca",
+    "data.R": "0f9bacd3ab1259d161dbba0e77b3c04ff36e465f5ab5016173723ff0b99fbd91",
+    "original_entry.py": "59b87b2d4d7357ead607159d6bcea5a0af1142c745f85f6bc51e98ccea7f3107",
+    "panels/strong_action_prevalence/plot.R": "fcb5799239c2b17312c399576aa39bb030c0111d42611dbf6d1d460bc3a5adea",
+    "panels/stable_review_context/plot.R": "364f77ff8b6ad4a7a97ab4a2523fc20a69af584b0eadb086115453482d3d9ab2",
+    "panels/ranking_capture/plot.R": "bb030aefb5a82143d885f56dfcd59614a29980fb9ca0d77558255395f45b2976",
+    "panels/analytical_annotation_gaps/plot.R": "d521fdf5cf07a536f30f5f43d2597d753381924ca5386b55ff89a71a12f8ac84"
+  }
+}
