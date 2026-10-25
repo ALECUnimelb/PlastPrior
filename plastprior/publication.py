@@ -121,7 +121,7 @@ def write_publication(db, directory, run_id):
         detail_metadata = {
             'format': DETAIL_FORMAT, 'schema_version': '1', 'run_id': run_id,
             'row_count': str(n), 'csv_sha256': _hash(csv_path),
-            'publication_format': FORMAT, 'priority_policy': 'priority-complete-domains-v1',
+            'publication_format': FORMAT, 'priority_policy': json.loads(Path(__file__).with_name('priority_policy.json').read_text())['policy_version'],
             'scope': SCOPE,
             'source_details': json.dumps(source_summary),
             'chemical_families': json.dumps(family_summary),
@@ -206,14 +206,14 @@ annotations describe the frozen evidence, not current legal advice or proof of a
 
 ## Interpretation
 
-Blank numeric cells mean unavailable, never zero. A numeric zero is an available zero
-under the frozen policy. Complete priority requires all four hazard and all five exposure
-dimensions. Six exposure indicators are grouped into five dimensions because food contact
-and human biomonitoring share one dimension. Unranked compounds remain visible and must
-not be interpreted as low priority or assigned a fallback total.
+Missing component scores remain blank, with availability and reasons retained. Missing
+components contribute zero only to aggregate sums after evidence selection and fallback.
+Partial evidence remains scoreable and rankable. Completeness is descriptive, not a gate.
+Food contact and human biomonitoring contribute independently to their joint dimension.
+Only assessments with no available evidence in either domain are unranked (No data).
 
 Hazard = 2*P + 2*B + M + 3*T (range 0–16). Exposure is the sum of six indicators
-(range 0–10). Priority = hazard + exposure only when both domains are complete (0–26).
+(range 0–10). Priority = hazard + exposure for assessments with any evidence (0–26).
 Policy: `{policy['policy_version']}`. High priority requires total >=12, hazard >=4,
 exposure >=4; moderate requires total >=6, hazard >=2, exposure >=2; otherwise low.
 These are screening priorities, not measured risk or evidence of safety.

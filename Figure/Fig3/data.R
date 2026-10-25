@@ -42,4 +42,3 @@ regulatory_status_map <- c(
   auxiliary_identifier_only = "No matched GIC listing",
   not_listed = "No matched GIC listing"
 )
-

@@ -1,4 +1,4 @@
-"""Stage 7A: aggregate scores, complete-domain eligibility and tier audit."""
+"""Stage 7A: zero-contribution aggregation with independent evidence completeness."""
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 import json
@@ -47,7 +47,7 @@ def flag(value):
 
 
 def tier(hazard, exposure):
-    """Classify complete, nonnegative domains with the frozen dual gates."""
+    """Classify numeric screening totals with the frozen dual gates."""
     h, e = score_value(hazard, 16), score_value(exposure, 10)
     if h is None or e is None:
         return POLICY['rules']['incomplete_tier']
@@ -74,7 +74,7 @@ def historical_scores(row):
 
 
 def analysis_scores(row):
-    """Aggregate eligible components without treating unavailable evidence as zero."""
+    """Missing evidence contributes zero only to sums; input scores remain missing."""
     hazard = {c: score_value(row[c]) for c in HAZARD}
     for c, value in hazard.items():
         stem = c.removesuffix('_score').lower()
@@ -92,14 +92,14 @@ def analysis_scores(row):
     missing_e = [c for c, v in exposure.items() if v is None]
     e_complete = not missing_e
     e = score_value(row['Exposure_score'], 10)
-    if flag(row['Exposure_complete']) != e_complete or (e is not None) != e_complete:
+    if flag(row['Exposure_complete']) != e_complete:
         raise ValueError('Exposure completeness contradicts available components or total.')
     e_observed = sum(v for v in exposure.values() if v is not None)
-    if e_complete and e != e_observed:
-        raise ValueError('Complete exposure total differs from its component sum.')
+    if e != e_observed:
+        raise ValueError('Exposure total differs from its available component sum.')
     h_observed = sum(v * POLICY['hazard_weights'][c] for c, v in hazard.items() if v is not None)
-    h = h_observed if not missing_h else None
-    eligible = h is not None and e is not None
+    h = h_observed
+    eligible = any(v is not None for v in [*hazard.values(), *exposure.values()])
     reasons = ([{'domain': 'hazard', 'dimension': c, 'reason': row[c.lower() + '_unavailable_reason']}
                 for c in missing_h] +
                [{'domain': 'exposure', 'dimension': c, 'reason': row['exposure_' + c + '_unavailable_reason']}
@@ -113,9 +113,11 @@ def analysis_scores(row):
             'Hazard_data_status': status(list(hazard.values())),
             'Exposure_data_status': status(list(exposure.values())),
             'Priority_score': float(h + e) if eligible else None,
-            'Priority_eligible': eligible, 'Priority_tier': tier(h, e),
-            'Priority_data_status': 'Complete' if eligible else 'Insufficient evidence',
-            'Priority_ineligibility_reasons': _json(reasons),
+            'Priority_eligible': eligible, 'Priority_tier': tier(h, e) if eligible else 'No data',
+            'Priority_data_status': 'Complete' if not missing_h and e_complete else 'Partial' if eligible else 'No data',
+            'Priority_missing_reasons': _json(reasons),
+            'Priority_ineligibility_reasons': _json([] if eligible else [{'domain': 'assessment', 'dimension': 'all', 'reason': 'no_available_hazard_or_exposure_evidence'}]),
+            'priority_scoring_policy': POLICY['policy_version'],
             'priority_result_role': 'analysis_after_eligibility_audit'}
 
 
@@ -139,11 +141,8 @@ def change_reasons(old_inputs, row, calculated, field):
         reasons.append('upstream_hazard_identity_isolation')
     if not field.startswith('Hazard') and any(not unchanged(old_inputs['Exposure_' + c + '_score'], row['Exposure_' + c + '_score'], True) for c in EXPOSURE):
         reasons.append('upstream_exposure_eligibility_audit')
-    incomplete = (not calculated['Hazard_complete'] if field.startswith('Hazard') else
-                  not flag(row['Exposure_complete']) if field.startswith('Exposure') else
-                  not calculated['Priority_eligible'])
-    if incomplete:
-        reasons.append('incomplete_domains_no_zero_imputation')
+    if not calculated['Priority_eligible'] and field.startswith('Priority'):
+        reasons.append('no_available_hazard_or_exposure_evidence')
     return reasons
 
 
@@ -244,7 +243,7 @@ def integrate_priority(exposure_results):
                 changes.append({'inchikey': row['inchikey'], 'field': field,
                                 'historical_value': _json(h[field]), 'analysis_value': _json(after if after != '' else None),
                                 'change_reasons': _json(change_reasons(old, row, a, field)),
-                                'missing_reasons': a['Priority_ineligibility_reasons'],
+                                'missing_reasons': a['Priority_missing_reasons'],
                                 'qsar_identity_status': row['qsar_identity_status']})
     analysis = compounds.copy()
     for c in analysis_rows[0]:

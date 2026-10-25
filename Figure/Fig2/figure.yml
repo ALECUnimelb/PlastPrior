@@ -18,7 +18,7 @@
       "label": "Bioaccumulation",
       "order": 2,
       "panel_tag": "c",
-      "method_label": "QSAR BCF and structural rules"
+      "method_label": "Selected QSAR BCF"
     },
     {
       "dimension_id": "mobility",

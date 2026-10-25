@@ -220,7 +220,7 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Local research input data (distributed separately)
-/data/
+/data
 
 # Generated inspection reports and executed notebooks
 /results/
@@ -259,3 +259,8 @@ Desktop.ini
 /Figure/~$*.pptx
 /Figure/.history/
 /Figure/*/.building-*/
+
+# Isolated verified method-repair candidate and browser artifacts
+/candidate_results
+/.playwright-cli/
+/repair_baseline.json

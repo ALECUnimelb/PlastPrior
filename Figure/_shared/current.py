@@ -32,7 +32,7 @@ def verify_sources():
         assert metadata['run_id'] == source['run_id']
         assert metadata['csv_sha256'] == source['files']['publication']['sha256']
         assert dict(db.execute('SELECT Priority_tier,COUNT(*) FROM compounds GROUP BY Priority_tier')) == source['population']
-        assert db.execute("SELECT COUNT(*) FROM compounds WHERE priority_result_role != 'analysis_after_eligibility_audit' OR ranking_result_role != 'analysis_rank_within_complete_evidence_pool'").fetchone()[0] == 0
+        assert db.execute("SELECT COUNT(*) FROM compounds WHERE priority_result_role != 'analysis_after_eligibility_audit' OR ranking_result_role != 'analysis_rank_with_zero_contribution_policy'").fetchone()[0] == 0
     return source
 
 def run(folder):

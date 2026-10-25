@@ -38,7 +38,7 @@ policy_numeric <- function(values, column_name, missing_as_zero = FALSE) {
   if (!missing_as_zero && any(!nzchar(text))) {
     stop(column_name, " contains missing values.", call. = FALSE)
   }
-  if (missing_as_zero) stop("Missing-value imputation is prohibited.")
+  if (missing_as_zero) output[!nzchar(text)] <- 0 # Contribution only; source missingness is preserved.
   output
 }
 
@@ -123,7 +123,7 @@ read_policy_concordance_input <- function(snapshot, config) {
     lapply(
       specs$score_column,
       function(column) policy_numeric(
-        compounds[[column]], column, missing_as_zero = FALSE
+        compounds[[column]], column, missing_as_zero = TRUE
       )
     ),
     specs$component
@@ -211,7 +211,7 @@ read_policy_concordance_input <- function(snapshot, config) {
     inventory_listing_count = policy_numeric(
       compounds$Exposure_inventory_listing_count,
       "Exposure_inventory_listing_count",
-      missing_as_zero = FALSE
+      missing_as_zero = TRUE
     ),
     gic_status = gic_status,
     analytical_detectability = trimws(ifelse(
@@ -611,4 +611,3 @@ prepare_policy_concordance_data <- function(input, config) {
     )
   )
 }
-

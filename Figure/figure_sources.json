@@ -1,34 +1,33 @@
 {
   "schema_version": 1,
-  "run_id": "20261025T084218Z-16d2169b",
+  "run_id": "20261025T203314Z-be431d74",
   "files": {
     "analysis": {
-      "path": "audit_archive/20261025T083801Z-03208fa3/package/PlastPrior_results.sqlite",
-      "sha256": "5965dc1fd3487e13c692d8d4b19127b988e56f54537fc5df9324d351433acd5a"
+      "path": "audit_archive/20261025T202848Z-3408a32e/package/PlastPrior_results.sqlite",
+      "sha256": "495948f327b83a8f6d5ba7a968fc6e3ca7373572f762ad96a18aab8696a9ab9e"
     },
     "publication": {
-      "path": "audit_archive/20261025T092546Z-source-details/package/daily/PlastPrior_results.csv",
-      "sha256": "1b60d9ade3c90cb635f8c7bf6c638a0f6f3d253c1cc52bdc7b1262cfa51ee4fb"
+      "path": "audit_archive/20261025T202848Z-3408a32e/package/PlastPrior_results.csv",
+      "sha256": "3c0d12039713ad5537b92ee09142b3f418e2126d9163216e2a8ba9086b45813e"
     },
     "dashboard": {
-      "path": "audit_archive/20261025T092546Z-source-details/package/daily/PlastPrior_dashboard.sqlite",
-      "sha256": "6857f6c4049228dd711ce4372e797fa6297248286b76194dfaeb125dd5bb765b"
+      "path": "candidate_results/PlastPrior_dashboard.sqlite",
+      "sha256": "636aa24c4b0004d8d348c9694279b4b593cfb58aa2df23adea99c612911a26a8"
     }
   },
   "population": {
-    "High priority": 2051,
-    "Insufficient evidence": 10881,
-    "Low priority": 365,
-    "Moderate priority": 1828
+    "High priority": 3144,
+    "Low priority": 7535,
+    "Moderate priority": 4446
   },
   "total": 15125,
-  "ranked": 4244,
-  "missing_policy": "Unknown remains missing; no imputation; formal rank requires complete evidence.",
+  "ranked": 15125,
+  "missing_policy": "Unavailable components remain null and contribute zero only in sums; partial evidence remains rankable. All boundary ties are included.",
   "policies": {
-    "ranking_policy.json": "2a51a17db5cd51c60c70f8a65731c66d17e5d79a117c4613d9c38ebf4d149365",
+    "ranking_policy.json": "ab7b671678a0b0b3e6b711aff38a4cb1a6a1d81fcf5b3d82efa1d4b6de4268c4",
     "hazard_policy.json": "f7adc8e6db2c0a02fb308957a23392431e0ca87036d44766afe8a7bcfd36669e",
-    "priority_policy.json": "9c6b57c1c4065711a7da67563cdcd1e33262eda6d8b59027679a5fc566791366",
-    "exposure_policy.json": "1d5c87073796f3d7c2adaec589a589c8523a667ab612b8c1976e85b9a09b771b",
+    "priority_policy.json": "1109231978e97e7f754b34259eb7e4a4373a3c0ec9a1add9c4d61ecde85cdcf0",
+    "exposure_policy.json": "12dd50cb81beae2cc930394641403ca8e42fa6fbb4697a54775abcf1b86de16c",
     "hazard_bt_policy.json": "050e97c4d4c6ac4feaac35d841faaf2e5633571416e1905106c3e5eb27229714"
   }
 }

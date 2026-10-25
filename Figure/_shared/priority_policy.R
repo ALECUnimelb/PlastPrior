@@ -1,4 +1,4 @@
-# Current complete-evidence cohort only; missing score inputs are rejected.
+# Tier numeric contribution sums; source component missingness is retained separately.
 derive_priority_tier_shared <- function(
   scores, hazard, exposure, config, statuses = NULL,
   low_threshold = config$thresholds$low_priority_upper,

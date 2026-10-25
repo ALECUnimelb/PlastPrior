@@ -102,7 +102,7 @@
     "exposure_theoretical_max": 10
   },
   "priority_palette": {
-    "Insufficient evidence": "#C8CED6",
+    "No data": "#C8CED6",
     "Low priority": "#36495D",
     "Moderate priority": "#C88736",
     "High priority": "#A9463E"
@@ -122,7 +122,7 @@
   "hazard_profile_palette": {
     "No usable evidence": "#E3E7EB",
     "Evidence-supported zero (0)": "#A9B6C1",
-    "Low confidence (0.25)": "#8FA4B5",
+    "Score 0.25": "#8FA4B5",
     "Low (0.5)": "#6F92AA",
     "Moderate (1)": "#C88736",
     "High (2)": "#A9463E"
@@ -132,6 +132,7 @@
     "Score 0": "#C8D0D8",
     "Low (0.5)": "#6F92AA",
     "Moderate (1)": "#C88736",
-    "High (2)": "#A9463E"
+    "High (2)": "#A9463E",
+    "Partial evidence": "#B9BED0"
   }
 }

@@ -67,15 +67,19 @@ def human_detection_score(resolution):
 
 
 def aggregate_components(components):
-    joint = (components['food_contact'] + components['human_biomonitoring']
-             if all(components[k] is not None for k in ['food_contact', 'human_biomonitoring']) else None)
+    joint_values = [components[k] for k in ['food_contact', 'human_biomonitoring']]
+    joint = sum(v for v in joint_values if v is not None) if any(v is not None for v in joint_values) else None
     dimensions = {'food_contact_and_biomonitoring': joint,
                   **{k: components[k] for k in DIMENSIONS[1:]}}
-    available = sum(value is not None for value in dimensions.values())
+    availability = {k: v is not None for k, v in dimensions.items()}
+    availability['food_contact_and_biomonitoring'] = all(v is not None for v in joint_values)
+    available = sum(availability.values())
     observed = sum(value for value in components.values() if value is not None)
-    return {'Exposure_score': observed if available == 5 else None,
+    return {'Exposure_score': observed,
             'Exposure_observed_score': observed, 'Exposure_available_dimensions': available,
-            'Exposure_complete': available == 5, 'dimension_scores': dimensions}
+            'Exposure_complete': available == 5, 'dimension_scores': dimensions,
+            'dimension_available': availability,
+            'dimension_contributions': {k: v if v is not None else 0 for k, v in dimensions.items()}}
 
 
 def count_observations(value, path=()):
@@ -385,15 +389,17 @@ def integrate_exposure_scores(intake_results, data_root='data'):
                     'literature_query': literature_gate, 'fcchumon_resolution': payload.get('fcchumon_resolution'),
                     'source_tables_json': compounds.iloc[index]['source_tables_json'],
                     'component_scores': components, 'component_unavailable_reasons': reasons,
-                    'dimension_scores': aggregate['dimension_scores'], 'complete_total_required': True,
+                    'dimension_scores': aggregate['dimension_scores'],
+                    'dimension_available': aggregate['dimension_available'],
+                    'dimension_contributions': aggregate['dimension_contributions'], 'complete_total_required': False,
                     'upstream_manifest_sha256': hashes['intake'], 'model_predictions_used': False}
         outputs = {k: inputs[k] for k in OUTPUT_COLUMNS if k in inputs}
         outputs.update({f'Exposure_{k}_score': v for k, v in components.items()})
-        outputs.update({k: v for k, v in aggregate.items() if k != 'dimension_scores'})
+        outputs.update({k: v for k, v in aggregate.items() if not k.startswith('dimension_')})
         outputs['Exposure_score_basis'] = '|'.join('inventory_presence_proxy' if k == 'inventory' else k for k, v in components.items() if v is not None and v > 0) or None
         outputs['Exposure_evidence'] = _json(decision)
         outputs['exposure_result_role'] = 'analysis_after_eligibility_audit'
-        outputs['Exposure_missing_dimensions'] = _json([k for k, v in aggregate['dimension_scores'].items() if v is None])
+        outputs['Exposure_missing_dimensions'] = _json([k for k, available in aggregate['dimension_available'].items() if not available])
         for component, value in components.items():
             outputs[f'exposure_{component}_available'] = value is not None
             outputs[f'exposure_{component}_unavailable_reason'] = reasons[component]

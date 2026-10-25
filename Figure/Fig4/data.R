@@ -39,7 +39,7 @@ priority_sensitivity_numeric <- function(
   if (!missing_as_zero && any(!nzchar(text))) {
     stop(column_name, " contains missing values.", call. = FALSE)
   }
-  if (missing_as_zero) stop("Missing-value imputation is prohibited.")
+  if (missing_as_zero) output[!nzchar(text)] <- 0 # Contribution only; source missingness is preserved.
   output
 }
 
@@ -98,7 +98,7 @@ read_priority_sensitivity_input <- function(snapshot, config) {
     lapply(
       specs$score_column,
       function(column) priority_sensitivity_numeric(
-        compounds[[column]], column, missing_as_zero = FALSE
+        compounds[[column]], column, missing_as_zero = TRUE
       )
     ),
     specs$component
@@ -178,7 +178,7 @@ read_priority_sensitivity_input <- function(snapshot, config) {
     inventory_listing_count = priority_sensitivity_numeric(
       compounds$Exposure_inventory_listing_count,
       "Exposure_inventory_listing_count",
-      missing_as_zero = FALSE
+      missing_as_zero = TRUE
     ),
     specs = specs
   )
@@ -395,4 +395,3 @@ prepare_priority_sensitivity_data <- function(input, config, include_sensitivity
     )
   )
 }
-

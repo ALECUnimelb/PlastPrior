@@ -2,7 +2,7 @@
 
 Use these two files together:
 
-- `results/PlastPrior_results.csv`: 59 columns; one row per full InChIKey.
+- `results/PlastPrior_results.csv`: 60 columns; one row per full InChIKey.
 - `results/PlastPrior_dashboard.sqlite`: paired browser details, family evidence,
   embedded field dictionary and interpretation guide.
 

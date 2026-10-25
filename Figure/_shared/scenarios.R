@@ -1,7 +1,7 @@
-# Deliberate sensitivity perturbations of observed complete evidence only.
+# Deliberate sensitivity perturbations of the same baseline population and zero-contribution rule.
 # Both Fig. 4 and Fig. 5 use this implementation; baseline scores are unmodified.
 score_scenario <- function(id, hazard, exposure, raw_scores, inventory, inventory_count) {
-  if(any(!is.finite(c(hazard,exposure,inventory,inventory_count,unlist(raw_scores))))) stop('Scenario requires complete observed inputs; no imputation.')
+  if(any(!is.finite(c(hazard,exposure,inventory,inventory_count,unlist(raw_scores))))) stop('Scenario requires finite contributions; retain missingness in the source table.')
   h <- hazard; e <- exposure
   if(id=='equal_pbmt_weights') h <- 2*(raw_scores[['Persistence']]+raw_scores[['Bioaccumulation']]+raw_scores[['Mobility']]+raw_scores[['Toxicity']])
   else if(id=='inventory_linear') e <- exposure-inventory+pmin(.5*inventory_count,2)

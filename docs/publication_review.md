@@ -1,5 +1,11 @@
 # Publication readiness review
 
+> Current scoring-policy update: [zero-contribution policy](zero_contribution_policy.md)
+> supersedes the complete-domain eligibility rule and its recorded 4,244/10,881
+> verification counts below. Those dated results describe the earlier export,
+> not the repaired candidate. Upstream evidence admission remains unchanged.
+
+
 Current local storage: see [retained results and verification records](results_layout.md). Evidence files were relocated without changing their bytes. Historical paths and removed stage-output locations are documented in the migration manifest; the review findings below remain unchanged.
 
 Review date: **23 October 2026 (Australia/Melbourne)**. Scientific code baseline:

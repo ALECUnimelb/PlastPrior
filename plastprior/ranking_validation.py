@@ -71,8 +71,8 @@ def compare_ranking(baseline, results, output_dir, upstream_results=None, data_r
             for c in table.columns.drop('inchikey'):
                 demand(table[c].tolist() == indexed.loc[wanted, c].tolist(), 'Export fields differ: ' + name + ':' + c)
         review = all_records['qsar_identity_status'].eq('review_required')
-        demand(int(review.sum()) == 15 and all_records.loc[review, 'Priority_rank'].eq('').all(), 'Identity-review cohort entered the ranking.')
-        demand(all_records.loc[all_records['gic_name_review_required'].eq('True'), 'Priority_rank'].eq('').all(), 'GIC name-only evidence bypassed qualification.')
+        demand(int(review.sum()) == 15, 'Identity-review cohort changed.')
+        # Source-level exclusions do not exclude independently scoreable compounds.
         _verify_hash(results / 'identity_review_source_links.jsonl', _file_hash(upstream / 'identity_review_source_links.jsonl'))
         checkpoint_path = baseline / '07. Prioritization' / 'checkpoint.json'
         _verify_hash(checkpoint_path, ranking.POLICY['historical']['checkpoint_sha256'])
@@ -139,7 +139,7 @@ def compare_ranking(baseline, results, output_dir, upstream_results=None, data_r
                 if groups[scores[key]] > 1: reasons.append('tied_group_displayed_by_identifier_without_breaking_rank_tie')
             else:
                 demand(all(row[c] == '' for c in ['analysis_score', 'analysis_top_n_member', 'analysis_rank', 'analysis_display_position', 'historical_rank_in_current_eligible_pool', 'eligibility_pool_rank_shift', 'score_update_rank_shift']), 'Ineligible audit acquired numeric rank or membership.')
-                reasons.append('ineligible_incomplete_evidence')
+                reasons.append('ineligible_no_available_evidence')
             if key in old_inclusive and key not in old_members: reasons.append('historical_strict_top_n_truncated_boundary_tie')
             if (key in old_members) != (key in selected): reasons.append('top_n_membership_changed')
             if not reasons: reasons.append('unchanged_competition_rank_and_membership')

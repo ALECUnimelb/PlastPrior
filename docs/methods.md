@@ -1,4 +1,10 @@
 > Output-layout update: daily files are `results/PlastPrior_results.csv` and
+
+> Current scoring-policy update: [zero-contribution policy](zero_contribution_policy.md)
+> supersedes the complete-domain eligibility rule and its recorded 4,244/10,881
+> verification counts below. Those dated results describe the earlier export,
+> not the repaired candidate. Upstream evidence admission remains unchanged.
+
 > `results/PlastPrior_dashboard.sqlite`. Complete archives and temporary stages are
 > separate under `audit_archive/<run>/`. Stage-level paths in historical examples below
 > refer to `<run>/work/`; retain them with `--keep-intermediates` when reproducing checks.
@@ -29,7 +35,7 @@ After Stage 7B, the notebook and `python main.py --rank-priority` use the same
 `plastprior.export.export_results()` function. Each successful export creates a
 new directory under `results/final/<run_id>/`:
 
-- `PlastPrior_results.csv`: a 59-field publication table, including incomplete
+- `PlastPrior_results.csv`: a 60-field publication table, including incomplete
   and unranked records. Identity, source memberships, selected hazard pathways,
   exposure quantities/context, scores, ranks and missingness are explicit.
   Internal identity/GIC flags and detailed reasons remain in the archive.

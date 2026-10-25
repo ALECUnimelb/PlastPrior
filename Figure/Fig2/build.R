@@ -16,5 +16,5 @@ for(id in names(pbmt_dimension_schema)) {
  plots[[paste0(id,'_score_matrix')]] <- get(paste0('plot_pbmt_',id,'_score_matrix'))(d$source_data,config,'publication')
 }
 save_nested(prepared$source_data)
-save_facts(list(population=lock$total,coverage=prepared$source_data$coverage_metrics,agreement=prepared$source_data$agreement_metrics,independent_evidence='Usable computational and structural candidates after identity isolation; B includes structural halogen rules.',missing='Unavailable candidates remain NA; paired statistics require both candidates.'))
+save_facts(list(population=lock$total,coverage=prepared$source_data$coverage_metrics,agreement=prepared$source_data$agreement_metrics,independent_evidence='Usable computational candidates after identity isolation; B comparison uses selected QSAR BCF only. Structural halogen rules remain part of final B selection.',missing='Unavailable candidates remain NA; paired statistics require both candidates.'))
 save_plot(assemble_pbmt_concordance(plots,config),183,170)

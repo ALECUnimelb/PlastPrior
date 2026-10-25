@@ -155,7 +155,7 @@ def integrate_ranking(priority_results, top_n=100):
     for c in ranks.columns[1:]:
         all_records[c] = ranks[c].array
     all_records['Ranking_exclusion_reasons'] = all_records['Priority_ineligibility_reasons']
-    all_records['ranking_result_role'] = 'analysis_rank_within_complete_evidence_pool'
+    all_records['ranking_result_role'] = 'analysis_rank_with_zero_contribution_policy'
     compact = ['inchikey', 'name_resolved', 'cas_reported', 'representative_record_id', 'source_tables_json',
                'Persistence_score', 'Mobility_score', 'Bioaccumulation_score', 'Toxicity_score',
                'Hazard_score', 'Exposure_score', 'Priority_score', 'Priority_tier', 'Priority_eligible',
@@ -188,7 +188,7 @@ def integrate_ranking(priority_results, top_n=100):
         r2 = int(row['Priority_rank']) if eligible else None
         reasons = []
         if not eligible:
-            reasons.append('ineligible_incomplete_evidence')
+            reasons.append('ineligible_no_available_evidence')
         else:
             if r1 != r0:
                 reasons.append('ranking_pool_changed_by_eligibility')

@@ -5,7 +5,6 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
@@ -17,6 +16,10 @@ try {
  const page=await context.newPage();
  page.on('pageerror', e=>console.error(e.message));
  await page.goto(url);
+ await page.waitForFunction(() => {
+   const input=document.querySelector('[aria-label="Upload dashboard data file"]');
+   return input && !input.disabled;
+ }, null, {timeout:120000});
  await page.getByLabel('Upload dashboard data file',{exact:true}).setInputFiles(path.join(root,lock.files.publication.path));
  await page.getByText('Decabromodiphenyl oxide',{exact:true}).waitFor({timeout:120000});
  await page.getByLabel('Upload optional audit database',{exact:true}).setInputFiles(path.join(root,lock.files.dashboard.path));
@@ -36,6 +39,6 @@ try {
  await fs.writeFile(path.join(output,'source_data/visible_text.txt'),visible);
  const app=path.resolve(root,'../ChemicalPrioDashboard');
  const hashes={};
- for(const file of ['app/src/features/overview/ChemicalSvgViz.jsx','app/src/core/plastprior.js','app/src/ChemicalHazardVisualizer.jsx']) hashes[file]=crypto.createHash('sha256').update(await fs.readFile(path.join(app,file))).digest('hex');
- await fs.writeFile(path.join(output,'caption_facts.json'),JSON.stringify({run_id:lock.run_id,compound:'WHHGLZMJPXIBIX-UHFFFAOYSA-N',name:'Decabromodiphenyl oxide',viewport_css:[1672,1100],device_scale:2,crop:'Dashboard content and results list; upload header excluded.',pixel_edits:'None',dashboard_revision:execFileSync('git',['-C',app,'rev-parse','HEAD'],{encoding:'utf8'}).trim(),dashboard_source_sha256:hashes},null,2));
+ for(const file of ['app/src/features/overview/ChemicalSvgViz.jsx','app/src/core/plastprior.js','app/src/core/priorityScore.js','app/src/core/exposureScore.js','app/src/core/hazardComputationStatus.js','app/src/core/fishAcuteEvidence.js','app/src/core/auditDatabase.js','app/src/ChemicalHazardVisualizer.jsx']) hashes[file]=crypto.createHash('sha256').update(await fs.readFile(path.join(app,file))).digest('hex');
+ await fs.writeFile(path.join(output,'caption_facts.json'),JSON.stringify({run_id:lock.run_id,compound:'WHHGLZMJPXIBIX-UHFFFAOYSA-N',name:'Decabromodiphenyl oxide',viewport_css:[1672,1100],device_scale:2,crop:'Dashboard content and results list; upload header excluded.',pixel_edits:'None',dashboard_revision:'isolated working snapshot; exact implementation recorded by source SHA-256',dashboard_source_sha256:hashes},null,2));
 } finally {await browser.close();}

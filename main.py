@@ -179,7 +179,7 @@ def main(argv: list[str] | None = None) -> int:
         exposure_scores = integrate_exposure_scores(output_dir / "stage6" / "6a", args.data_root)
         exposure_scores.write_reports(output_dir / "stage6" / "6b")
         print(exposure_scores.summary.to_string(index=False))
-        print("Formal exposure totals require five available dimensions. No combined priority or ranking calculated.")
+        print("Exposure totals sum available contributions; completeness is reported separately. No combined priority or ranking calculated.")
     if passed and args.assess_priority:
         from plastprior.priority import integrate_priority
 
@@ -187,7 +187,7 @@ def main(argv: list[str] | None = None) -> int:
         priority = integrate_priority(output_dir / "stage6" / "6b")
         priority.write_reports(output_dir / "stage7" / "7a")
         print(priority.summary.to_string(index=False))
-        print("Incomplete domains retain missing totals and reasons. No ranking or Top-N generated.")
+        print("Missing components contribute zero to sums and retain missingness reasons. No ranking or Top-N generated.")
     if passed and args.rank_priority:
         from plastprior.ranking import integrate_ranking
 
@@ -195,7 +195,7 @@ def main(argv: list[str] | None = None) -> int:
         rankings = integrate_ranking(output_dir / "stage7" / "7a", args.top_n)
         rankings.write_reports(output_dir / "stage7" / "7b")
         print(rankings.summary)
-        print("Incomplete records retain null ranks. Identifier order only stabilises the display of ties.")
+        print("Only records with no available evidence retain null ranks. Identifier order only stabilises the display of ties.")
         from plastprior.delivery import finish_run
 
         package = finish_run(output_dir, daily_dir, archive_dir,

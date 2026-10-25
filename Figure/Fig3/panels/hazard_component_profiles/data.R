@@ -1,7 +1,7 @@
 hazard_score_classes <- c(
   "No usable evidence",
   "Evidence-supported zero (0)",
-  "Low confidence (0.25)",
+  "Score 0.25",
   "Low (0.5)",
   "Moderate (1)",
   "High (2)"
@@ -11,7 +11,7 @@ classify_hazard_score <- function(values) {
   output <- rep("Unsupported score", length(values))
   output[is.na(values)] <- "No usable evidence"
   output[!is.na(values) & abs(values - 0) <= 1e-9] <- "Evidence-supported zero (0)"
-  output[!is.na(values) & abs(values - 0.25) <= 1e-9] <- "Low confidence (0.25)"
+  output[!is.na(values) & abs(values - 0.25) <= 1e-9] <- "Score 0.25"
   output[!is.na(values) & abs(values - 0.5) <= 1e-9] <- "Low (0.5)"
   output[!is.na(values) & abs(values - 1) <= 1e-9] <- "Moderate (1)"
   output[!is.na(values) & abs(values - 2) <= 1e-9] <- "High (2)"

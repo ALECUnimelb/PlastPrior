@@ -25,7 +25,7 @@ plot_hazard_component_profiles <- function(panel_data, config, variant = "public
     profiles$score_class %in% c(
       "No usable evidence",
       "Evidence-supported zero (0)",
-      "Low confidence (0.25)"
+      "Score 0.25"
     ),
     "#202830",
     "white"
