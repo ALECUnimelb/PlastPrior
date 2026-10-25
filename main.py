@@ -188,6 +188,8 @@ def main(argv: list[str] | None = None) -> int:
         package = export_results(output_dir, progress=lambda message: print(message, flush=True))
         print(f"Final CSV: {package['csv']}")
         print(f"Final SQLite: {package['sqlite']}")
+        print(f"Dashboard SQLite: {package['dashboard_sqlite']}")
+        print(f"Data dictionary: {package['dictionary']}")
     return 0 if passed else 1
 
 

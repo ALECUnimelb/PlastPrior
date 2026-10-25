@@ -1,0 +1,470 @@
+[
+  {
+    "field": "inchikey",
+    "source_field": "inchikey",
+    "type": "text",
+    "unit": "",
+    "definition": "Full InChIKey of the resolved compound; unique join key for CSV, archive and evidence.",
+    "missing": "Never blank."
+  },
+  {
+    "field": "Name",
+    "source_field": "name_resolved",
+    "type": "text",
+    "unit": "",
+    "definition": "Resolved display name; not a guarantee of unambiguous identity.",
+    "missing": "Blank means no resolved name; literal NA is preserved."
+  },
+  {
+    "field": "CAS",
+    "source_field": "cas_reported",
+    "type": "text",
+    "unit": "",
+    "definition": "CAS identifier(s) reported by the representative source; not independently standardized.",
+    "missing": "Blank means not reported. Import as text."
+  },
+  {
+    "field": "SMILES",
+    "source_field": "smiles_isomeric",
+    "type": "text",
+    "unit": "",
+    "definition": "Resolved isomeric SMILES; preserve exact representation.",
+    "missing": "Blank means unavailable."
+  },
+  {
+    "field": "source_dbs",
+    "source_field": "source_tables_json",
+    "type": "text",
+    "unit": "",
+    "definition": "Source-table memberships mapped to readable labels; memberships can share upstream evidence.",
+    "missing": "Empty list means no recorded memberships.",
+    "transform": "sources"
+  },
+  {
+    "field": "function_top_classes",
+    "source_field": "function_top_classes",
+    "type": "text",
+    "unit": "",
+    "definition": "Broad plastic-related function classes from retained eligible annotations; absence is not evidence of no plastic use.",
+    "missing": "Blank means no available annotation."
+  },
+  {
+    "field": "GIC_regulatory_status",
+    "source_field": "GIC_regulatory_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Highest annotated GIC regulatory category in the frozen snapshot; not current legal status or proof of no regulation.",
+    "missing": "Blank means unavailable; not_listed is limited to the evaluated snapshot."
+  },
+  {
+    "field": "Persistence_score",
+    "source_field": "Persistence_score",
+    "type": "number",
+    "unit": "score 0–2",
+    "definition": "Final eligible P screening score. Hazard weights: P=2, B=2, M=1, T=3.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Persistence_score_basis",
+    "source_field": "Persistence_score_basis",
+    "type": "text",
+    "unit": "",
+    "definition": "Selected evidence pathway for P; distinguish curated data, named QSAR model, LRTP and structure rules. Full candidates and reliability are in the archive.",
+    "missing": "Blank means no selected usable evidence."
+  },
+  {
+    "field": "Bioaccumulation_score",
+    "source_field": "Bioaccumulation_score",
+    "type": "number",
+    "unit": "score 0–2",
+    "definition": "Final eligible B screening score. Hazard weights: P=2, B=2, M=1, T=3.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Bioaccumulation_score_basis",
+    "source_field": "Bioaccumulation_score_basis",
+    "type": "text",
+    "unit": "",
+    "definition": "Selected evidence pathway for B; distinguish curated data, named QSAR model, LRTP and structure rules. Full candidates and reliability are in the archive.",
+    "missing": "Blank means no selected usable evidence."
+  },
+  {
+    "field": "Mobility_score",
+    "source_field": "Mobility_score",
+    "type": "number",
+    "unit": "score 0–2",
+    "definition": "Final eligible M screening score. Hazard weights: P=2, B=2, M=1, T=3.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Mobility_score_basis",
+    "source_field": "Mobility_score_basis",
+    "type": "text",
+    "unit": "",
+    "definition": "Selected evidence pathway for M; distinguish curated data, named QSAR model, LRTP and structure rules. Full candidates and reliability are in the archive.",
+    "missing": "Blank means no selected usable evidence."
+  },
+  {
+    "field": "Toxicity_score",
+    "source_field": "Toxicity_score",
+    "type": "number",
+    "unit": "score 0–2",
+    "definition": "Final eligible T screening score. Hazard weights: P=2, B=2, M=1, T=3.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Toxicity_score_basis",
+    "source_field": "Toxicity_score_basis",
+    "type": "text",
+    "unit": "",
+    "definition": "Selected evidence pathway for T; distinguish curated data, named QSAR model, LRTP and structure rules. Full candidates and reliability are in the archive.",
+    "missing": "Blank means no selected usable evidence."
+  },
+  {
+    "field": "Aquatic_M_score",
+    "source_field": "Aquatic_M_score",
+    "type": "number",
+    "unit": "score 0–2",
+    "definition": "Aquatic mobility component; final mobility is the selected maximum under eligibility rules.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "LRTP_M_score",
+    "source_field": "LRTP_M_score",
+    "type": "number",
+    "unit": "score 0–2",
+    "definition": "Long-range transport mobility component; final mobility is the selected maximum under eligibility rules.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_production_score",
+    "source_field": "Exposure_production_score",
+    "type": "number",
+    "unit": "score 0–2",
+    "definition": "Selected production/market-scale proxy; inspect metric, source, period and value status.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_patent_score",
+    "source_field": "Exposure_patent_score",
+    "type": "number",
+    "unit": "score 0–2",
+    "definition": "Patent activity score from the eligible selected count.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_literature_score",
+    "source_field": "Exposure_literature_score",
+    "type": "number",
+    "unit": "score 0–2",
+    "definition": "Literature score from the explicitly named selected source; do not substitute LitChemPlast for PubMed.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_food_contact_score",
+    "source_field": "Exposure_food_contact_score",
+    "type": "number",
+    "unit": "score 0–1",
+    "definition": "FCCmigex food-contact evidence indicator, not a migration concentration.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_human_biomonitoring_score",
+    "source_field": "Exposure_human_biomonitoring_score",
+    "type": "number",
+    "unit": "score 0–1",
+    "definition": "Eligible FCChumon detection evidence indicator, not a measured exposure concentration.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_inventory_score",
+    "source_field": "Exposure_inventory_score",
+    "type": "number",
+    "unit": "score 0–2",
+    "definition": "Industrial-inventory presence score, thresholds 1/2/4 listings -> 0.5/1/2; capped at 2.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Hazard_score",
+    "source_field": "Hazard_score",
+    "type": "number",
+    "unit": "score 0–16",
+    "definition": "2*P + 2*B + M + 3*T, only when all four dimensions are available. Not PlastChem Hazard_score.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_score",
+    "source_field": "Exposure_score",
+    "type": "number",
+    "unit": "score 0–10",
+    "definition": "Sum of six indicators across five dimensions; formal total requires all dimensions.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Priority_score",
+    "source_field": "Priority_score",
+    "type": "number",
+    "unit": "score 0–26",
+    "definition": "Hazard + exposure only when both domains are complete. Do not infer a value for an unranked record.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Priority_tier",
+    "source_field": "Priority_tier",
+    "type": "text",
+    "unit": "",
+    "definition": "High priority, Moderate priority, Low priority, or Insufficient evidence; screening categories, not measured risk.",
+    "missing": "Never substitute low for insufficient evidence."
+  },
+  {
+    "field": "Priority_rank",
+    "source_field": "Priority_rank",
+    "type": "integer",
+    "unit": "rank",
+    "definition": "Competition rank among eligible compounds only; ties share rank.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Priority_tie_size",
+    "source_field": "Priority_tie_size",
+    "type": "integer",
+    "unit": "compounds",
+    "definition": "Number of eligible compounds sharing the same priority score.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Ranking_eligible",
+    "source_field": "Ranking_eligible",
+    "type": "boolean",
+    "unit": "",
+    "definition": "True/False: eligibility for formal ranking; incomplete evidence is excluded.",
+    "missing": "Must be True or False."
+  },
+  {
+    "field": "Top_n_selected",
+    "source_field": "Top_n_selected",
+    "type": "boolean",
+    "unit": "",
+    "definition": "True for members of the inclusive Top-N selection, including boundary ties.",
+    "missing": "Blank for unranked; False for eligible records outside Top-N."
+  },
+  {
+    "field": "Hazard_available_dimensions",
+    "source_field": "Hazard_available_dimensions",
+    "type": "integer",
+    "unit": "dimensions",
+    "definition": "Available hazard dimensions out of 4; does not imply a complete total.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Hazard_missing_dimensions",
+    "source_field": "Hazard_missing_dimensions",
+    "type": "text",
+    "unit": "",
+    "definition": "Missing hazard dimensions, semicolon-delimited; original JSON is retained in compounds.",
+    "missing": "Empty list means none missing.",
+    "transform": "list"
+  },
+  {
+    "field": "Exposure_available_dimensions",
+    "source_field": "Exposure_available_dimensions",
+    "type": "integer",
+    "unit": "dimensions",
+    "definition": "Available exposure dimensions out of 5; does not imply a complete total.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_missing_dimensions",
+    "source_field": "Exposure_missing_dimensions",
+    "type": "text",
+    "unit": "",
+    "definition": "Missing exposure dimensions, semicolon-delimited; original JSON is retained in compounds.",
+    "missing": "Empty list means none missing.",
+    "transform": "list"
+  },
+  {
+    "field": "Ranking_exclusion_reasons",
+    "source_field": "Ranking_exclusion_reasons",
+    "type": "text",
+    "unit": "",
+    "definition": "Domain/dimension: reason entries, semicolon-delimited without truncation; original structured reasons remain in compounds.",
+    "missing": "Empty list means no ranking exclusions.",
+    "transform": "reasons"
+  },
+  {
+    "field": "qsar_identity_status",
+    "source_field": "qsar_identity_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Model-to-compound identity assessment, e.g. exact_key_match or review_required; unresolved predictions remain isolated.",
+    "missing": "Blank means status unavailable."
+  },
+  {
+    "field": "Exposure_scale_value_tonnes",
+    "source_field": "Exposure_scale_value_tonnes",
+    "type": "number",
+    "unit": "tonnes",
+    "definition": "Selected numeric production/market-scale proxy in tonnes; may be derived from a range.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_scale_metric_type",
+    "source_field": "Exposure_scale_metric_type",
+    "type": "text",
+    "unit": "",
+    "definition": "Metric represented by the selected evidence; do not assume production.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_scale_value_status",
+    "source_field": "Exposure_scale_value_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Exact, interval, bound or other recorded value status; inspect full bounds in the archive.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_scale_source",
+    "source_field": "Exposure_scale_source",
+    "type": "text",
+    "unit": "",
+    "definition": "Source of the selected production/market evidence.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_scale_jurisdiction",
+    "source_field": "Exposure_scale_jurisdiction",
+    "type": "text",
+    "unit": "",
+    "definition": "Geographic scope of the selected evidence; not necessarily global.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_scale_reporting_period",
+    "source_field": "Exposure_scale_reporting_period",
+    "type": "text",
+    "unit": "",
+    "definition": "Reported time period; blank must not be replaced by export year.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_production_data_status",
+    "source_field": "Exposure_production_data_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Availability status of selected production/market evidence; available need not mean a numeric quantity exists.",
+    "missing": "Blank means no recorded status."
+  },
+  {
+    "field": "Exposure_patent_count",
+    "source_field": "Exposure_patent_count",
+    "type": "number",
+    "unit": "count",
+    "definition": "Selected eligible patent count.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_patent_source",
+    "source_field": "Exposure_patent_source",
+    "type": "text",
+    "unit": "",
+    "definition": "Source of the selected patent count.",
+    "missing": "Blank means unavailable."
+  },
+  {
+    "field": "Exposure_patent_data_status",
+    "source_field": "Exposure_patent_data_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Availability of patent evidence; distinguish unavailable from a successful zero.",
+    "missing": "Blank means status unavailable."
+  },
+  {
+    "field": "Exposure_literature_count",
+    "source_field": "Exposure_literature_count",
+    "type": "number",
+    "unit": "count",
+    "definition": "Selected scoring-literature count; source is specified separately.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_literature_source",
+    "source_field": "Exposure_literature_source",
+    "type": "text",
+    "unit": "",
+    "definition": "Source of the selected literature count.",
+    "missing": "Blank means unavailable."
+  },
+  {
+    "field": "Exposure_literature_data_status",
+    "source_field": "Exposure_literature_data_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Availability of literature evidence; distinguish unavailable from a successful zero.",
+    "missing": "Blank means status unavailable."
+  },
+  {
+    "field": "Exposure_inventory_listing_count",
+    "source_field": "Exposure_inventory_listing_count",
+    "type": "number",
+    "unit": "count",
+    "definition": "Number of eligible industrial inventory listings; overlapping inventories are not independent measurements.",
+    "missing": "Blank means unavailable; numeric zero is an available zero."
+  },
+  {
+    "field": "Exposure_inventory_list_tags",
+    "source_field": "Exposure_inventory_list_tags",
+    "type": "text",
+    "unit": "",
+    "definition": "Names of eligible industrial inventory lists, semicolon-delimited.",
+    "missing": "Blank means no tags available; consult status and count."
+  },
+  {
+    "field": "Exposure_inventory_data_status",
+    "source_field": "Exposure_inventory_data_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Availability of inventory evidence; distinguish unavailable from a successful zero.",
+    "missing": "Blank means status unavailable."
+  },
+  {
+    "field": "Exposure_food_contact_data_status",
+    "source_field": "Exposure_food_contact_data_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Availability of FCCmigex food-contact evidence.",
+    "missing": "Blank means status unavailable."
+  },
+  {
+    "field": "exposure_human_biomonitoring_available",
+    "source_field": "exposure_human_biomonitoring_available",
+    "type": "boolean",
+    "unit": "",
+    "definition": "Whether the human-biomonitoring scoring indicator has eligible evidence.",
+    "missing": "Must be True or False."
+  },
+  {
+    "field": "Hazard_data_status",
+    "source_field": "Hazard_data_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Complete, Partial or Unavailable under the frozen domain-completeness policy.",
+    "missing": "Blank means no recorded status."
+  },
+  {
+    "field": "Exposure_data_status",
+    "source_field": "Exposure_data_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Complete, Partial or Unavailable under the frozen domain-completeness policy.",
+    "missing": "Blank means no recorded status."
+  },
+  {
+    "field": "Priority_data_status",
+    "source_field": "Priority_data_status",
+    "type": "text",
+    "unit": "",
+    "definition": "Complete or Insufficient evidence; formal priority must remain missing if incomplete.",
+    "missing": "Blank means no recorded status."
+  }
+]

@@ -21,14 +21,29 @@ standalone checks available from a clone of the code repository alone.
 
 After Stage 7B, the notebook and `python main.py --rank-priority` use the same
 `plastprior.export.export_results()` function. Each successful export creates a
-new directory under `results/final/<run_id>/` with exactly two files:
+new directory under `results/final/<run_id>/`:
 
-- `PlastPrior_results.csv`: a 53-field summary of all compounds, including
-  incomplete and unranked records. Scores, ranks, boundary-inclusive Top-N,
-  missingness, identity exceptions and GIC review flags remain explicit.
+- `PlastPrior_results.csv`: a 58-field publication table, including incomplete
+  and unranked records. Identity, source memberships, selected hazard pathways,
+  exposure quantities/context, scores, ranks and missingness are explicit.
+  Internal identity/GIC flags and detailed reasons remain in the archive.
 - `PlastPrior_results.sqlite`: complete final analysis (all original fields),
   historical final results, source records and membership links, retained audit
   decisions, shared evidence bodies and sparse intermediate differences.
+- `PlastPrior_data_dictionary.csv` and `README.md`: field meanings, source-field
+  mapping, units, missingness, scoring policies and read-only access examples.
+- `dashboard/PlastPrior_dashboard.sqlite`: all final compound fields plus display
+  aliases, without the multi-million-row intermediate audit. CSV SHA-256 and row
+  count bind this projection to the exact publication file. It is not a substitute
+  for the complete archive.
+
+The publication contract is `plastprior-publication-v1`; the detail projection
+uses `plastprior-dashboard-v1`, independently of the archive schema. The
+`publication_results` table reproduces the CSV text exactly. Production/market
+metric, value status, jurisdiction and reporting period accompany its quantity.
+Sources and missing dimensions are flattened without truncation; original JSON
+and all source field text remain available in `compounds`. The export verifies
+every publication field and every final field in the browser projection.
 
 This is export schema **2**, `compact-v2`. It changes storage only. Scientific
 stages, source files and prior output directories are not modified or deleted.

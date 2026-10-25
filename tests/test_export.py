@@ -12,6 +12,9 @@ from plastprior.export import (
     MAIN_TABLES, MANIFESTS, SCORES, COUNTS, FLAGS, SUMMARY_FIELDS,
     _inventory, _value, archived_bytes, export_results, read_audit_payload, read_artifact_records,
 )
+from plastprior.publication import REQUIRED_FIELDS, FIELDS as PUBLICATION_FIELDS, project
+
+INPUT_FIELDS = list(dict.fromkeys([*SUMMARY_FIELDS, *sorted(REQUIRED_FIELDS)]))
 
 
 def write_csv(path, fields, rows):
@@ -33,7 +36,7 @@ def fixture(root):
         ('missing', '', '', 'False', ''), ('b', '2.0', '1', 'True', 'True'),
         ('a', '2.0', '1', 'True', 'True'), ('zero', '0.0', '3', 'True', 'False'),
     ]:
-        row = dict.fromkeys(SUMMARY_FIELDS, '')
+        row = dict.fromkeys(INPUT_FIELDS, '')
         row.update({field: 'False' for field in FLAGS})
         row.update({field: '0' for field in COUNTS})
         row.update({field: score for field in SCORES})
@@ -44,10 +47,13 @@ def fixture(root):
                    qsar_identity_status='review_required' if key == 'missing' else 'verified',
                    qsar_identity_reason='identity_review_required' if key == 'missing' else '',
                    gic_name_review_required='True' if key == 'missing' else 'False',
-                   Ranking_exclusion_reasons='missing_evidence' if key == 'missing' else '')
+                   Ranking_exclusion_reasons='[{"domain":"hazard","dimension":"Persistence","reason":"missing_evidence"}]' if key == 'missing' else '[]',
+                   source_tables_json='["plastchem","fccmigex"]',
+                   exposure_human_biomonitoring_available='True',
+                   Priority_data_status='Insufficient evidence' if key == 'missing' else 'Complete')
         rows.append(row)
     paths = {table: root.joinpath(*parts) for parts, table in MAIN_TABLES.items()}
-    write_csv(paths['compounds'], SUMMARY_FIELDS, rows)
+    write_csv(paths['compounds'], INPUT_FIELDS, rows)
     write_csv(paths['historical_results'], ['inchikey', 'Historical_sort_position', 'Priority_score'],
               [{'inchikey': row['inchikey'], 'Historical_sort_position': str(i), 'Priority_score': '2.0'} for i, row in enumerate(rows, 1)])
     write_csv(paths['source_records'], ['record_id', 'source_id', 'reported_fields_json'],
@@ -58,8 +64,8 @@ def fixture(root):
                 'is_representative': 'True'} for row in rows])
     ranked = [rows[2], rows[1], rows[3]]
     folder = root / 'stage7' / '7b'
-    write_csv(folder / 'eligible_priority_ranking.csv', SUMMARY_FIELDS, ranked)
-    write_csv(folder / 'top_priority_including_ties.csv', SUMMARY_FIELDS, ranked[:2])
+    write_csv(folder / 'eligible_priority_ranking.csv', INPUT_FIELDS, ranked)
+    write_csv(folder / 'top_priority_including_ties.csv', INPUT_FIELDS, ranked[:2])
     audits = root / 'stage4' / 'test_audit.jsonl'
     audits.parent.mkdir(parents=True)
     audits.write_text('{"inchikey":"missing","reason":"identity_review_required","value":null}\n'
@@ -90,13 +96,24 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(package['status'], 'passed')
         self.assertEqual(package['compounds'], 4)
         self.assertEqual(package['top_n_compounds'], 2)
-        self.assertEqual({p.suffix for p in package['directory'].iterdir()}, {'.csv', '.sqlite'})
+        self.assertEqual({p.name for p in package['directory'].iterdir()},
+                         {'PlastPrior_results.csv', 'PlastPrior_results.sqlite',
+                          'PlastPrior_data_dictionary.csv', 'README.md', 'dashboard'})
         with package['csv'].open(encoding='utf-8', newline='') as stream:
             rows = list(csv.DictReader(stream))
         self.assertEqual([r['inchikey'] for r in rows], ['a', 'b', 'zero', 'missing'])
         self.assertEqual(rows[-1]['Priority_score'], '')
         self.assertEqual(rows[2]['Priority_score'], '0.0')
-        self.assertEqual(rows[0]['name_resolved'], 'NA')
+        self.assertEqual(rows[0]['Name'], 'NA')
+        self.assertEqual(rows[0]['CAS'], '001-01-1')
+        self.assertEqual(rows[0]['source_dbs'], 'PlastChem; FCCmigex')
+        self.assertEqual(list(rows[0]), list(PUBLICATION_FIELDS))
+        self.assertEqual(rows[-1]['Ranking_exclusion_reasons'], 'hazard/Persistence: missing_evidence')
+        with sqlite3.connect(package['dashboard_sqlite']) as detail:
+            meta = dict(detail.execute('SELECT * FROM metadata'))
+            self.assertEqual(meta['format'], 'plastprior-dashboard-v1')
+            self.assertEqual(meta['csv_sha256'], sha(package['csv']))
+            self.assertEqual(detail.execute("SELECT Name,Priority_score FROM compound_audit WHERE inchikey_std='missing'").fetchone(), ('NA', ''))
         with sqlite3.connect(package['sqlite']) as db:
             self.assertEqual(db.execute("SELECT Priority_score, Priority_rank, Top_n_selected FROM compounds WHERE inchikey='missing'").fetchone(), (None, None, None))
             self.assertEqual(db.execute("SELECT Priority_score, Top_n_selected FROM compounds WHERE inchikey='zero'").fetchone(), (0.0, 0))
@@ -140,8 +157,8 @@ class ExportTests(unittest.TestCase):
     def test_top_n_covering_the_whole_pool_shares_snapshot_content(self):
         source = self.root / 'stage7' / '7b' / 'eligible_priority_ranking.csv'
         self.rows[3]['Top_n_selected'] = 'True'
-        write_csv(source.parent / 'compound_rankings.csv', SUMMARY_FIELDS, self.rows)
-        write_csv(source, SUMMARY_FIELDS, [self.rows[2], self.rows[1], self.rows[3]])
+        write_csv(source.parent / 'compound_rankings.csv', INPUT_FIELDS, self.rows)
+        write_csv(source, INPUT_FIELDS, [self.rows[2], self.rows[1], self.rows[3]])
         (source.parent / 'top_priority_including_ties.csv').write_bytes(source.read_bytes())
         self.refresh_manifest(('stage7', '7b', 'ranking_manifest.json'))
         package = export_results(self.root)
@@ -222,6 +239,26 @@ class ExportTests(unittest.TestCase):
         self.assertIsNone(_value('Priority_score', ''))
         self.assertEqual(_value('Priority_score', '0'), 0)
         self.assertEqual(_value('cas_reported', '000-01-0'), '000-01-0')
+
+    def test_publication_requires_fields_and_preserves_zero_and_unknown(self):
+        row = dict(self.rows[3])
+        row.update(Exposure_patent_count='0.0', Exposure_literature_count='',
+                   Exposure_scale_reporting_period='', Exposure_scale_metric_type='import')
+        result = project(row)
+        self.assertEqual(result['Exposure_patent_count'], '0.0')
+        self.assertEqual(result['Exposure_literature_count'], '')
+        self.assertEqual(result['Exposure_scale_reporting_period'], '')
+        self.assertEqual(result['Exposure_scale_metric_type'], 'import')
+        del row['Exposure_patent_count']
+        with self.assertRaisesRegex(ValueError, 'Missing publication inputs'):
+            project(row)
+
+    def test_publication_failure_does_not_publish_partial_package(self):
+        destination = self.root / 'final' / 'bad-publication'
+        with patch('plastprior.publication.write_publication', side_effect=ValueError('publication validation failed')):
+            with self.assertRaisesRegex(ValueError, 'publication validation failed'):
+                export_results(self.root, destination)
+        self.assertFalse(destination.exists())
 
 
 if __name__ == '__main__':

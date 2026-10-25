@@ -110,11 +110,17 @@ The last Notebook cell prints the output paths. Each successful export creates:
 <output directory>/final/<run_id>/
   PlastPrior_results.csv
   PlastPrior_results.sqlite
+  PlastPrior_data_dictionary.csv
+  README.md
+  dashboard/PlastPrior_dashboard.sqlite
 ```
 
 | File or SQLite view | Purpose |
 | --- | --- |
-| CSV | 53-field summary of all compounds, including scores, ranks, eligibility and missingness |
+| CSV | 58-field publication table: identity, source memberships, selected evidence, scores, ranks and missingness |
+| Data dictionary and README | Definitions, units, null conventions, policy, source tracing and usage |
+| `dashboard/PlastPrior_dashboard.sqlite` | Browser-sized projection of every final compound field, paired with the CSV by SHA-256 |
+| `publication_results` | Exact text projection of the publication CSV in the full archive |
 | `compounds` | All 251 final fields in the verified collection |
 | `eligible_ranking` | Complete assessments eligible for ranking |
 | `top_priority` | Top-N including every boundary tie |
@@ -132,6 +138,14 @@ The frozen-input validation yielded **15,125 compounds**, **4,244 ranked**,
 checks for the specified inputs and policies, not targets for other datasets.
 Final directories are never overwritten by export. Intermediate files in a
 reused output directory can be replaced; cleanup is not automatic.
+
+For the updated ChemicalPrioDashboard, load `PlastPrior_results.csv` followed by
+`dashboard/PlastPrior_dashboard.sqlite` from the same export. The full archive
+is for offline audit, not browser import. The display adapter preserves absent
+formal scores and uses the selected literature source. The scientific archive
+remains compact-v2; the separate publication and browser-detail contracts are
+version 1. Publication field selection is defined in
+`plastprior/publication_fields.json`, without rescoring or source enrichment.
 
 ## Scope and limitations
 

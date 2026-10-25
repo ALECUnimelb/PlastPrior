@@ -729,6 +729,18 @@ def export_results(results_dir, output_dir=None, *, progress=None):
                 'external_references': 'Original inputs and stage-file bytes are not embedded. Their paths and hashes are inventoried; retained parsed stage values are reconstructible. Scope exclusions have explicit row ranges, counts and a sequence digest.',
             }
             db.executemany('INSERT INTO run_metadata VALUES (?,?)', [(k, _json(v)) for k, v in metadata.items()])
+            from .publication import write_publication, FIELDS
+            notify('Writing and verifying the concise publication CSV and browser detail projection.')
+            publication = write_publication(db, staging, run_id)
+            db.execute('UPDATE run_metadata SET value_json=? WHERE key=?',
+                       (_json(_hash(csv_path)), 'csv_sha256'))
+            db.execute('UPDATE run_metadata SET value_json=? WHERE key=?',
+                       (_json(FIELDS), 'summary_fields'))
+            validation['archive_summary_fields'] = validation['summary_fields']
+            validation['summary_fields'] = len(FIELDS)
+            validation['publication'] = publication
+            db.execute('UPDATE run_metadata SET value_json=? WHERE key=?',
+                       (_json(validation), 'validation'))
             db.commit()
         # Rename a new directory on the same filesystem after closing SQLite (Windows-safe).
         if destination.exists():
@@ -736,4 +748,6 @@ def export_results(results_dir, output_dir=None, *, progress=None):
         staging.rename(destination)
     notify('Verified final package: ' + str(destination))
     return {'directory': destination, 'csv': destination / csv_path.name,
-            'sqlite': destination / db_path.name, **validation}
+            'sqlite': destination / db_path.name,
+            'dashboard_sqlite': destination / 'dashboard' / 'PlastPrior_dashboard.sqlite',
+            'dictionary': destination / 'PlastPrior_data_dictionary.csv', **validation}
