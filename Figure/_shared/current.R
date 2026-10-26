@@ -54,10 +54,15 @@ save_nested <- function(tables, prefix='') {
 current_policy <- jsonlite::fromJSON(file.path(repo_root,'plastprior/priority_policy.json'),simplifyVector=FALSE)
 configure_current <- function(config) {
   config$priority_tier_policy_version <- current_policy$policy_version
-  config$thresholds$moderate_component_min <- current_policy$tiers[['Moderate priority']]$hazard
-  config$thresholds$high_component_min <- current_policy$tiers[['High priority']]$hazard
-  config$thresholds$low_priority_upper <- current_policy$tiers[['Moderate priority']]$total
-  config$thresholds$high_priority_lower <- current_policy$tiers[['High priority']]$total
+  high <- current_policy$tiers[['High priority']]
+  moderate <- current_policy$tiers[['Moderate priority']]$any_of
+  config$thresholds$moderate_hazard_min <- moderate[[1]]$hazard_gte
+  config$thresholds$high_hazard_gt <- high$hazard_gt
+  config$thresholds$exposure_min <- high$exposure_gte
+  stopifnot(moderate[[1]]$hazard_lte == high$hazard_gt,
+            moderate[[1]]$exposure_gte == high$exposure_gte,
+            moderate[[2]]$hazard_gt == high$hazard_gt,
+            moderate[[2]]$exposure_lt == high$exposure_gte)
   config
 }
 if(!is.null(config)) config <- configure_current(config)

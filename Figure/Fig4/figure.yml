@@ -72,9 +72,10 @@
   },
   "thresholds": {
     "score_tolerance": 1e-09,
-    "low_priority_upper": 6,
-    "high_priority_lower": 12,
-    "expected_total_maximum": 26
+    "expected_total_maximum": 26,
+    "moderate_hazard_min": 6,
+    "high_hazard_gt": 10,
+    "exposure_min": 5
   },
   "components": [
     {
@@ -153,50 +154,50 @@
       "scenario_id": "baseline",
       "label": "Baseline",
       "note": "Published score and thresholds",
-      "low_threshold": 6,
-      "high_threshold": 12
+      "moderate_hazard_min": 6,
+      "high_hazard_gt": 10
     },
     {
       "scenario_id": "equal_pbmt_weights",
       "label": "Equal PBMT weights",
       "note": "All four PBMT dimensions weighted 2; hazard maximum retained at 16",
-      "low_threshold": 6,
-      "high_threshold": 12
+      "moderate_hazard_min": 6,
+      "high_hazard_gt": 10
     },
     {
       "scenario_id": "inventory_linear",
       "label": "Inventory linear 0.5/list",
       "note": "Each listed inventory contributes 0.5 points, capped at 2",
-      "low_threshold": 6,
-      "high_threshold": 12
+      "moderate_hazard_min": 6,
+      "high_hazard_gt": 10
     },
     {
       "scenario_id": "inventory_halved",
       "label": "Inventory weight halved",
       "note": "Inventory-presence contribution multiplied by 0.5",
-      "low_threshold": 6,
-      "high_threshold": 12
+      "moderate_hazard_min": 6,
+      "high_hazard_gt": 10
     },
     {
       "scenario_id": "exposure_capped",
       "label": "Exposure capped at 8",
       "note": "Integrated exposure score capped at 8 points",
-      "low_threshold": 6,
-      "high_threshold": 12
+      "moderate_hazard_min": 6,
+      "high_hazard_gt": 10
     },
     {
-      "scenario_id": "high_threshold_11",
-      "label": "High threshold 11",
-      "note": "High-priority threshold lowered from 12 to 11",
-      "low_threshold": 6,
-      "high_threshold": 11
+      "scenario_id": "high_hazard_gt_9",
+      "label": "High: H > 9",
+      "note": "Strict High hazard threshold >9; Exposure >=5; moderate lower H boundary remains 6.",
+      "moderate_hazard_min": 6,
+      "high_hazard_gt": 9
     },
     {
-      "scenario_id": "high_threshold_13",
-      "label": "High threshold 13",
-      "note": "High-priority threshold raised from 12 to 13",
-      "low_threshold": 6,
-      "high_threshold": 13
+      "scenario_id": "high_hazard_gt_11",
+      "label": "High: H > 11",
+      "note": "Strict High hazard threshold >11; Exposure >=5; moderate lower H boundary remains 6.",
+      "moderate_hazard_min": 6,
+      "high_hazard_gt": 11
     }
   ],
   "priority_palette": {
@@ -209,9 +210,9 @@
     "Rank correlation (Spearman rho)": "#2F7183"
   },
   "heatmap_palette": [
-    "#F7F9FB",
-    "#D7E5ED",
-    "#8BB6C8",
-    "#2D687F"
+    "#8C9FAF",
+    "#687F93",
+    "#476279",
+    "#293F55"
   ]
 }

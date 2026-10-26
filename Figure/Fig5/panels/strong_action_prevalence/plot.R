@@ -16,6 +16,7 @@ plot_policy_strong_action_prevalence <- function(source_data, config) {
     scales::comma(plot_data$compound_count), "  (",
     scales::percent(plot_data$proportion, accuracy = 0.1), ")"
   )
+  config$thresholds$panel_a_x_maximum <- min(1, max(0.3, ceiling((max(plot_data$ci_high) + 0.10) * 10) / 10))
   high <- plot_data[plot_data$priority_tier == "High priority", ]
   palette <- policy_named_palette(config, "priority_palette")
 

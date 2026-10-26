@@ -7,6 +7,6 @@ score_scenario <- function(id, hazard, exposure, raw_scores, inventory, inventor
   else if(id=='inventory_linear') e <- exposure-inventory+pmin(.5*inventory_count,2)
   else if(id=='inventory_halved') e <- exposure-.5*inventory
   else if(id=='exposure_capped') e <- pmin(exposure,8)
-  else if(!id %in% c('baseline','high_threshold_11','high_threshold_13')) stop('Unknown scenario: ',id)
+  else if(!id %in% c('baseline','high_hazard_gt_9','high_hazard_gt_11')) stop('Unknown scenario: ',id)
   list(score=h+e,hazard=h,exposure=e)
 }

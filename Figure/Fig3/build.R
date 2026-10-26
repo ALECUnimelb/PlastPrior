@@ -17,8 +17,12 @@ prepared <- list(priority_score_distribution=prepare_priority_score_distribution
 plots <- list()
 for(id in ids) {
  save_nested(prepared[[id]]$source_data,paste0(id,'/'))
- plots[[id]] <- get(paste0('plot_',id))(prepared[[id]]$source_data,config,'publication')
+ variant <- if(id=='hazard_exposure_landscape') 'compact' else 'publication'
+ plots[[id]] <- get(paste0('plot_',id))(prepared[[id]]$source_data,config,variant)
 }
 save_table(compounds,'compound_values')
 save_facts(list(population=lock$total,ranked=lock$ranked,no_data=lock$total-lock$ranked,panel_statistics=lapply(prepared,`[[`,'statistics'),missing='Full-inventory profiles distinguish unknown from zero; missing components contribute zero to totals; partial evidence remains rankable.'))
-save_plot(assemble_priority_landscape(plots,config),183,215)
+heatmap_config <- panel_config(config,'hazard_exposure_landscape')
+standalone_heatmap <- plot_hazard_exposure_landscape(prepared$hazard_exposure_landscape$source_data,config,'publication')
+export_figure(standalone_heatmap,file.path(output_dir,'Fig3b'),as.numeric(heatmap_config$width_mm),as.numeric(heatmap_config$height_mm),dpi=as.numeric(config$export$dpi))
+save_plot(assemble_priority_landscape(plots,config),as.numeric(config$export$width_mm),as.numeric(config$export$height_mm))

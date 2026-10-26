@@ -121,7 +121,7 @@ plot_regulatory_context_inset <- function(panel_data, config, variant = "publica
       linewidth = 0.22
     ) +
     ggplot2::geom_text(
-      data = tier_totals[tier_totals$compound_count > 0, , drop = FALSE],
+      data = tier_totals[tier_totals$compound_count / total >= 0.05, , drop = FALSE],
       ggplot2::aes(
         x = 1.25, y = ymid,
         label = scales::comma(compound_count),
@@ -153,6 +153,11 @@ plot_regulatory_context_inset <- function(panel_data, config, variant = "publica
       plot.margin = ggplot2::margin(2, 1, 2, 1)
     ) +
     ggplot2::guides(fill = ggplot2::guide_legend(ncol = 1, byrow = TRUE))
+
+  small_tiers <- tier_totals[tier_totals$compound_count > 0 & tier_totals$compound_count / total < 0.05, , drop=FALSE]
+  if (nrow(small_tiers)>0) plot <- plot +
+    ggplot2::geom_segment(data=small_tiers,ggplot2::aes(x=1.95,xend=3.12,y=ymid,yend=ymid),colour='#202830',linewidth=.25) +
+    ggplot2::geom_text(data=small_tiers,ggplot2::aes(x=3.45,y=ymid,label=scales::comma(compound_count)),colour='#202830',size=2.1,fontface='bold')
 
   fraction_threshold <- if (identical(variant, "audit_all_values")) {
     0

@@ -59,12 +59,11 @@
   },
   "thresholds": {
     "score_tolerance": 1e-09,
-    "low_priority_upper": 6,
-    "high_priority_lower": 12,
-    "baseline_stable_minimum": 13,
-    "alternative_stable_minimum": 12,
     "panel_a_x_maximum": 0.3,
-    "confidence_z": 1.959964
+    "confidence_z": 1.959964,
+    "moderate_hazard_min": 6,
+    "high_hazard_gt": 10,
+    "exposure_min": 5
   },
   "components": [
     {
@@ -176,5 +175,6 @@
     "RPLC +ESI-HRMS": "#C97928",
     "RPLC -ESI-HRMS": "#AF302D",
     "Missing annotation": "#AEB7C2"
-  }
+  },
+  "stable_high_definition": "High at baseline and under all four score perturbations, using H>10 and E>=5 without an extra total-score gate."
 }

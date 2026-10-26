@@ -1,142 +1,52 @@
-# This semantic panel inherits theme_classic(base_size = 8,
-# base_family = "Arial") and delegates svglite::svglite(),
-# grDevices::cairo_pdf(), ragg::agg_png(res = 600), and
-# ragg::agg_tiff(res = 600) to the module build/export contract
-# (assembled width_mm = 183; standalone dimensions are in figure.yml).
-
-plot_hazard_exposure_landscape <- function(panel_data, config, variant = "publication") {
-  pairs <- panel_data$hazard_exposure_pairs
-  pairs$Priority_tier <- factor(pairs$Priority_tier, levels = priority_levels)
-  pairs <- pairs[
-    order(-pairs$compound_count, pairs$Hazard_score, pairs$Exposure_score),
-    ,
-    drop = FALSE
-  ]
-  priority_palette <- named_palette(config, "priority_palette")
-  hazard_max <- as.numeric(config$thresholds$hazard_theoretical_max)
-  exposure_max <- as.numeric(config$thresholds$exposure_theoretical_max)
-  size_breaks <- c(25, 100, 250, 500, 1000)
-  size_breaks <- size_breaks[size_breaks <= max(pairs$compound_count)]
-  if (length(size_breaks) == 0L) size_breaks <- max(pairs$compound_count)
-
-  boundary <- function(total, gate, tier) {
-    left <- max(gate, total - exposure_max)
-    if (gate == 0) {
-      return(data.frame(Hazard_score = c(left, total),
-                        Exposure_score = c(total - left, 0), tier = tier))
-    }
-    data.frame(Hazard_score = c(left, left, total - gate, hazard_max),
-               Exposure_score = c(exposure_max, total - left, gate, gate), tier = tier)
-  }
-  boundaries <- rbind(
-    boundary(config$thresholds$low_priority_upper,
-             config$thresholds$moderate_component_min, "Moderate priority"),
-    boundary(config$thresholds$high_priority_lower,
-             config$thresholds$high_component_min, "High priority")
-  )
-
-  base_plot <- ggplot2::ggplot(
-    pairs,
-    ggplot2::aes(
-      x = Hazard_score,
-      y = Exposure_score,
-      size = compound_count,
-      fill = Priority_tier
-    )
-  ) +
-    ggplot2::geom_path(
-      data = boundaries,
-      ggplot2::aes(x = Hazard_score, y = Exposure_score, group = tier),
-      inherit.aes = FALSE, colour = "#677583",
-      linetype = "22", linewidth = 0.55
-    ) +
-    ggplot2::geom_point(
-      shape = 21,
-      colour = "white",
-      stroke = 0.16,
-      alpha = 0.72
-    ) +
-    ggplot2::scale_fill_manual(
-      values = priority_palette,
-      breaks = c("Low priority", "Moderate priority", "High priority"),
-      name = NULL,
-      drop = FALSE
-    ) +
-    ggplot2::scale_size_area(
-      max_size = 4.2,
-      breaks = size_breaks,
-      labels = scales::comma,
-      name = "Compounds"
-    ) +
-    ggplot2::scale_x_continuous(
-      breaks = seq(0, hazard_max, by = 2),
-      labels = function(x) sprintf("%d", as.integer(x)),
-      limits = c(0, hazard_max),
-      expand = ggplot2::expansion(add = c(0.25, 0.25))
-    ) +
-    ggplot2::scale_y_continuous(
-      breaks = seq(0, exposure_max, by = 2),
-      labels = function(x) sprintf("%d", as.integer(x)),
-      limits = c(0, exposure_max),
-      expand = ggplot2::expansion(add = c(0.25, 0.25))
-    ) +
-    ggplot2::coord_fixed(ratio = 1, clip = "off") +
-    ggplot2::labs(x = "Hazard score", y = "Exposure score") +
-    priority_landscape_theme() +
-    ggplot2::theme(
-      legend.position = "bottom",
-      legend.box = "vertical",
-      legend.direction = "horizontal",
-      legend.text = ggplot2::element_text(size = 7.0),
-      legend.title = ggplot2::element_text(size = 7.0, colour = "#202830"),
-      legend.key.height = grid::unit(5.2, "mm"),
-      legend.spacing.y = grid::unit(1.0, "mm")
-    ) +
-    ggplot2::guides(
-      fill = ggplot2::guide_legend(
-        order = 1,
-        nrow = 1,
-        override.aes = list(
-          size = 3.8,
-          alpha = 0.82,
-          fill = unname(priority_palette[c(
-            "Low priority", "Moderate priority", "High priority"
-          )])
-        )
-      ),
-      size = ggplot2::guide_legend(
-        order = 2,
-        title.position = "left",
-        nrow = 1,
-        override.aes = list(
-          shape = 21,
-          fill = "#7B8794",
-          colour = "white",
-          alpha = 0.9
-        )
-      )
-    )
-
-  if (identical(variant, "publication")) {
-    return(base_plot)
-  }
-  threshold <- as.numeric(config$display$hazard_exposure_label_min_count)
-  labels <- pairs[pairs$compound_count >= threshold, , drop = FALSE]
-  base_plot +
-    ggplot2::geom_text(
-      data = labels,
-      ggplot2::aes(label = scales::comma(compound_count)),
-      colour = "white",
-      fontface = "bold",
-      size = 1.95,
-      show.legend = FALSE
-    ) +
-    ggplot2::geom_text(
-      data = labels,
-      ggplot2::aes(label = scales::comma(compound_count)),
-      colour = "#202830",
-      fontface = "bold",
-      size = 1.45,
-      show.legend = FALSE
-    )
+# Approved numeric heatmap; all graphics use R, Arial, and editable vector exports.
+plot_hazard_exposure_landscape <- function(panel_data, config, variant='publication') {
+ compact <- identical(variant,'compact')
+ style <- config$display$heatmap_compact
+ pt_to_mm <- function(x) as.numeric(x) / (72.27/25.4)
+ grid <- panel_data$heatmap_source_data
+ key <- panel_data$colour_key
+ x_labels <- as.character(0:16)
+ priority_levels <- c('Low priority','Moderate priority','High priority')
+ palettes <- lapply(priority_levels,function(p) key$colour[key$priority==p])
+ names(palettes) <- priority_levels
+boundaries <- data.frame(x=c(6,11,6),y=c(5,0,5),xend=c(6,11,17),yend=c(11,11,5))
+p <- ggplot(grid,aes(x=hazard_position+.5,y=exposure_bin+.5)) +
+ geom_tile(aes(fill=fill_colour),width=1,height=1,colour='white',linewidth=if(compact) style$tile_linewidth_mm else .4) +
+ geom_segment(data=boundaries,aes(x=x,y=y,xend=xend,yend=yend),inherit.aes=FALSE,colour='white',linewidth=if(compact) .75 else 1.1) +
+ geom_segment(data=boundaries,aes(x=x,y=y,xend=xend,yend=yend),inherit.aes=FALSE,colour='#243442',linewidth=if(compact) style$boundary_linewidth_mm else .5,linetype='22') +
+ geom_text(aes(label=compound_count,colour=text_colour),family='Arial',size=if(compact) pt_to_mm(style$number_size_pt) else 2.9) +
+ scale_colour_identity() + scale_fill_identity() +
+ scale_x_continuous(breaks=(0:16)+.5,labels=x_labels,limits=c(0,17),expand=expansion(mult=0)) +
+ scale_y_continuous(breaks=(0:10)+.5,labels=0:10,limits=c(0,11),expand=expansion(mult=0)) +
+ coord_fixed(ratio=if(compact) style$cell_aspect_ratio else 1,clip='off') +
+ labs(x='Hazard score (threshold-aware bins)',y='Exposure score (bins)') +
+ theme_classic(base_size=if(compact) style$axis_title_size_pt else 10,base_family='Arial') +
+ theme(axis.line=element_blank(),axis.ticks=element_blank(),axis.text=element_text(colour='#202830',size=if(compact) style$axis_text_size_pt else 8.5),axis.text.x=element_text(lineheight=.85),axis.title=element_text(colour='#202830'),plot.margin=if(compact) margin(5,3,1,3) else margin(6,8,1,8))
+# Three ticks on a four-shade key: same count intervals as the heatmap.
+legend_segments <- do.call(rbind,lapply(seq_along(priority_levels),function(i) {
+ data.frame(x=(i-1)+.10+((1:4)-.5)*.20,colour=palettes[[priority_levels[i]]])
+}))
+legend_ticks <- do.call(rbind,lapply(0:2,function(i) {
+ data.frame(x=i+c(.10,.50,.80),label=c('0','50','>100'))
+}))
+legend_labels <- data.frame(x=c(.5,1.5,2.5),label=priority_levels)
+legend_plot <- ggplot() +
+ geom_tile(data=legend_segments,aes(x=x,y=.55,fill=colour),width=.20,height=.24) +
+ scale_fill_identity() +
+ geom_segment(data=legend_ticks,aes(x=x,xend=x,y=.67,yend=.73),linewidth=.3,colour='#202830') +
+ geom_text(data=legend_ticks,aes(x=x,y=.86,label=label),family='Arial',size=if(compact) pt_to_mm(style$legend_tick_size_pt) else 2.8,colour='#202830') +
+ geom_text(data=legend_labels,aes(x=x,y=.14,label=label),family='Arial',size=if(compact) pt_to_mm(style$legend_label_size_pt) else 3.2,colour='#202830') +
+ scale_x_continuous(limits=c(0,3),expand=expansion(mult=0)) +
+ scale_y_continuous(limits=c(0,1),expand=expansion(mult=0)) +
+ theme_void(base_family='Arial') + theme(plot.margin=if(compact) margin(0,1,0,1) else margin(0,8,0,8))
+legend_row <- plot_spacer() + legend_plot + plot_spacer() + plot_layout(widths=if(compact) c(.1,8.8,.1) else c(1,7,1))
+# Use the available vertical space for the heatmap; keep its key directly below.
+combined <- if(compact) {
+ (p / legend_row) + plot_layout(heights=as.numeric(unlist(style$row_heights))) +
+   plot_annotation(theme=theme(plot.margin=margin(4,1,2,1)))
+} else {
+ (p / legend_row) + plot_layout(heights=c(12.7,1.6)) +
+   plot_annotation(theme=theme(plot.margin=margin(4,4,4,4)))
+}
+ combined
 }
