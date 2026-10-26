@@ -148,6 +148,10 @@ Adopting new inputs requires a separate versioned analysis and validation.
 
 ## Access, citations and distribution
 
+Consult the [current source-by-source distribution checklist](data_distribution_checklist.md)
+for conditional public deposits, provider-acquisition routes and unresolved scopes.
+Official licensing evidence and exact local-file readiness are separate.
+
 The repository currently provides source references, file identities and known
 limitations. It does not yet provide a complete approved input archive, an
 established project data-request route, or a public result deposit. Dataset

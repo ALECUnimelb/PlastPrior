@@ -41,7 +41,22 @@
       "exact_snapshot_status": "unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "The catalog endpoint did not return usable content in this review. Recover the exact 2025-06-03 export route and applicable list-level terms."
+      "required_action": "The catalog endpoint did not return usable content in this review. Recover the exact 2025-06-03 export route and applicable list-level terms.",
+      "p0_distribution_review": {
+        "id": "NORMAN_SusDat",
+        "category": "original_source_for_now",
+        "terms_observed": "No dataset-wide redistribution licence established in the retrieved export page.",
+        "permission_scope": "The aggregate SusDat export and contributing lists require separate scope review.",
+        "evidence_urls": [
+          "https://www.norman-network.com/nds/susdat/",
+          "https://www.norman-network.net/nds/SLE/"
+        ],
+        "citation_instruction": "Cite NORMAN SusDat and contributing list identifiers; retain the declared 2025-06-03 export label as recorded, not an authenticated retrieval date.",
+        "required_action": "Recover the exact export route and list-level notices; establish permission for mirrored aggregate records and analytical predictions.",
+        "acquisition_instruction": "Obtain the specified export from NORMAN or its provider; the current page does not establish access to the frozen bytes.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "PubChemLite",
@@ -72,7 +87,23 @@
       "exact_snapshot_status": "unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "The website links a current Zenodo release and citations; the local undated CSV has not been matched to a version-specific archive. Do not substitute the current release."
+      "required_action": "The website links a current Zenodo release and citations; the local undated CSV has not been matched to a version-specific archive. Do not substitute the current release.",
+      "p0_distribution_review": {
+        "id": "PubChemLite",
+        "category": "public_under_conditions",
+        "terms_observed": "CC BY 4.0 on candidate record 22953182.",
+        "permission_scope": "Applies to the identified PubChemLite-CCSbase-20260925 deposit; the local undated CSV has not been matched.",
+        "evidence_urls": [
+          "https://pubchemlite.lcsb.uni.lu/",
+          "https://zenodo.org/records/22953182",
+          "https://zenodo.org/api/records/22953182"
+        ],
+        "citation_instruction": "Cite Schymanski et al. (2021), doi:10.1186/s13321-021-00489-0; identify the actual dataset version. Cite CCS work only when the matched input contains and uses that contribution.",
+        "required_action": "Locate the historical release matching the local hash, retain attribution and licence notices, and document any transformation. The current candidate is not the frozen input.",
+        "acquisition_instruction": "Use the official site and Zenodo version history; do not replace PubChemLite.csv with the current download.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "PlastChem",
@@ -166,6 +197,21 @@
         "source_bytes_unchanged": true,
         "editing_history_established": false,
         "rights_decision_changed": false
+      },
+      "p0_distribution_review": {
+        "id": "PlastChem",
+        "category": "public_under_conditions",
+        "terms_observed": "CC BY-NC 4.0 on version 1.01, record 15397723.",
+        "permission_scope": "The official version permits attributed noncommercial sharing/adaptation; this does not establish an unrestricted licence for the combined database.",
+        "evidence_urls": [
+          "https://zenodo.org/records/15397723",
+          "https://zenodo.org/api/records/15397723"
+        ],
+        "citation_instruction": "Cite Wagner et al., State of the science on plastic chemicals, dataset version 1.01, doi:10.5281/zenodo.15397723; preserve creator and licence notices.",
+        "required_action": "Document the local workbook as a byte-different copy with scientifically equivalent tables, retain the comparison report and disclose known changes; assess the intended distribution against the NC scope.",
+        "acquisition_instruction": "The version-specific official XLSX is accessible. It is a candidate source, not a byte-identical replacement for the frozen workbook.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
       }
     },
     {
@@ -197,7 +243,22 @@
       "exact_snapshot_status": "unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "The report link redirected to a PDF that could not be retrieved by the web tool. Establish the workbook supplement and its terms separately from the report."
+      "required_action": "The report link redirected to a PDF that could not be retrieved by the web tool. Establish the workbook supplement and its terms separately from the report.",
+      "p0_distribution_review": {
+        "id": "UNEP",
+        "category": "original_source_for_now",
+        "terms_observed": "No licence for the exact annex workbook established in this review.",
+        "permission_scope": "The report and its Excel annex are distinct objects; report access alone does not clear the local workbook.",
+        "evidence_urls": [
+          "https://www.unep.org/resources/report/chemicals-plastics-technical-report",
+          "https://www.unep.org/pt-br/node/34317"
+        ],
+        "citation_instruction": "Cite UNEP (2023), Chemicals in Plastics: A Technical Report, plus the exact annex identity when established.",
+        "required_action": "Recover the official Excel annex and workbook correspondence; inspect annex-specific notices. Search-index evidence lists an Excel annex, but direct retrieval failed.",
+        "acquisition_instruction": "Use the UNEP report/annex route or request the specific annex from the provider; do not treat the report PDF as the required input.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "NORMAN_MPLEACH",
@@ -286,6 +347,21 @@
         "source_bytes_unchanged": true,
         "editing_history_established": false,
         "rights_decision_changed": false
+      },
+      "p0_distribution_review": {
+        "id": "NORMAN_MPLEACH",
+        "category": "public_under_conditions",
+        "terms_observed": "CC BY 4.0 on NORMAN-SLE-S133.0.1.0, record 18157912.",
+        "permission_scope": "The identified MPLEACH deposit permits attributed sharing/adaptation; local byte differences remain provenance issues.",
+        "evidence_urls": [
+          "https://zenodo.org/records/18157912",
+          "https://zenodo.org/api/records/18157912"
+        ],
+        "citation_instruction": "Cite Alygizakis, Roosma, Brunner and Slobodnik, S133 MPLEACH, version NORMAN-SLE-S133.0.1.0, doi:10.5281/zenodo.18157912.",
+        "required_action": "Attach the existing scientific-table equivalence result, preserve both hashes and indicate local changes without inventing editing history.",
+        "acquisition_instruction": "Obtain MPLEACH.xlsx from the version-specific record; keep the frozen local file unchanged for historical reproduction.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
       }
     },
     {
@@ -317,7 +393,23 @@
       "exact_snapshot_status": "unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "The official page links the S112 NORMAN chemical list. The local S112_FCCMIGEX sheet is not proof of a particular release or of database-wide redistribution terms."
+      "required_action": "The official page links the S112 NORMAN chemical list. The local S112_FCCMIGEX sheet is not proof of a particular release or of database-wide redistribution terms.",
+      "p0_distribution_review": {
+        "id": "FCCmigex",
+        "category": "public_under_conditions",
+        "terms_observed": "CC BY 4.0 on candidate NORMAN-SLE-S112.0.2.1, record 15852269.",
+        "permission_scope": "Covers the deposited S112 list, not automatically the whole interactive FCCmigex database. Candidate XLSX MD5 differs from the local workbook.",
+        "evidence_urls": [
+          "https://foodpackagingforum.org/resources/databases/fccmigex",
+          "https://zenodo.org/records/15852269",
+          "https://zenodo.org/api/records/15852269"
+        ],
+        "citation_instruction": "Cite Geueke et al., doi:10.1080/10408398.2022.2067828, the FCCmigex website and the actual S112 release DOI once matched.",
+        "required_action": "Identify which S112 version produced FCCmigex.xlsx and compare the workbook before assigning a version. Preserve attribution and describe changes.",
+        "acquisition_instruction": "Use the official FCCmigex page to reach NORMAN S112/Zenodo. The candidate release is not yet validated as the frozen source.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "FCChumon",
@@ -348,7 +440,23 @@
       "exact_snapshot_status": "unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "The official page links the 2024 article (10.1038/s41370-024-00718-2). The publisher page could not be retrieved; exact workbook supplement and terms remain unresolved."
+      "required_action": "The official page links the 2024 article (10.1038/s41370-024-00718-2). The publisher page could not be retrieved; exact workbook supplement and terms remain unresolved.",
+      "p0_distribution_review": {
+        "id": "FCChumon",
+        "category": "confirmation_required",
+        "terms_observed": "CC BY 4.0 observed on the publisher article; third-party exceptions remain possible.",
+        "permission_scope": "The article links Supplementary Tables, but the exact local S1/S2 workbook-to-supplement relationship and notices have not been checked.",
+        "evidence_urls": [
+          "https://foodpackagingforum.org/resources/databases/fcchumon",
+          "https://www.nature.com/articles/s41370-024-00718-2?trk=public_post_comment-text",
+          "https://www.nature.com/articles/s41370-024-00718-2.pdf"
+        ],
+        "citation_instruction": "Cite Geueke et al., Evidence for widespread human exposure to food contact chemicals, doi:10.1038/s41370-024-00718-2; online publication 2024, journal volume 35 (2025), 330-341.",
+        "required_action": "Match the exact supplement and inspect credit lines before extending article-level permission to FCChumon.xlsx. Publisher search-index text was available; direct HTML redirected to an inaccessible authentication endpoint.",
+        "acquisition_instruction": "Retrieve the Supplementary Tables through the original article/provider. Do not assume the dashboard export and supplement are interchangeable.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "FCCprio",
@@ -441,6 +549,21 @@
         "source_bytes_unchanged": true,
         "editing_history_established": false,
         "rights_decision_changed": false
+      },
+      "p0_distribution_review": {
+        "id": "FCCprio",
+        "category": "public_under_conditions",
+        "terms_observed": "CC BY 4.0 on version 0.2, record 17199870.",
+        "permission_scope": "The identified version permits attributed sharing/adaptation; the concept DOI is not a version pin.",
+        "evidence_urls": [
+          "https://zenodo.org/records/17199870",
+          "https://zenodo.org/api/records/17199870"
+        ],
+        "citation_instruction": "Cite Wiesinger et al., Food Contact Chemicals Priority (FCCprio) List, version 0.2, doi:10.5281/zenodo.17199870, and its accompanying methodology.",
+        "required_action": "Use the version DOI in release citations; preserve the byte-difference/content-equivalence audit and a transparent local-copy notice.",
+        "acquisition_instruction": "Obtain FCCprio-List-v0-2-Zenodo-20260115.xlsx from the version 0.2 record, not the concept DOI current release.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
       }
     },
     {
@@ -533,6 +656,21 @@
         "source_bytes_unchanged": true,
         "editing_history_established": false,
         "rights_decision_changed": false
+      },
+      "p0_distribution_review": {
+        "id": "LitChemPlast",
+        "category": "public_under_conditions",
+        "terms_observed": "CC BY 4.0 on v20240809, record 13271346.",
+        "permission_scope": "The identified XLS/relational deposit permits attributed sharing/adaptation; local XLS bytes differ although scientific tables matched.",
+        "evidence_urls": [
+          "https://zenodo.org/records/13271346",
+          "https://zenodo.org/api/records/13271346"
+        ],
+        "citation_instruction": "Cite Wiesinger et al., LitChemPlast database, v20240809, doi:10.5281/zenodo.13271346, and the associated article doi:10.1021/acs.estlett.4c00355.",
+        "required_action": "Retain the official-to-local filename mapping, creator notices, both hashes and the existing content comparison. Do not invent a retrieval date.",
+        "acquisition_instruction": "Use LitChemPlast_v20240809.xls from the versioned record; document the local filename LitChemPlast.xls.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
       }
     },
     {
@@ -564,7 +702,22 @@
       "exact_snapshot_status": "unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "The official description lists several upstream sources. The local CSV export method, date and exact redistribution scope have not been established."
+      "required_action": "The official description lists several upstream sources. The local CSV export method, date and exact redistribution scope have not been established.",
+      "p0_distribution_review": {
+        "id": "ICCA",
+        "category": "original_source_for_now",
+        "terms_observed": "No redistribution permission for the local CSV established.",
+        "permission_scope": "The provider describes registration-based access and multiple upstream contributions, including industry sources.",
+        "evidence_urls": [
+          "https://plasticscircularity.org/additives/",
+          "https://iccadatabase.com/"
+        ],
+        "citation_instruction": "Cite ICCA Plastic Additives Database, the actual export/version and relevant upstream sources; snapshot date remains unrecorded.",
+        "required_action": "Recover export/account terms, provenance and allowed reuse scope. No account was created, agreement accepted or provider contacted in this review.",
+        "acquisition_instruction": "Readers should obtain access through the provider registration route for now; a registration route does not guarantee retrieval of the frozen CSV.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "UCSF",
@@ -595,7 +748,22 @@
       "exact_snapshot_status": "unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "Publisher and DOI endpoints did not return usable content. The local workbook-to-supplement association, citation details and terms need evidence."
+      "required_action": "Publisher and DOI endpoints did not return usable content. The local workbook-to-supplement association, citation details and terms need evidence.",
+      "p0_distribution_review": {
+        "id": "UCSF",
+        "category": "public_under_conditions",
+        "terms_observed": "CC BY-NC 4.0 on official supplement doi:10.1021/envhealth.5c00197.s001.",
+        "permission_scope": "Covers the identified ACS Figshare supplement (version 1); it has a different MD5 and size from UCSF paper database.xlsx. Scientific equality was not tested.",
+        "evidence_urls": [
+          "https://api.figshare.com/v2/articles/31072267",
+          "https://acs.figshare.com/articles/dataset/Unraveling_Plastic-Related_Chemical_Exposures_during_Pregnancy_and_Their_Associations_with_Pregnancy_Outcomes_Using_Suspect_Screening_Analysis/31072267"
+        ],
+        "citation_instruction": "Cite Yang et al., Unraveling Plastic-Related Chemical Exposures during Pregnancy and Their Associations with Pregnancy Outcomes Using Suspect Screening Analysis, doi:10.1021/envhealth.5c00197, and supplement doi:10.1021/envhealth.5c00197.s001.",
+        "required_action": "Compare the local workbook with eh5c00197_si_001.xlsx in a separately approved content audit; preserve NC terms, attribution and change notices. A name match is insufficient.",
+        "acquisition_instruction": "The publisher supplement record identifies file eh5c00197_si_001.xlsx; obtain it through the official record without overwriting frozen inputs.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "PlasticMAP",
@@ -626,7 +794,22 @@
       "exact_snapshot_status": "unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Version-specific official acquisition or an approved frozen archive; not implemented.",
-      "required_action": "Publisher access returned HTTP 403. The filename-derived date is not an authenticated release or retrieval date; identify the exact supplement and terms."
+      "required_action": "Publisher access returned HTTP 403. The filename-derived date is not an authenticated release or retrieval date; identify the exact supplement and terms.",
+      "p0_distribution_review": {
+        "id": "PlasticMAP",
+        "category": "public_under_conditions",
+        "terms_observed": "CC BY-NC 4.0 on official supplement doi:10.1021/acs.est.1c00976.s001.",
+        "permission_scope": "Covers the identified ACS Figshare ZIP deposit (version 1); the archive-to-local-workbook mapping has not been verified.",
+        "evidence_urls": [
+          "https://api.figshare.com/v2/articles/14794556",
+          "https://acs.figshare.com/articles/dataset/Deep_Dive_into_Plastic_Monomers_Additives_and_Processing_Aids/14794556"
+        ],
+        "citation_instruction": "Cite Wiesinger, Wang and Hellweg, Deep Dive into Plastic Monomers, Additives, and Processing Aids, doi:10.1021/acs.est.1c00976, and supplement doi:10.1021/acs.est.1c00976.s001.",
+        "required_action": "Inspect the official archive member and match PlasticMAP_S1_210611.xlsx; retain NC terms and any change notice. Do not compare a ZIP checksum directly with an extracted XLSX.",
+        "acquisition_instruction": "Obtain es1c00976_si_001.zip from the publisher supplement; identify the required workbook member before preparing an acquisition recipe.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "VEGA",
@@ -749,7 +932,23 @@
       "exact_snapshot_status": "local_frozen_bytes_identified_external_route_unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved frozen output archive with provenance, or a validated deterministic reconstruction; pending.",
-      "required_action": "Recover exact application/model versions, input structures and report-generation provenance. Website retrieval timed out; software access alone does not document output redistribution terms."
+      "required_action": "Recover exact application/model versions, input structures and report-generation provenance. Website retrieval timed out; software access alone does not document output redistribution terms.",
+      "p0_distribution_review": {
+        "id": "VEGA",
+        "category": "confirmation_required",
+        "terms_observed": "GPL 3 reported for VEGA QSAR software; report-content scope not established.",
+        "permission_scope": "A software licence does not alone determine the rights in generated predictions, report templates or embedded reference/training material. No claim is made that outputs inherit GPL.",
+        "evidence_urls": [
+          "https://www.vegahub.eu/download/vega-qsar-download/",
+          "https://www.vegahub.eu/download/vega-qsar-download-versions/",
+          "https://www.vegahub.eu/portfolio-item/vega-qsar/"
+        ],
+        "citation_instruction": "Cite VEGA and the actual model/QMRF references and versions listed in plastprior/qsar_models.json; record the application build and generation date if recovered.",
+        "required_action": "Recover report-generation provenance and examine report/model notices. Distinguish project-generated numerical predictions from any copied reference material.",
+        "acquisition_instruction": "The exact 20 frozen reports must be supplied by their generating project or an authorised archive; downloading VEGA does not supply them.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "GIC",
@@ -787,6 +986,21 @@
         "license": "BSD-3-Clause",
         "url": "https://raw.githubusercontent.com/envris/global-inventory-compiler-public/9487e9395ee51f7cce304ff65a041854d908211d/LICENSE",
         "scope": "Pinned software only; not an upstream-data rights decision."
+      },
+      "p0_distribution_review": {
+        "id": "GIC",
+        "category": "confirmation_required",
+        "terms_observed": "BSD-3-Clause confirmed for the pinned GIC code only.",
+        "permission_scope": "Compiled upstream inventories and local gic_list_tag_metadata.csv have separate provenance and rights requirements.",
+        "evidence_urls": [
+          "https://github.com/envris/global-inventory-compiler-public/blob/9487e9395ee51f7cce304ff65a041854d908211d/LICENSE",
+          "https://github.com/envris/global-inventory-compiler-public"
+        ],
+        "citation_instruction": "Cite GIC at revision 9487e9395ee51f7cce304ff65a041854d908211d and each used inventory/list provider and snapshot; distinguish current pinned code from the unrecorded historical version.",
+        "required_action": "Map the used list tags to providers and terms, and recover metadata-table provenance. Retain identity/name/shared-identifier flags; do not treat software licensing as data clearance.",
+        "acquisition_instruction": "Obtain compiled inputs through their provider/project route only after upstream list decisions; the code repository is not an exact-data acquisition recipe.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
       }
     },
     {
@@ -815,7 +1029,21 @@
       "exact_snapshot_status": "local_frozen_bytes_identified_external_route_unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved frozen output archive with provenance, or a validated deterministic reconstruction; pending.",
-      "required_action": "NCBI identifies contributed content, including PubChem, with possible third-party terms. Recover query date/parameters, coverage, errors and provenance for the exact output; do not rerun live queries as frozen substitutes."
+      "required_action": "NCBI identifies contributed content, including PubChem, with possible third-party terms. Recover query date/parameters, coverage, errors and provenance for the exact output; do not rerun live queries as frozen substitutes.",
+      "p0_distribution_review": {
+        "id": "Patent_queries",
+        "category": "confirmation_required",
+        "terms_observed": "NCBI policy distinguishes government-created information from contributed/licensed material.",
+        "permission_scope": "The local CSV header describes counts, query/provenance/status fields, not an abstract/full-text collection. This header check is not a complete rights or content audit.",
+        "evidence_urls": [
+          "https://www.ncbi.nlm.nih.gov/home/about/policies/"
+        ],
+        "citation_instruction": "Cite NCBI PubChem patent resources, exact query parameters, retrieval timestamps, counting method, failure status and file hash.",
+        "required_action": "Assess project-generated count/query records separately from third-party content; verify the retained fields and error text, then choose an appropriate project distribution notice. Preserve failed queries and valid zeros.",
+        "acquisition_instruction": "Obtain the frozen query output from the generating project; live queries are not a reproducible replacement for the recorded snapshot.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "PubMed_queries",
@@ -843,7 +1071,21 @@
       "exact_snapshot_status": "local_frozen_bytes_identified_external_route_unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved frozen output archive with provenance, or a validated deterministic reconstruction; pending.",
-      "required_action": "Document the exact count-query output and attribution, separately from abstracts/full text. Preserve failed queries, missing counts and valid zeros; live counts may change."
+      "required_action": "Document the exact count-query output and attribution, separately from abstracts/full text. Preserve failed queries, missing counts and valid zeros; live counts may change.",
+      "p0_distribution_review": {
+        "id": "PubMed_queries",
+        "category": "confirmation_required",
+        "terms_observed": "NCBI policy distinguishes government-created information from contributed/licensed material.",
+        "permission_scope": "The local CSV header describes counts, query/provenance/status fields, not an abstract/full-text collection. This header check is not a complete rights or content audit.",
+        "evidence_urls": [
+          "https://www.ncbi.nlm.nih.gov/home/about/policies/"
+        ],
+        "citation_instruction": "Cite NCBI PubMed literature resources, exact query parameters, retrieval timestamps, counting method, failure status and file hash.",
+        "required_action": "Assess project-generated count/query records separately from third-party content; verify the retained fields and error text, then choose an appropriate project distribution notice. Preserve failed queries and valid zeros.",
+        "acquisition_instruction": "Obtain the frozen query output from the generating project; live queries are not a reproducible replacement for the recorded snapshot.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "us_epa_cdr",
@@ -883,7 +1125,22 @@
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
       "scientific_scope_limit": "Not a global total; reporting thresholds, exemptions and confidentiality apply.",
-      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations.",
+      "p0_distribution_review": {
+        "id": "us_epa_cdr",
+        "category": "original_source_for_now",
+        "terms_observed": "Official CDR/IUR downloads available; dataset-specific applicability of reuse notices remains to verify.",
+        "permission_scope": "The EPA disclaimer page is a catalogue of possible notices and explicitly does not apply automatically to every work.",
+        "evidence_urls": [
+          "https://www.epa.gov/chemical-data-reporting/access-cdr-data",
+          "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers"
+        ],
+        "citation_instruction": "Cite US EPA, the actual CDR/IUR reporting years, public release/version, dictionary and retrieval records; distinguish reporting years from download dates.",
+        "required_action": "Match each required archive/response to the frozen source manifest and inspect its notices; keep derived summaries and raw-source attribution separate.",
+        "acquisition_instruction": "Use year-specific EPA public downloads and recorded ChemView routes; do not substitute the newest CDR cycle.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "echa_reach",
@@ -934,7 +1191,22 @@
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
       "scientific_scope_limit": "Registration bands are not independent measurements by ECHA.",
-      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations.",
+      "p0_distribution_review": {
+        "id": "echa_reach",
+        "category": "original_source_for_now",
+        "terms_observed": "ECHA legal notice excludes third-party rights and whole/substantial databases from its general reuse permission.",
+        "permission_scope": "Generic acknowledgement is not sufficient evidence to mirror a bulk REACH/API cache; legal-notice text was retrieved through the official-domain search index after direct access returned 403.",
+        "evidence_urls": [
+          "https://echa.europa.eu/legal-notice",
+          "https://chem.echa.europa.eu/"
+        ],
+        "citation_instruction": "Cite ECHA CHEM, query/retrieval date, relevant substance/list identifiers and notices; preserve limitations on tonnage interpretation.",
+        "required_action": "Determine applicable database/API terms and scope of the collected cache before distribution. Review derived evidence separately; do not infer blanket permission from public browsing.",
+        "acquisition_instruction": "Use the original ECHA service under its terms for now. Exact historical cache availability remains unestablished.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "nordic_spin",
@@ -985,7 +1257,21 @@
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
       "scientific_scope_limit": "Total Use is market-use evidence, not manufacture/import production volume.",
-      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations.",
+      "p0_distribution_review": {
+        "id": "nordic_spin",
+        "category": "original_source_for_now",
+        "terms_observed": "No reuse licence established; the original portal timed out in this review.",
+        "permission_scope": "Retrieval failure establishes neither prohibition nor permission.",
+        "evidence_urls": [
+          "http://www.spin2000.net/spinmyphp/"
+        ],
+        "citation_instruction": "Cite Nordic SPIN, contributing national registers, coverage years, query dates and source response hashes.",
+        "required_action": "Recover applicable portal/national-register terms and a frozen access route; map the response audit to required derived tables.",
+        "acquisition_instruction": "Use the original SPIN provider route for now; establish historical access or a permitted project mirror before claiming independent reproduction.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "japan_meti_cscl",
@@ -1056,7 +1342,23 @@
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
       "scientific_scope_limit": "One CAS may map to multiple MITI numbers; records are not automatically additive.",
-      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations.",
+      "p0_distribution_review": {
+        "id": "japan_meti_cscl",
+        "category": "original_source_for_now",
+        "terms_observed": "NITE general terms require attention to permission/quotation exceptions; J-CHECK also links a specific use concept.",
+        "permission_scope": "Do not apply one notice to every METI/NITE file. General website terms and the existing-chemicals-survey use concept may have different scopes.",
+        "evidence_urls": [
+          "https://www.nite.go.jp/en/homepage/index.html",
+          "https://www.nite.go.jp/chem/jcheck/top.action?request_locale=en",
+          "https://www.meti.go.jp/policy/chemical_management/english/files/concept_regarding_the_use_of_information.pdf"
+        ],
+        "citation_instruction": "Cite the actual METI/NITE source, CSCL fiscal years, MITI/CAS mapping source and retrieval date; preserve unconfirmed identifier-linkage limitations.",
+        "required_action": "Map each downloaded response to its provider and applicable notice. The linked concept document was identified but not reviewed here; obtain a scope-specific distribution decision.",
+        "acquisition_instruction": "Use the original METI/J-CHECK sources for now rather than publishing a bulk response mirror.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "korea_chemical_statistics",
@@ -1101,7 +1403,21 @@
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
       "scientific_scope_limit": "Verified public endpoints do not expose CAS-specific manufacture/import quantities.",
-      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations.",
+      "p0_distribution_review": {
+        "id": "korea_chemical_statistics",
+        "category": "original_source_for_now",
+        "terms_observed": "Statistics interface accessible; no exact-data redistribution grant established.",
+        "permission_scope": "Public search access does not establish the terms for exported responses or derived project tables.",
+        "evidence_urls": [
+          "https://icis.mcee.go.kr/search/searchType6.do?pageType=tabC"
+        ],
+        "citation_instruction": "Cite the chemical statistics provider, survey years, query filters, units and retrieval evidence; distinguish aggregate data from compound-level observations.",
+        "required_action": "Identify dataset/export terms and map the frozen demo/derived files to actual source responses. Retain evidence eligibility exclusions.",
+        "acquisition_instruction": "Use the original statistics service for now; do not substitute national totals for missing compound-specific data.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "canada_cepa_s71",
@@ -1237,7 +1553,23 @@
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
       "scientific_scope_limit": "Contextual evidence rows are not additive; evidence_scope must be retained.",
-      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations.",
+      "p0_distribution_review": {
+        "id": "canada_cepa_s71",
+        "category": "public_under_conditions",
+        "terms_observed": "Open Government Licence - Canada listed on official Section 71 dataset metadata.",
+        "permission_scope": "Conditional redistribution applies to information covered by the licence; third-party rights and other listed exemptions remain outside the grant.",
+        "evidence_urls": [
+          "https://open.canada.ca/data/en/dataset/22650b19-63b5-454f-8485-b6bd5e88e022",
+          "https://catalogue.ec.gc.ca/geonetwork/srv/api/records/c354599e-832c-4b86-a18a-b8b9a4a61931?language=eng",
+          "https://open.canada.ca/en/open-government-licence-canada"
+        ],
+        "citation_instruction": "Cite Environment and Climate Change Canada, the relevant Section 71 initiative and dataset identifier; include the required Open Government Licence attribution.",
+        "required_action": "Map source_file_index.csv entries to specific public resources and notices, record release/hash correspondence, and label project transformations. Official-domain indexed metadata supplied the licence evidence after direct portal access failed.",
+        "acquisition_instruction": "Use the Section 71 catalogue and initiative-specific resources; public access to the latest files does not identify the frozen collection.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "korea_new_chemicals",
@@ -1302,7 +1634,22 @@
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
       "scientific_scope_limit": "Manufacture and import cannot be separated; notification rows are not national totals.",
-      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations."
+      "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations.",
+      "p0_distribution_review": {
+        "id": "korea_new_chemicals",
+        "category": "original_source_for_now",
+        "terms_observed": "Notice attachments and a copyright-policy route located; attachment-specific reuse scope unconfirmed.",
+        "permission_scope": "The notice is mutable: currently linked attachments refer to September 2026, so the page URL alone is not a frozen version.",
+        "evidence_urls": [
+          "https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20240100056",
+          "https://www.moel.go.kr/site/copyright/copyrightList.do"
+        ],
+        "citation_instruction": "Cite MOEL, notice identifier, exact attachment/version, coverage years and retrieval date.",
+        "required_action": "Recover the frozen attachment IDs and any item-level public-use marker or applicable notice; do not assume an open licence from government ownership.",
+        "acquisition_instruction": "Acquire the specific notice attachments through MOEL for now; keep the project source manifest for historical file identity.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "taiwan_toxic_chemicals",
@@ -1370,7 +1717,23 @@
       "proposed_access_route": "Approved frozen raw/derived subset linked to official per-file URLs and hashes; pending dependency and rights review.",
       "scientific_scope_limit": "No reporting year is published; multi-CAS controlled-group totals are not CAS allocations.",
       "required_action": "Map audit rows to the required raw responses, establish applicable dataset terms and exact external access, and document derived-table transformations.",
-      "license_scope": "Current TOXIC_P_19 and TOXIC_P_23 pages link this licence; verify exact frozen archive mapping and attribution before release."
+      "license_scope": "Current TOXIC_P_19 and TOXIC_P_23 pages link this licence; verify exact frozen archive mapping and attribution before release.",
+      "p0_distribution_review": {
+        "id": "taiwan_toxic_chemicals",
+        "category": "public_under_conditions",
+        "terms_observed": "Open Government Data License, version 1.0, linked by TOXIC_P_19 and TOXIC_P_23.",
+        "permission_scope": "The two identified datasets allow redistribution/adaptation under their attribution terms; applicability to each local derived file requires a source mapping.",
+        "evidence_urls": [
+          "https://data.moenv.gov.tw/dataset/detail/TOXIC_P_19",
+          "https://data.moenv.gov.tw/dataset/detail/TOXIC_P_23",
+          "https://data.gov.tw/license"
+        ],
+        "citation_instruction": "Cite Ministry of Environment / Chemicals Administration, TOXIC_P_19 and TOXIC_P_23, dataset titles, snapshot dates and the required attribution statement.",
+        "required_action": "Match downloaded response hashes and dataset IDs to download_audit.csv, retain notices and describe transformations. Current October 2026 data are not substitutes for the frozen snapshot.",
+        "acquisition_instruction": "Use dataset-specific downloads/history through MOENV; preserve the exact historical response or a properly attributed frozen copy.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     },
     {
       "id": "Frozen_exposure_reference",
@@ -1434,7 +1797,19 @@
       "exact_snapshot_status": "local_policy_hashes_match_external_distribution_unresolved",
       "distribution_decision": "unresolved_do_not_package_yet",
       "proposed_access_route": "Approved external frozen bundle retaining all eight files and upstream provenance.",
-      "required_action": "Resolve upstream terms and exact access; separate frozen-derived reproduction from independent raw-source reconstruction. Inspect local paths and metadata before packaging."
+      "required_action": "Resolve upstream terms and exact access; separate frozen-derived reproduction from independent raw-source reconstruction. Inspect local paths and metadata before packaging.",
+      "p0_distribution_review": {
+        "id": "Frozen_exposure_reference",
+        "category": "confirmation_required",
+        "terms_observed": "Project-derived bundle; upstream distribution requirements unresolved.",
+        "permission_scope": "Project authorship of a derived table does not itself clear copied or transformed upstream evidence.",
+        "evidence_urls": [],
+        "citation_instruction": "Cite the PlastPrior version, original transformation/run identifiers and each contributing source; preserve all eight manifest and reference file hashes.",
+        "required_action": "Resolve upstream file scopes and define a minimal complete bundle. Review machine paths and operational metadata in manifests without altering the frozen originals.",
+        "acquisition_instruction": "The generating project must supply the exact eight-file bundle through an approved route. It is not recreated by the current raw-data workflow.",
+        "local_package_status": "not_release_ready",
+        "checked_on": "2026-10-24"
+      }
     }
   ],
   "expanded_production_inventory": {
@@ -1975,5 +2350,361 @@
     "final_sqlite": "results/final/20261023T191130Z-0fa717ee/PlastPrior_results.sqlite",
     "original_path_semantics": "original_* fields record prior locations; deleted stage paths remain historical file identities, not current standalone files.",
     "reconstruction_limit": "Compact SQLite retains parsed records under its retention policy, not original stage-file bytes; scope-excluded patent bodies are not retained."
+  },
+  "current_distribution_review": {
+    "checked_on": "2026-10-24",
+    "timezone": "Australia/Melbourne",
+    "baseline_commit": "48d94cae71eaec25a640827d14a9d8dcf781c86a",
+    "report": "docs/data_distribution_checklist.md",
+    "status": "source_review_complete_exact_package_pending",
+    "scope": "Twenty-five source/bundle decisions; official licensing observations and local package readiness are separate. No upload, input substitution or scientific recomputation.",
+    "category_semantics": {
+      "public_under_conditions": "An identified official data deposit or dataset has a stated reuse licence, subject to its terms. This is not clearance of an unmatched local snapshot.",
+      "original_source_for_now": "Recommend provider acquisition instead of a project mirror for now. This is an operational disposition, not a finding that redistribution is legally prohibited.",
+      "confirmation_required": "A content-specific decision is still needed; software/article licences, public access or project derivation alone do not settle the local file scope."
+    },
+    "category_counts": {
+      "original_source_for_now": 9,
+      "public_under_conditions": 10,
+      "confirmation_required": 6
+    },
+    "exact_local_bundles_ready_for_distribution": 0,
+    "readiness_semantics": "Zero completed local release checklists does not mean no material is licensable. Provenance mapping, attribution or scope review remains open for each bundle; no extra permission is required merely because a valid open licence already permits the intended use.",
+    "previous_review_semantics": "Existing top-level review_date, observations, decisions and integrity counts describe the previous dated review; p0_distribution_review is the current assessment.",
+    "metadata_records": [
+      {
+        "provider": "zenodo",
+        "record_id": 15397723,
+        "metadata_url": "https://zenodo.org/api/records/15397723",
+        "checked_on": "2026-10-24",
+        "title": "State of the science on plastic chemicals - Identifying and addressing chemicals and polymers of concern",
+        "version": "1.01",
+        "doi": "10.5281/zenodo.15397723",
+        "license": {
+          "id": "cc-by-nc-4.0"
+        },
+        "creators": [
+          "Wagner, Martin",
+          "Monclús, Laura",
+          "Arp, Hans Peter H.",
+          "Groh, Ksenia J.",
+          "Løseth, Mari E.",
+          "Muncke, Jane",
+          "Wang, Zhanyun",
+          "Wolf, Raoul",
+          "Zimmermann, Lisa"
+        ],
+        "files": [
+          {
+            "filename": "PlastChem_State_of_the_Science_on_Plastic_Chemicals_Report.pdf",
+            "bytes": 38069692,
+            "published_checksum": "md5:28aa80ea258468cac827c7db4240d58d",
+            "download_url": "https://zenodo.org/api/records/15397723/files/PlastChem_State_of_the_Science_on_Plastic_Chemicals_Report.pdf/content"
+          },
+          {
+            "filename": "plastchem_db_v1.01.xlsx",
+            "bytes": 10402921,
+            "published_checksum": "md5:06a9e1f3cea375ffcef93780bfce4414",
+            "download_url": "https://zenodo.org/api/records/15397723/files/plastchem_db_v1.01.xlsx/content"
+          }
+        ],
+        "status": "retrieved"
+      },
+      {
+        "provider": "zenodo",
+        "record_id": 18157912,
+        "metadata_url": "https://zenodo.org/api/records/18157912",
+        "checked_on": "2026-10-24",
+        "title": "S133 | MPLEACH | Chemicals Leaching from Microplastics",
+        "version": "NORMAN-SLE-S133.0.1.0",
+        "doi": "10.5281/zenodo.18157912",
+        "license": {
+          "id": "cc-by-4.0"
+        },
+        "creators": [
+          "Alygizakis, Nikiforos",
+          "Roosma, Jorg",
+          "Brunner, Andrea Mizzi",
+          "Slobodnik, Jaroslav"
+        ],
+        "files": [
+          {
+            "filename": "MPLEACH_InChIKeys.txt",
+            "bytes": 20812,
+            "published_checksum": "md5:1e66538ca996f3b4aaac396dba49d881",
+            "download_url": "https://zenodo.org/api/records/18157912/files/MPLEACH_InChIKeys.txt/content"
+          },
+          {
+            "filename": "MPLEACH.csv",
+            "bytes": 262130,
+            "published_checksum": "md5:9f245218e6afba6c3981485446501f83",
+            "download_url": "https://zenodo.org/api/records/18157912/files/MPLEACH.csv/content"
+          },
+          {
+            "filename": "MPLEACH.xlsx",
+            "bytes": 208922,
+            "published_checksum": "md5:5bb740534f0d8086832e8dade1f810d0",
+            "download_url": "https://zenodo.org/api/records/18157912/files/MPLEACH.xlsx/content"
+          }
+        ],
+        "status": "retrieved"
+      },
+      {
+        "provider": "zenodo",
+        "record_id": 17199870,
+        "metadata_url": "https://zenodo.org/api/records/17199870",
+        "checked_on": "2026-10-24",
+        "title": "Food Contact Chemicals Priority (FCCprio) List",
+        "version": "0.2",
+        "doi": "10.5281/zenodo.17199870",
+        "license": {
+          "id": "cc-by-4.0"
+        },
+        "creators": [
+          "Wiesinger, Helene",
+          "Parkinson, Lindsey V.",
+          "Geueke, Birgit",
+          "Anguera Sempere, Albert",
+          "Boucher, Justin M.",
+          "Cabane, Etienne",
+          "Scheringer, Martin",
+          "Muncke, Jane"
+        ],
+        "files": [
+          {
+            "filename": "FCCprio-List-v0-2-Zenodo-20260115.xlsx",
+            "bytes": 787336,
+            "published_checksum": "md5:705f0d6c74f9a6e3115e5f4b34095ad6",
+            "download_url": "https://zenodo.org/api/records/17199870/files/FCCprio-List-v0-2-Zenodo-20260115.xlsx/content"
+          },
+          {
+            "filename": "FCCprio-List-v0-2-Zenodo-Methods-20260115.pdf",
+            "bytes": 244412,
+            "published_checksum": "md5:cc790cf24727b353e24d25986a5b9ea0",
+            "download_url": "https://zenodo.org/api/records/17199870/files/FCCprio-List-v0-2-Zenodo-Methods-20260115.pdf/content"
+          }
+        ],
+        "status": "retrieved"
+      },
+      {
+        "provider": "zenodo",
+        "record_id": 13271346,
+        "metadata_url": "https://zenodo.org/api/records/13271346",
+        "checked_on": "2026-10-24",
+        "title": "LitChemPlast database",
+        "version": "v20240809",
+        "doi": "10.5281/zenodo.13271346",
+        "license": {
+          "id": "cc-by-4.0"
+        },
+        "creators": [
+          "Wiesinger, Helene",
+          "Shalin, Anna",
+          "Huang, Xinmei",
+          "Siegrist, Armin",
+          "Plinke, Nils",
+          "Hellweg, Stefanie",
+          "Wang, Zhanyun"
+        ],
+        "files": [
+          {
+            "filename": "LitChemPlast_relational_database_v20240809.zip",
+            "bytes": 2866950,
+            "published_checksum": "md5:890d2e65aad6a73c2dba0898fd24f0cc",
+            "download_url": "https://zenodo.org/api/records/13271346/files/LitChemPlast_relational_database_v20240809.zip/content"
+          },
+          {
+            "filename": "LitChemPlast_v20240809.xls",
+            "bytes": 60782592,
+            "published_checksum": "md5:e5e6444c18fdd3f9ca462fe92891b8cc",
+            "download_url": "https://zenodo.org/api/records/13271346/files/LitChemPlast_v20240809.xls/content"
+          }
+        ],
+        "status": "retrieved"
+      },
+      {
+        "provider": "zenodo",
+        "record_id": 15852269,
+        "metadata_url": "https://zenodo.org/api/records/15852269",
+        "checked_on": "2026-10-24",
+        "title": "S112 | FCCMIGEX | List of Migrating & Extractable Food Contact Chemicals (FCCmigex) by FPF",
+        "version": "NORMAN-SLE-S112.0.2.1",
+        "doi": "10.5281/zenodo.15852269",
+        "license": {
+          "id": "cc-by-4.0"
+        },
+        "creators": [
+          "Geueke, Birgit",
+          "Parkinson, Lindsey"
+        ],
+        "files": [
+          {
+            "filename": "S112_FCCMIGEX_DTXSID.txt",
+            "bytes": 70784,
+            "published_checksum": "md5:a88b3224da98fd674e8ca23c741f15da",
+            "download_url": "https://zenodo.org/api/records/15852269/files/S112_FCCMIGEX_DTXSID.txt/content"
+          },
+          {
+            "filename": "S112_FCCMIGEX.csv",
+            "bytes": 1379281,
+            "published_checksum": "md5:ca023152645c4086a05418463170dccf",
+            "download_url": "https://zenodo.org/api/records/15852269/files/S112_FCCMIGEX.csv/content"
+          },
+          {
+            "filename": "S112_FCCMIGEX_notes.txt",
+            "bytes": 1312,
+            "published_checksum": "md5:8a0d99a6ee66d89ab72f9767df1d4973",
+            "download_url": "https://zenodo.org/api/records/15852269/files/S112_FCCMIGEX_notes.txt/content"
+          },
+          {
+            "filename": "S112_FCCMIGEX_InChIKey.txt",
+            "bytes": 138684,
+            "published_checksum": "md5:c941eeab9e1cb3a976b4c2f75722e2bd",
+            "download_url": "https://zenodo.org/api/records/15852269/files/S112_FCCMIGEX_InChIKey.txt/content"
+          },
+          {
+            "filename": "S112_FCCMIGEX.xlsx",
+            "bytes": 877320,
+            "published_checksum": "md5:1db6be1df9dacfb83d530740e9ff2767",
+            "download_url": "https://zenodo.org/api/records/15852269/files/S112_FCCMIGEX.xlsx/content"
+          }
+        ],
+        "status": "retrieved"
+      },
+      {
+        "provider": "zenodo",
+        "record_id": 22953182,
+        "metadata_url": "https://zenodo.org/api/records/22953182",
+        "checked_on": "2026-10-24",
+        "title": "PubChemLite for Exposomics + predicted CCS from CCSbase - 25 Sep 2026",
+        "version": "PubChemLite-CCSbase-20260925",
+        "doi": "10.5281/zenodo.22953182",
+        "license": {
+          "id": "cc-by-4.0"
+        },
+        "creators": [
+          "Schymanski, Emma",
+          "Kondic, Todor",
+          "Elapavalore, Anjana",
+          "Bolton, Evan",
+          "Thiessen, Paul",
+          "Zhang, Jian",
+          "Kim, Sunghwan",
+          "Krinsky, Allison M.",
+          "Ross, Dylan H.",
+          "Xu, Libin"
+        ],
+        "files": [
+          {
+            "filename": "PubChemLite_CCSbase_20260925.csv",
+            "bytes": 225339793,
+            "published_checksum": "md5:fd1629808c2cf2896acc502e26e352f0",
+            "download_url": "https://zenodo.org/api/records/22953182/files/PubChemLite_CCSbase_20260925.csv/content"
+          }
+        ],
+        "status": "retrieved"
+      },
+      {
+        "provider": "figshare",
+        "record_id": 14794556,
+        "metadata_url": "https://api.figshare.com/v2/articles/14794556",
+        "checked_on": "2026-10-24",
+        "title": "Deep Dive into Plastic Monomers, Additives, and Processing Aids",
+        "version": 1,
+        "doi": "10.1021/acs.est.1c00976.s001",
+        "license": {
+          "value": 10,
+          "name": "CC BY-NC 4.0",
+          "url": "https://creativecommons.org/licenses/by-nc/4.0/"
+        },
+        "creators": [
+          "Helene Wiesinger",
+          "Zhanyun Wang",
+          "Stefanie Hellweg"
+        ],
+        "files": [
+          {
+            "filename": "es1c00976_si_001.zip",
+            "bytes": 7089542,
+            "published_checksum": "md5:51a6a74121ee3f475cb3b40d087d0872",
+            "download_url": "https://ndownloader.figshare.com/files/28436588"
+          }
+        ],
+        "status": "retrieved"
+      },
+      {
+        "provider": "figshare",
+        "record_id": 31072267,
+        "metadata_url": "https://api.figshare.com/v2/articles/31072267",
+        "checked_on": "2026-10-24",
+        "title": "Unraveling Plastic-Related Chemical Exposures during Pregnancy and Their Associations with Pregnancy Outcomes Using Suspect Screening Analysis",
+        "version": 1,
+        "doi": "10.1021/envhealth.5c00197.s001",
+        "license": {
+          "value": 10,
+          "name": "CC BY-NC 4.0",
+          "url": "https://creativecommons.org/licenses/by-nc/4.0/"
+        },
+        "creators": [
+          "Junjie Yang",
+          "Dimitri Abrahamsson",
+          "Julian Edwards",
+          "Miaomiao Wang",
+          "Jessica Trowbridge",
+          "Rachel Morello-Frosch",
+          "Erin DeMicco",
+          "June-Soo Park",
+          "Tracey J. Woodruff"
+        ],
+        "files": [
+          {
+            "filename": "eh5c00197_si_001.xlsx",
+            "bytes": 6542302,
+            "published_checksum": "md5:6decc6057e2cb9c4714912361572777f",
+            "download_url": "https://ndownloader.figshare.com/files/61026316"
+          }
+        ],
+        "status": "retrieved"
+      }
+    ],
+    "additional_byte_comparisons": [
+      {
+        "id": "UCSF",
+        "local_md5": "8f69022f21001cc6935319755d3c9a44",
+        "official_md5": "6decc6057e2cb9c4714912361572777f",
+        "match": false,
+        "content_comparison_performed": false
+      },
+      {
+        "id": "FCCmigex",
+        "local_md5": "ce2ac3bab0b929e9be497d73f3a87951",
+        "official_md5": "1db6be1df9dacfb83d530740e9ff2767",
+        "match": false,
+        "content_comparison_performed": false
+      },
+      {
+        "id": "PubChemLite",
+        "local_md5": "85f1ccc4e0adbff805d8eb3b94c541e2",
+        "official_md5": "fd1629808c2cf2896acc502e26e352f0",
+        "match": false,
+        "content_comparison_performed": false
+      },
+      {
+        "id": "PlasticMAP",
+        "comparison": "Official object is a ZIP, local object is an XLSX; no archive-member equivalence test performed."
+      }
+    ],
+    "scientific_pipeline_rerun": false,
+    "providers_contacted": false,
+    "accounts_created": false,
+    "datasets_downloaded_or_replaced": false,
+    "verification": {
+      "original_data_files_sha256_verified": 42202,
+      "implementation_files_compared_to_head": 54,
+      "final_csv_sqlite_unchanged": true,
+      "historical_register_preserved": true,
+      "scientific_pipeline_rerun": false,
+      "scope": "Integrity and documentation checks only; no new scientific validation."
+    }
   }
 }

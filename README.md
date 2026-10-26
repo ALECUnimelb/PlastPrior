@@ -18,6 +18,7 @@ reproduction package.
 | Install, run and check results | [Reproduction guide](docs/reproduction.md) |
 | Inspect scientific rules and stage-level evidence | [Methods and stage reference](docs/methods.md) |
 | Locate the retained local CSV, SQLite and verification records | [Local results storage](docs/results_layout.md) |
+| Review source distribution decisions | [Source-by-source checklist](docs/data_distribution_checklist.md) |
 | Review source access and unresolved release requirements | [Data access review](docs/data_access_review.md) and [publication review](docs/publication_review.md) |
 
 The local result links require the retained files on the reader's machine.
