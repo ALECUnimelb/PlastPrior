@@ -311,9 +311,12 @@ def compare_exposure_scores(baseline, results, output_dir, upstream_results=None
             observed_sum = sum(v for v in expected.values() if v is not None)
             demand(int(row['Exposure_available_dimensions']) == coverage, 'Incorrect exposure coverage.')
             demand(numeric(row['Exposure_observed_score']) == Decimal(str(observed_sum)), 'Incorrect observed-component sum.')
-            demand(numeric(row['Exposure_score']) == (Decimal(str(observed_sum)) if coverage == 5 else None), 'Incomplete total was zero-filled or renormalised.')
+            demand(numeric(row['Exposure_score']) == Decimal(str(observed_sum)), 'Exposure total differs from available contributions.')
             demand(row['Exposure_complete'] == str(coverage == 5), 'Incorrect completeness flag.')
             demand(json.loads(row['Exposure_missing_dimensions']) == [k for k,v in dimensions.items() if v is None], 'Missing dimension list differs.')
+            joint_sum = sum(expected[k] for k in ['food_contact', 'human_biomonitoring'] if expected[k] is not None)
+            demand(decision['dimension_contributions']['food_contact_and_biomonitoring'] == joint_sum, 'Joint contribution lost available evidence.')
+            demand(decision['complete_total_required'] is False, 'Completeness incorrectly gates exposure totals.')
             demand(not decision['model_predictions_used'], 'Predictions entered exposure scoring.')
             for column in scoring.OUTPUT_COLUMNS:
                 a,b=historical_by_key.at[key,column],row[column]

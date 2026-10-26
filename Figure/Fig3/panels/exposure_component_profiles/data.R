@@ -1,4 +1,4 @@
-exposure_score_classes <- c("No usable evidence", "Score 0", "Low (0.5)", "Moderate (1)", "High (2)")
+exposure_score_classes <- c("No usable evidence", "Partial evidence", "Score 0", "Low (0.5)", "Moderate (1)", "High (2)")
 
 classify_exposure_score <- function(values) {
   output <- rep(NA_character_, length(values))
@@ -17,7 +17,7 @@ classify_exposure_score <- function(values) {
   output
 }
 
-build_exposure_profiles <- function(scores) {
+build_exposure_profiles <- function(scores, partial_masks=NULL) {
   rows <- list()
   positive_counts <- list()
   row_index <- 1L
@@ -25,6 +25,7 @@ build_exposure_profiles <- function(scores) {
     component <- names(scores)[[component_order]]
     values <- scores[[component_order]]
     classes <- classify_exposure_score(values)
+    if(!is.null(partial_masks)) classes[partial_masks[[component_order]]] <- "Partial evidence"
     counts <- table(factor(classes, levels = exposure_score_classes))
     positive_counts[[component]] <- sum(values > 0, na.rm = TRUE)
     for (class_order in seq_along(exposure_score_classes)) {
@@ -45,9 +46,19 @@ build_exposure_profiles <- function(scores) {
 }
 
 prepare_exposure_component_profiles <- function(compounds, metadata) {
-  scores <- lapply(exposure_dimensions,function(columns) rowSums(compounds[,columns,drop=FALSE],na.rm=FALSE))
-  dimensions <- build_exposure_profiles(scores)
+  scores <- lapply(exposure_dimensions,function(columns) {
+    x <- compounds[,columns,drop=FALSE]
+    total <- rowSums(x,na.rm=TRUE)
+    total[rowSums(!is.na(x))==0] <- NA_real_
+    total
+  })
+  partial <- lapply(exposure_dimensions,function(columns) {
+    available <- rowSums(!is.na(compounds[,columns,drop=FALSE]))
+    available>0 & available<length(columns)
+  })
+  dimensions <- build_exposure_profiles(scores,partial)
+  joint_availability <- data.frame(Inchikey_std=compounds$Inchikey_std, contribution=scores[['Food-contact + biomonitoring']], partial=partial[['Food-contact + biomonitoring']])
   indicators <- build_exposure_profiles(lapply(exposure_indicators,function(column) compounds[[column]]))
   stopifnot(all(tapply(dimensions$profiles$compound_count,dimensions$profiles$component,sum)==nrow(compounds)))
-  list(source_data=list(exposure_component_profiles=dimensions$profiles,exposure_indicator_profiles=indicators$profiles), statistics=list(population_full=nrow(compounds),missing_is_separate_from_zero=TRUE))
+  list(source_data=list(joint_dimension_availability=joint_availability,exposure_component_profiles=dimensions$profiles,exposure_indicator_profiles=indicators$profiles), statistics=list(population_full=nrow(compounds),missing_is_separate_from_zero=TRUE))
 }

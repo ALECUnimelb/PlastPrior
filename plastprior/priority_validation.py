@@ -86,7 +86,7 @@ def compare_priority(baseline, results, output_dir, upstream_results=None, data_
             demand(prior[c].tolist() == analysis[c].tolist(), 'Upstream field changed: ' + c)
         require_prediction_isolation(analysis)
         review = analysis['qsar_identity_status'].eq('review_required')
-        demand(int(review.sum()) == 15 and analysis.loc[review, 'Priority_eligible'].eq('False').all(), 'Frozen identity cohort became eligible.')
+        demand(int(review.sum()) == 15, 'Frozen identity cohort changed.')
         demand(_file_hash(upstream / 'identity_review_source_links.jsonl') == _file_hash(results / 'identity_review_source_links.jsonl'), 'Identity source links changed.')
         decision_rows = [json.loads(line) for line in (results / 'priority_decisions.jsonl').read_text(encoding='utf-8').splitlines()]
         demand([r['inchikey'] for r in decision_rows] == keys, 'Decision audit coverage or order changed.')
@@ -96,13 +96,13 @@ def compare_priority(baseline, results, output_dir, upstream_results=None, data_
             h = [number(row[c]) for c in hazard]
             e = [number(row['Exposure_' + c + '_score']) for c in exposure]
             hc, ec = all(v is not None for v in h), all(v is not None for v in e)
-            eligible = hc and ec
+            eligible = any(v is not None for v in h + e)
             observed = sum(v * w for v, w in zip(h, [2, 1, 2, 3]) if v is not None)
             total_e = sum(v for v in e if v is not None)
-            expected_h, expected_total = observed if hc else None, observed + total_e if eligible else None
-            expected_tier = ('Insufficient evidence' if not eligible else
-                             'High priority' if expected_total >= 12 and observed >= 4 and total_e >= 4 else
-                             'Moderate priority' if expected_total >= 6 and observed >= 2 and total_e >= 2 else 'Low priority')
+            expected_h, expected_total = observed, observed + total_e if eligible else None
+            expected_tier = ('No data' if not eligible else
+                             'High priority' if observed > 10 and total_e >= 5 else
+                             'Moderate priority' if (6 <= observed <= 10 and total_e >= 5) or (observed > 10 and total_e < 5) else 'Low priority')
             expected = {'Hazard_score': expected_h, 'Hazard_observed_score': observed,
                         'Hazard_available_dimensions': sum(v is not None for v in h),
                         'Priority_score': expected_total}
@@ -110,7 +110,7 @@ def compare_priority(baseline, results, output_dir, upstream_results=None, data_
                 demand(number(row[c]) == value, 'Independent aggregate or missingness differs: ' + key + ':' + c)
             demand(row['Hazard_complete'] == str(hc) and row['Priority_eligible'] == str(eligible), 'Completeness differs: ' + key)
             demand(row['Priority_tier'] == expected_tier, 'Independent tier differs: ' + key)
-            demand(row['Priority_data_status'] == ('Complete' if eligible else 'Insufficient evidence'), 'Priority status differs.')
+            demand(row['Priority_data_status'] == ('Complete' if hc and ec else 'Partial' if eligible else 'No data'), 'Priority status differs.')
             for domain, values in [('Hazard', h), ('Exposure', e)]:
                 available = sum(v is not None for v in values)
                 expected_status = 'Complete' if available == len(values) else 'Partial' if available else 'Unavailable'
@@ -120,7 +120,8 @@ def compare_priority(baseline, results, output_dir, upstream_results=None, data_
             reasons = [{'domain': 'hazard', 'dimension': c, 'reason': row[c.lower() + '_unavailable_reason']} for c in missing_h]
             reasons += [{'domain': 'exposure', 'dimension': c, 'reason': row['exposure_' + c + '_unavailable_reason']}
                         for c, v in zip(exposure, e) if v is None]
-            demand(json.loads(row['Priority_ineligibility_reasons']) == reasons, 'Missingness reasons changed.')
+            demand(json.loads(row['Priority_missing_reasons']) == reasons, 'Missingness reasons changed.')
+            demand(json.loads(row['Priority_ineligibility_reasons']) == ([] if eligible else [{'domain': 'assessment', 'dimension': 'all', 'reason': 'no_available_hazard_or_exposure_evidence'}]), 'Qualification reason differs.')
             demand(all(r['reason'] for r in reasons), 'Missing exclusion explanation.')
             demand(audit['upstream_manifests_sha256'] == manifest['upstream_manifests_sha256'], 'Decision input hashes differ.')
             demand(audit['source_join_key'] == key, 'Source lineage key differs.')
@@ -154,21 +155,20 @@ def compare_priority(baseline, results, output_dir, upstream_results=None, data_
             before, after = expected_changes[(key, field)]
             demand(equal(json.loads(record['historical_value']), before, field.endswith('_score')), 'Change before-value differs.')
             demand(equal(json.loads(record['analysis_value']), after, field.endswith('_score')), 'Change after-value differs.')
-            demand(json.loads(record['missing_reasons']) == json.loads(by_key.loc[key, 'Priority_ineligibility_reasons']), 'Change exclusion reasons differ.')
+            demand(json.loads(record['missing_reasons']) == json.loads(by_key.loc[key, 'Priority_missing_reasons']), 'Change exclusion reasons differ.')
             h_old = history_index.loc[key]
             a_row = by_key.loc[key]
             expected_reasons = []
+            if field == 'Priority_tier' and a_row['Priority_eligible'] == 'True':
+                expected_reasons.append('priority_classification_policy_changed')
             if field.endswith('data_status'):
                 expected_reasons.append('availability_status_distinguishes_complete_partial_and_unavailable')
             if not field.startswith('Exposure') and any(number(h_old[c]) != number(a_row[c]) for c in hazard):
                 expected_reasons.append('upstream_hazard_identity_isolation')
             if not field.startswith('Hazard') and any(number(h_old[c]) != number(a_row[c]) for c in components[4:]):
                 expected_reasons.append('upstream_exposure_eligibility_audit')
-            incomplete = (a_row['Hazard_complete'] == 'False' if field.startswith('Hazard') else
-                          a_row['Exposure_complete'] == 'False' if field.startswith('Exposure') else
-                          a_row['Priority_eligible'] == 'False')
-            if incomplete:
-                expected_reasons.append('incomplete_domains_no_zero_imputation')
+            if a_row['Priority_eligible'] == 'False' and field.startswith('Priority'):
+                expected_reasons.append('no_available_hazard_or_exposure_evidence')
             demand(json.loads(record['change_reasons']) == expected_reasons and bool(expected_reasons), 'Change reason is unsupported.')
         checks.append({'scope': 'independent_aggregation_tiers_missingness_and_change_accounting',
                        'compounds': len(keys), 'changes': len(changes), 'identity_review_compounds': int(review.sum())})
@@ -182,7 +182,7 @@ def compare_priority(baseline, results, output_dir, upstream_results=None, data_
         differences.append({'scope': 'priority_validation', 'detail': str(exc)})
     report = {'stage': '7A', 'status': 'passed' if not differences else 'failed',
               'difference_count': len(differences), 'counts': counts, 'checks': checks,
-              'comparison': 'Seven historical final fields and ten input scores; independent analysis aggregates, dual gates, missingness, unchanged upstream evidence and explicit changes. No ranking.'}
+              'comparison': 'Seven historical final fields and ten input scores; independent analysis aggregates, strict hazard / inclusive exposure thresholds, missingness, unchanged upstream evidence and explicit changes. No ranking.'}
     pd.DataFrame(differences).to_csv(output_dir / 'priority_differences.csv', index=False, encoding='utf-8', lineterminator='\n')
     (output_dir / 'priority_validation_summary.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     return report

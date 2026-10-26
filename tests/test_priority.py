@@ -3,7 +3,7 @@ import unittest
 from decimal import Decimal
 
 from plastprior.priority import (
-    HAZARD, EXPOSURE, analysis_scores, historical_scores, score_value, tier, keyed, change_reasons,
+    HAZARD, EXPOSURE, analysis_scores, historical_scores, score_value, tier, historical_tier, keyed, change_reasons,
 )
 import pandas as pd
 
@@ -23,16 +23,40 @@ def row_fixture():
 
 
 class PriorityTests(unittest.TestCase):
-    def test_dual_gates_and_exact_thresholds(self):
+    def test_historical_dual_gates_and_exact_thresholds(self):
         for h, e, expected in [(4, 8, 'High priority'), (8, 4, 'High priority'),
                                (10, 2, 'Moderate priority'), (2, 4, 'Moderate priority'),
                                (4, 2, 'Moderate priority'), (16, 0, 'Low priority'),
                                (1, 10, 'Low priority'), (0, 0, 'Low priority')]:
-            self.assertEqual(tier(h, e), expected)
-        self.assertEqual(tier(Decimal('3.9999'), 9), 'Moderate priority')
-        self.assertEqual(tier(4, Decimal('7.9999')), 'Moderate priority')
-        self.assertEqual(tier(Decimal('1.9999'), 10), 'Low priority')
-        self.assertEqual(tier(None, 10), 'Insufficient evidence')
+            self.assertEqual(historical_tier(h, e), expected)
+        self.assertEqual(historical_tier(Decimal('3.9999'), 9), 'Moderate priority')
+        self.assertEqual(historical_tier(4, Decimal('7.9999')), 'Moderate priority')
+        self.assertEqual(historical_tier(Decimal('1.9999'), 10), 'Low priority')
+        self.assertEqual(historical_tier(None, 10), 'No data')
+
+    def test_current_thresholds_without_rounding(self):
+        cases = [(0, 10, 'Low priority'), (16, 0, 'Moderate priority'),
+                 ('5.9999', 5, 'Low priority'), (6, 5, 'Moderate priority'),
+                 ('9.75', 5, 'Moderate priority'), (10, 5, 'Moderate priority'),
+                 (10, '4.9999', 'Low priority'), ('10.0001', 5, 'High priority'),
+                 ('10.0001', '4.9999', 'Moderate priority'), (16, 10, 'High priority')]
+        for h, e, expected in cases:
+            with self.subTest(h=h, e=e):
+                self.assertEqual(tier(h, e), expected)
+        self.assertEqual(tier(None, 5), 'No data')
+        self.assertEqual(tier(10, None), 'No data')
+
+    def test_historical_and_analysis_classifiers_are_independent(self):
+        self.assertEqual(historical_tier(8, 4), 'High priority')
+        self.assertEqual(tier(8, 4), 'Low priority')
+        row = row_fixture()
+        row.update(Persistence_score='2', Bioaccumulation_score='2')
+        for name in ['inventory', 'production']:
+            row['Exposure_' + name + '_score'] = '2'
+        row['Exposure_score'] = '4'
+        self.assertEqual(historical_scores(row)['Priority_tier'], 'High priority')
+        self.assertEqual(analysis_scores(row)['Priority_tier'], 'Low priority')
+        self.assertEqual(historical_scores(row)['Priority_score'], analysis_scores(row)['Priority_score'])
 
     def test_supported_zero_is_complete_and_not_missing(self):
         result = analysis_scores(row_fixture())
@@ -46,22 +70,22 @@ class PriorityTests(unittest.TestCase):
         row.update(Persistence_score='', persistence_available='False',
                    persistence_unavailable_reason='identity_review_required_no_independent_or_curated_fallback')
         result = analysis_scores(row)
-        self.assertIsNone(result['Hazard_score'])
-        self.assertIsNone(result['Priority_score'])
+        self.assertEqual(result['Hazard_score'], result['Hazard_observed_score'])
+        self.assertEqual(result['Priority_score'], result['Hazard_score'])
         self.assertEqual(result['Hazard_available_dimensions'], 3)
         self.assertEqual(result['Hazard_data_status'], 'Partial')
-        self.assertIn('identity_review', result['Priority_ineligibility_reasons'])
+        self.assertIn('identity_review', result['Priority_missing_reasons'])
         self.assertEqual(historical_scores(row)['Hazard_score'], 0)
 
     def test_missing_exposure_preserves_complete_hazard(self):
         row = row_fixture()
-        row.update(Exposure_score='', Exposure_complete='False', Exposure_patent_score='',
+        row.update(Exposure_score='0', Exposure_complete='False', Exposure_patent_score='',
                    exposure_patent_available='False', exposure_patent_unavailable_reason='query_error')
         result = analysis_scores(row)
         self.assertEqual(result['Hazard_score'], 0)
-        self.assertIsNone(result['Priority_score'])
-        self.assertEqual(result['Priority_tier'], 'Insufficient evidence')
-        self.assertIn('query_error', result['Priority_ineligibility_reasons'])
+        self.assertEqual(result['Priority_score'], result['Hazard_score'])
+        self.assertEqual(result['Priority_tier'], 'Low priority')
+        self.assertIn('query_error', result['Priority_missing_reasons'])
 
     def test_hazard_observed_sum_never_renormalised(self):
         row = row_fixture()
@@ -70,7 +94,7 @@ class PriorityTests(unittest.TestCase):
         row.update(Toxicity_score='', toxicity_available='False', toxicity_unavailable_reason='no_usable_evidence')
         result = analysis_scores(row)
         self.assertEqual(result['Hazard_observed_score'], 7)
-        self.assertIsNone(result['Hazard_score'])
+        self.assertEqual(result['Hazard_score'], result['Hazard_observed_score'])
 
     def test_all_missing_hazard_is_unavailable(self):
         row = row_fixture()
@@ -82,7 +106,7 @@ class PriorityTests(unittest.TestCase):
         result = analysis_scores(row)
         self.assertEqual(result['Hazard_data_status'], 'Unavailable')
         self.assertEqual(result['Hazard_observed_score'], 0)
-        self.assertIsNone(result['Hazard_score'])
+        self.assertEqual(result['Hazard_score'], result['Hazard_observed_score'])
         self.assertEqual(historical_scores(row)['Hazard_data_status'], 'No data')
 
     def test_flags_totals_and_reasons_must_agree(self):
@@ -115,12 +139,12 @@ class PriorityTests(unittest.TestCase):
     def test_change_causes_only_reference_relevant_domains(self):
         old = row_fixture()
         row = {**old, 'Exposure_patent_score': '', 'exposure_patent_available': 'False',
-               'exposure_patent_unavailable_reason': 'query_error', 'Exposure_score': '', 'Exposure_complete': 'False'}
+               'exposure_patent_unavailable_reason': 'query_error', 'Exposure_score': '0', 'Exposure_complete': 'False'}
         result = analysis_scores(row)
         self.assertEqual(change_reasons(old, row, result, 'Hazard_data_status'),
                          ['availability_status_distinguishes_complete_partial_and_unavailable'])
         self.assertEqual(change_reasons(old, row, result, 'Exposure_score'),
-                         ['upstream_exposure_eligibility_audit', 'incomplete_domains_no_zero_imputation'])
+                         ['upstream_exposure_eligibility_audit'])
 
     def test_identity_join_rejects_duplicates_and_changed_universe(self):
         for values in [['a', 'a'], ['a', 'c'], ['a', '']]:

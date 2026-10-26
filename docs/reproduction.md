@@ -1,5 +1,11 @@
 # Reproduction and verification
 
+> Current scoring-policy update: [zero-contribution policy](zero_contribution_policy.md)
+> supersedes the complete-domain eligibility rule and its recorded 4,244/10,881
+> verification counts below. Those dated results describe the earlier export,
+> not the repaired candidate. Upstream evidence admission remains unchanged.
+
+
 The implemented scope is reproduction from specified frozen inputs through
 identity assembly, evidence integration, hazard/exposure assessment, ranking
 and compact export. It does not rebuild live queries, VEGA predictions or all
@@ -83,7 +89,7 @@ audit_archive/<run>/
     daily/                            # two files exposed through results
 ```
 
-The CSV has 59 publication fields. The small SQLite contains all final details,
+The CSV has 60 publication fields. The small SQLite contains all final details,
 family audit, embedded dictionary and interpretation guide. The complete archive
 retains all 251 original final fields and retained intermediate evidence. Scores
 and ranks remain independent of structural family annotations.

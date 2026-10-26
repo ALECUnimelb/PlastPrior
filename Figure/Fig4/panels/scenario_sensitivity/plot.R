@@ -27,8 +27,12 @@ plot_priority_scenario_sensitivity <- function(source_data, config) {
     levels = c("Rank rho", "Tier agreement", "High-priority\nJaccard")
   )
   plot_data$label <- scales::percent(plot_data$value, accuracy = 0.1)
-  plot_data$label_colour <- ifelse(plot_data$value >= 0.88, "white", "#111820")
   heatmap_palette <- as.character(unlist(config$heatmap_palette))
+  fill_scale <- scales::col_numeric(heatmap_palette,domain=c(min(plot_data$value),1))
+  rgb <- t(grDevices::col2rgb(fill_scale(plot_data$value)))/255
+  linear <- ifelse(rgb<=0.04045,rgb/12.92,((rgb+.055)/1.055)^2.4)
+  lum <- as.vector(linear %*% c(.2126,.7152,.0722))
+  plot_data$label_colour <- ifelse((lum+.05)/.05 >= 1.05/(lum+.05),'black','white')
 
   ggplot2::ggplot(
     plot_data,

@@ -113,14 +113,25 @@ def publish_daily(package, results_dir, archive_root, *, baseline_csv=None):
     return manifest
 
 
-def finish_run(work, results_dir, archive_root, *, keep_intermediates=False, baseline_csv=None, progress=print):
+def finish_run(work, results_dir, archive_root, *, keep_intermediates=False, baseline_csv=None,
+               priority_migration_baseline=None, progress=print):
     from .export import export_results
 
     work = Path(work).resolve()
     archive = Path(archive_root).expanduser().resolve()
     if work.name != 'work' or not work.is_relative_to(archive):
         raise ValueError('Only a managed run workspace may be cleaned.')
+    if priority_migration_baseline is not None:
+        if baseline_csv is not None:
+            raise ValueError('Choose exact regression or explicit priority migration, not both.')
+        destination = Path(results_dir).expanduser().absolute()
+        if destination.exists() or destination.is_symlink():
+            raise ValueError('Priority migration requires a new results directory; preserve the old version.')
     package = export_results(work, work.parent / 'package', progress=progress)
+    if priority_migration_baseline is not None:
+        from .priority_migration import verify_priority_migration
+        report = verify_priority_migration(priority_migration_baseline, package['csv'])
+        (Path(package['directory']) / 'priority_migration.json').write_text(json.dumps(report, indent=2) + '\n')
     publish_daily(package, results_dir, archive, baseline_csv=baseline_csv)
     if not keep_intermediates:
         shutil.rmtree(work)

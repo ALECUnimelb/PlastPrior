@@ -6,8 +6,11 @@ HERE=Path(__file__).resolve().parent
 def check():
     output=HERE/'output'
     rows=lambda p:list(csv.DictReader(p.open()))
-    columns=rows(output/'source_data/overlap/selected.csv')
-    sizes=rows(output/'source_data/overlap/set_sizes.csv')
+    repo=HERE.parents[1]
+    lock=json.loads((repo/'Figure/figure_sources.json').read_text())
+    data=repo/lock['figure_data_dir']/HERE.name
+    columns=rows(data/'overlap/selected.csv')
+    sizes=rows(data/'overlap/set_sizes.csv')
     colors={r['color'].upper() for r in sizes}
     root=ET.parse(output/'ExtendedDataFig1.svg').getroot()
     ns={'s':'http://www.w3.org/2000/svg'}

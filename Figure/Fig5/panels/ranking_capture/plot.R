@@ -15,7 +15,7 @@ plot_policy_ranking_capture <- function(source_data, config) {
     stop("Ranking markers must share one screening fraction.", call. = FALSE)
   }
   palette <- policy_named_palette(config, "method_palette")
-  axis_maximum <- max(0.90, max(plot_data$captured_fraction) + 0.14)
+  axis_maximum <- min(1, max(0.20, ceiling((max(plot_data$captured_fraction) + 0.06) * 10) / 10))
 
   ggplot2::ggplot(
     plot_data,
@@ -55,7 +55,7 @@ plot_policy_ranking_capture <- function(source_data, config) {
     ) +
     ggplot2::scale_x_continuous(
       labels = scales::label_percent(accuracy = 1),
-      limits = c(0, axis_maximum), breaks = seq(0, min(1,axis_maximum), by = 0.2),
+      limits = c(0, axis_maximum), breaks = seq(0, min(1,axis_maximum), by = if (axis_maximum <= 0.4) 0.05 else 0.2),
       expand = ggplot2::expansion(mult = c(0, 0))
     ) +
     ggplot2::labs(

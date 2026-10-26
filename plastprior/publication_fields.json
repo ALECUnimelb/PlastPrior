@@ -197,32 +197,32 @@
     "source_field": "Hazard_score",
     "type": "number",
     "unit": "score 0–16",
-    "definition": "2*P + 2*B + M + 3*T, only when all four dimensions are available. Not PlastChem Hazard_score.",
-    "missing": "Blank means unavailable; numeric zero is an available zero."
+    "definition": "2*P + 2*B + M + 3*T. Missing components contribute zero after evidence selection; completeness is reported separately.",
+    "missing": "Aggregate zero may result from absent contributions; consult component availability."
   },
   {
     "field": "Exposure_score",
     "source_field": "Exposure_score",
     "type": "number",
     "unit": "score 0–10",
-    "definition": "Sum of six indicators across five dimensions; formal total requires all dimensions.",
-    "missing": "Blank means unavailable; numeric zero is an available zero."
+    "definition": "Sum of available six indicator contributions across five dimensions. Missing contributions are zero in the sum; evidence scores remain missing.",
+    "missing": "Aggregate zero may result from absent contributions; consult component availability."
   },
   {
     "field": "Priority_score",
     "source_field": "Priority_score",
     "type": "number",
     "unit": "score 0–26",
-    "definition": "Hazard + exposure only when both domains are complete. Do not infer a value for an unranked record.",
-    "missing": "Blank means unavailable; numeric zero is an available zero."
+    "definition": "Hazard + exposure for assessments with any available evidence. Partial evidence does not prevent a total.",
+    "missing": "Blank only for assessments with no available evidence; numeric zero is a screening sum."
   },
   {
     "field": "Priority_tier",
     "source_field": "Priority_tier",
     "type": "text",
     "unit": "",
-    "definition": "High priority, Moderate priority, Low priority, or Insufficient evidence; screening categories, not measured risk.",
-    "missing": "Never substitute low for insufficient evidence."
+    "definition": "High priority, Moderate priority, Low priority, or No data when no hazard or exposure evidence is available.",
+    "missing": "No data is distinct from evidence-supported Low priority."
   },
   {
     "field": "Priority_rank",
@@ -245,7 +245,7 @@
     "source_field": "Ranking_eligible",
     "type": "boolean",
     "unit": "",
-    "definition": "True/False: eligibility for formal ranking; incomplete evidence is excluded.",
+    "definition": "True when any hazard or exposure evidence is available; partial evidence remains rankable.",
     "missing": "Must be True or False."
   },
   {
@@ -472,7 +472,15 @@
     "source_field": "Priority_data_status",
     "type": "text",
     "unit": "",
-    "definition": "Complete or Insufficient evidence; formal priority must remain missing if incomplete.",
+    "definition": "Complete, Partial, or No data. Partial evidence does not prevent scoring or ranking.",
     "missing": "Blank means no recorded status."
+  },
+  {
+    "field": "priority_scoring_policy",
+    "source_field": "priority_scoring_policy",
+    "type": "text",
+    "unit": "",
+    "definition": "Versioned scientific policy governing aggregate missing contributions and classification.",
+    "missing": "Required for new releases."
   }
 ]

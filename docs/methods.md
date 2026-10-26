@@ -1,4 +1,10 @@
 > Output-layout update: daily files are `results/PlastPrior_results.csv` and
+
+> Current scoring-policy update: [zero-contribution policy](zero_contribution_policy.md)
+> supersedes the complete-domain eligibility rule and its recorded 4,244/10,881
+> verification counts below. Those dated results describe the earlier export,
+> not the repaired candidate. Upstream evidence admission remains unchanged.
+
 > `results/PlastPrior_dashboard.sqlite`. Complete archives and temporary stages are
 > separate under `audit_archive/<run>/`. Stage-level paths in historical examples below
 > refer to `<run>/work/`; retain them with `--keep-intermediates` when reproducing checks.
@@ -29,7 +35,7 @@ After Stage 7B, the notebook and `python main.py --rank-priority` use the same
 `plastprior.export.export_results()` function. Each successful export creates a
 new directory under `results/final/<run_id>/`:
 
-- `PlastPrior_results.csv`: a 59-field publication table, including incomplete
+- `PlastPrior_results.csv`: a 60-field publication table, including incomplete
   and unranked records. Identity, source memberships, selected hazard pathways,
   exposure quantities/context, scores, ranks and missingness are explicit.
   Internal identity/GIC flags and detailed reasons remain in the archive.
@@ -1556,26 +1562,35 @@ records have exposure data, so the historical `No data` priority category is
 not reached. Historical hazard status still distinguishes any available PBMT
 component from none. These results are labelled `historical_reproduction_only`.
 
-**Qualified analysis.** Inherit the complete Stage 6B analysis table verbatim,
-including PBMT scores, eligibility flags, evidence and exposure values. Only
-append aggregate assessment fields. The four hazard components must all be
-available for `Hazard_score`; all five exposure dimensions must be available
-for the inherited `Exposure_score`. Both domains must be complete for
-`Priority_score`, `Priority_eligible=True` and a High/Moderate/Low tier.
-Otherwise, the total is null and the tier and priority data status are
-`Insufficient evidence`. Zero is valid only when an eligible upstream component
-supports it. Malformed, negative, non-finite or out-of-range scores, inconsistent
-availability flags, and missing exclusion reasons are rejected.
+**Qualified analysis.** Inherit the Stage 6B analysis table verbatim, including
+component scores, availability, evidence and exposure values. Missing component
+scores contribute zero only to the weighted hazard and additive exposure sums;
+the raw scores remain missing and contributions are not renormalised. H and E are
+numeric contribution sums even when an entire domain is unavailable. Records
+with at least one available component have S = H + E and `Priority_eligible=True`.
+Only records with all ten components unavailable have no total, a `No data` tier
+and no rank. Domain completeness is descriptive, not an eligibility gate.
 
-`Hazard_observed_score` is the weighted sum of available hazard contributions,
-without imputation or renormalisation. It is not a complete hazard score. With
-no available hazard evidence this bookkeeping sum is zero, while `Hazard_score`
-is null and `Hazard_data_status` is `Unavailable`. Always interpret this field
-with `Hazard_available_dimensions`, `Hazard_complete` and
-`Hazard_missing_dimensions`. Domain status values are `Complete`, `Partial`
-and `Unavailable`; their semantics intentionally differ from the historical
-`Has data` / `No data` flags. Every unavailable component contributes its exact
-upstream reason to `Priority_ineligibility_reasons`.
+The current `priority-hgt10-ege5-v1` policy uses unrounded H and E:
+
+```text
+High: H > 10 and E >= 5
+Moderate: 6 <= H <= 10 and E >= 5, or H > 10 and E < 5
+Low: otherwise, for eligible records
+```
+
+`Priority_score` remains H + E; neither classification nor ranking uses display
+rounding. Historical reproduction uses the frozen dual gates above through a
+separate classifier. See [the migration contract](priority_classification_migration.md)
+for old/new verification and independent output directories.
+
+`Hazard_available_dimensions`, `Hazard_complete`, `Hazard_missing_dimensions`
+and domain status distinguish missing contributions from observed zeros. Domain
+status is `Complete`, `Partial` or `Unavailable`; priority status is `Complete`,
+`Partial` or `No data`. `Priority_missing_reasons` retains component gaps, whereas
+`Priority_ineligibility_reasons` applies only to assessments without any available
+evidence. Malformed, negative, non-finite or out-of-range scores and contradictory
+availability or aggregate values are rejected.
 
 **Identity, GIC and exposure limitations.** The 15 unresolved model associations
 retain their QSAR/Pov/LRTP isolation and all 58 source memberships. Independent
@@ -1657,8 +1672,8 @@ module checks the upstream manifest, implementation and policy fingerprints,
 and verifies qualification against Stage 7A. It does not change scores, tiers,
 evidence, source selections, model exclusions or GIC associations.
 
-**Ranks and ties.** Only `Priority_eligible=True` records with a complete finite
-score enter the ranking. Competition rank is one plus the number of eligible
+**Ranks and ties.** All `Priority_eligible=True` records with a finite total
+score enter the ranking, including partial evidence. Competition rank is one plus the number of eligible
 scores strictly greater than the record's score. Equal scores share ranks,
 for example 1, 2, 2, 4. Decimal comparisons precede display rounding. Descending
 score and ascending full InChIKey give a reproducible display order, but the
@@ -1669,7 +1684,7 @@ It can therefore contain more than N rows. A positive integer N is required;
 when N exceeds the eligible pool, all eligible records are returned. With no
 eligible records, the export is empty and its boundary score is null. Summary
 metadata retains N, actual selected count, cutoff and boundary group size.
-`Priority_tier` remains unchanged. Its dual hazard/exposure gates mean that a
+`Priority_tier` remains unchanged. Its hazard/exposure classification means that a
 Moderate record can have a higher total than a High record; tiers do not reorder
 the score ranking or break ties.
 
@@ -1677,10 +1692,11 @@ the score ranking or break ties.
 `compound_rankings.csv`, including the 15 model-review compounds. Ineligible
 records have null `Priority_rank`, `Priority_tie_size` and `Top_n_selected`;
 null selection is not a valid negative selection within the ranked pool.
-Supported complete zero scores remain rankable. `unranked_review.csv` is sorted
+Supported zero scores remain rankable, including those with partial evidence. `unranked_review.csv` is sorted
 only by InChIKey and retains component scores, missingness reasons and identity
-and GIC context. It does not rank incomplete records by observed partial sums.
-GIC name-only associations do not regain eligibility. Other GIC review flags
+and GIC context. Partial-evidence records with available contributions are ranked;
+all-unavailable records remain unranked. GIC name-only associations do not gain
+inventory-score contributions. Other GIC review flags
 do not create additional exclusions beyond the qualified Stage 7A decision.
 
 **Historical reproduction.** The historical view reproduces the legacy

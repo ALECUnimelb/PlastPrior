@@ -49,32 +49,20 @@ assemble_priority_landscape <- function(panel_plots, config) {
     clip = FALSE,
     on_top = TRUE
   )
-  middle_row <- tag_priority_panel(
-    panel_plots$hazard_exposure_landscape,
-    "b",
-    config
-  ) + tag_priority_panel(
-    panel_plots$score_decomposition,
-    "c",
-    config
-  ) + patchwork::plot_layout(
-    widths = as.numeric(unlist(config$layout$middle_widths))
+  heatmap_row <- grid::grobTree(
+    patchwork::patchworkGrob(panel_plots$hazard_exposure_landscape),
+    grid::textGrob('b',x=grid::unit(.006,'npc'),y=grid::unit(.994,'npc'),
+      just=c('left','top'),gp=grid::gpar(fontfamily=resolve_manuscript_font(),
+      fontsize=as.numeric(config$layout$tag_size_pt),fontface='bold',col='#111820'))
   )
-  bottom_row <- tag_priority_panel(
-    panel_plots$hazard_component_profiles,
-    "d",
-    config
-  ) + tag_priority_panel(
-    panel_plots$exposure_component_profiles,
-    "e",
-    config
-  ) + patchwork::plot_layout(
-    widths = as.numeric(unlist(config$layout$bottom_widths))
-  )
-  patchwork::wrap_elements(full = top_row) /
-    patchwork::wrap_elements(full = middle_row) /
-    patchwork::wrap_elements(full = bottom_row) +
-    patchwork::plot_layout(
-      heights = as.numeric(unlist(config$layout$row_heights))
-    )
+  middle_row <- patchwork::wrap_elements(full=heatmap_row) +
+    tag_priority_panel(panel_plots$score_decomposition,"c",config) +
+    patchwork::plot_layout(widths=as.numeric(unlist(config$layout$middle_widths)))
+  bottom_row <- tag_priority_panel(panel_plots$hazard_component_profiles,"d",config) +
+    tag_priority_panel(panel_plots$exposure_component_profiles,"e",config) +
+    patchwork::plot_layout(widths=as.numeric(unlist(config$layout$bottom_widths)))
+  patchwork::wrap_elements(full=top_row) /
+    patchwork::wrap_elements(full=middle_row) /
+    patchwork::wrap_elements(full=bottom_row) +
+    patchwork::plot_layout(heights=as.numeric(unlist(config$layout$row_heights)))
 }

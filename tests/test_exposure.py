@@ -42,7 +42,7 @@ class ExposureScoreTests(unittest.TestCase):
         self.assertIsNone(human_detection_score({**valid, 'match_method': 'cas_rejected_ambiguous_target_mapping'})[0])
         self.assertEqual(human_detection_score({**valid, 'match_method': 'exact_one_to_one_cas', 'detected': True})[0], 1)
 
-    def test_total_requires_five_dimensions_without_rescaling(self):
+    def test_total_retains_available_contributions_without_rescaling(self):
         values = {k: 0.0 for k in COMPONENTS}
         full = aggregate_components(values)
         self.assertEqual(full['Exposure_score'], 0)
@@ -51,11 +51,13 @@ class ExposureScoreTests(unittest.TestCase):
         self.assertEqual(aggregate_components(values)['Exposure_score'], 10)
         values['inventory'] = None
         partial = aggregate_components(values)
-        self.assertIsNone(partial['Exposure_score'])
+        self.assertEqual(partial['Exposure_score'], 8)
         self.assertEqual(partial['Exposure_observed_score'], 8)
         self.assertEqual(partial['Exposure_available_dimensions'], 4)
         values['human_biomonitoring'] = None
         self.assertEqual(aggregate_components(values)['Exposure_available_dimensions'], 3)
+        self.assertEqual(aggregate_components(values)['dimension_scores']['food_contact_and_biomonitoring'], 1)
+        self.assertEqual(aggregate_components(values)['Exposure_score'], 7)
 
     def test_patent_failed_zero_correction_is_not_zero(self):
         gate = {'eligible': False, 'audit_id': 'patent:2', 'exclusion_reasons': ['query_error']}

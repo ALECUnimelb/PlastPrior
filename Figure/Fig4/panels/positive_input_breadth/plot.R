@@ -9,9 +9,11 @@ plot_priority_positive_input_breadth <- function(source_data, config) {
     scales::percent(plot_data$within_tier_proportion, accuracy = 1),
     ""
   )
-  plot_data$label_colour <- ifelse(
-    plot_data$within_tier_proportion >= 0.12, "white", "#111820"
-  )
+  fill_scale <- scales::col_numeric(as.character(unlist(config$heatmap_palette)),domain=c(0,max(plot_data$within_tier_proportion)))
+  rgb <- t(grDevices::col2rgb(fill_scale(plot_data$within_tier_proportion)))/255
+  linear <- ifelse(rgb<=0.04045,rgb/12.92,((rgb+.055)/1.055)^2.4)
+  lum <- as.vector(linear %*% c(.2126,.7152,.0722))
+  plot_data$label_colour <- ifelse((lum+.05)/.05 >= 1.05/(lum+.05),'black','white')
   median_values <- stats::setNames(
     metrics$median_positive_inputs, metrics$priority_tier
   )

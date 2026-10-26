@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "policy_version": "priority-competition-rank-v1",
+  "policy_version": "priority-zero-contribution-competition-v1",
   "default_top_n": 100,
   "rules": {
-    "eligibility": "Inherit Stage 7A complete-domain eligibility; never impute scores.",
+    "eligibility": "Rank assessments with any available hazard or exposure evidence. Missing components contribute zero to sums and do not exclude partial assessments.",
     "rank": "One plus the number of eligible scores strictly greater than this score.",
     "ties": "Exact numeric equality before display rounding; equal scores share competition rank.",
     "display": "Descending score, then full InChIKey ascending; identifiers are not scientific tie-breakers.",

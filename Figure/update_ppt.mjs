@@ -17,10 +17,18 @@ const {finalizePresentation}=await import(pathToFileURL(path.join(skill,'contain
 execFileSync(path.join(workspaceDir,'.venv/bin/python'),[path.join(figuresDir,'verify_figures.py')],{cwd:workspaceDir,stdio:'inherit'});
 const names=['Fig1','Fig2','Fig3','Fig4','Fig5','ExtendedDataFig1','ExtendedDataFig2','ExtendedDataFig3','ExtendedDataFig4'];
 const lock=JSON.parse(await fs.readFile(path.join(figuresDir,'figure_sources.json'),'utf8'));
-const build=await fs.mkdtemp(path.join(figuresDir,'.history/ppt-'));
-const destination=path.join(figuresDir,'Final_Figures.pptx');
+const buildRoot=path.join(workspaceDir,'audit_archive/ppt_builds');
+await fs.mkdir(buildRoot,{recursive:true});
+const build=await fs.mkdtemp(path.join(buildRoot,'ppt-'));
+const decks=await Promise.all((await fs.readdir(figuresDir)).filter(name=>/^Final_Figures.*\.pptx$/.test(name)).map(async name=>({path:path.join(figuresDir,name),mtime:(await fs.stat(path.join(figuresDir,name))).mtimeMs})));
+decks.sort((a,b)=>b.mtime-a.mtime);
+const template=process.argv[2]?path.resolve(process.argv[2]):decks[0]?.path;
+if(!template)throw new Error('Provide an existing review deck as the first argument.');
+const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+Z$/,'Z');
+const destination=process.argv[3]?path.resolve(process.argv[3]):path.join(figuresDir,`Final_Figures_${stamp}.pptx`);
+try {await fs.access(destination);throw new Error('Output already exists: '+destination);} catch(error) {if(error.code!=='ENOENT')throw error;}
 const source=path.join(build,'before.pptx');
-await fs.copyFile(destination,source);
+await fs.copyFile(template,source);
 const sourceHash=crypto.createHash('sha256').update(await fs.readFile(source)).digest('hex');
 const p=await PresentationFile.importPptx(await FileBlob.load(source));
 await fs.writeFile(path.join(build,'before-inspection.json'),JSON.stringify(await p.inspect({kind:'slide,textbox,image,notes',maxChars:30000}),null,2));
@@ -57,5 +65,5 @@ for(const [i,slide] of final.slides.items.entries()) {
  await fs.writeFile(path.join(build,`slide-${i+1}.png`),new Uint8Array(await png.arrayBuffer()));
  console.log(`Rendered final slide ${i+1}/9`);
 }
-await fs.copyFile(finalPath,destination);
+await fs.copyFile(finalPath,destination,1);
 console.log(JSON.stringify({pptx:destination,reviewDirectory:build}));

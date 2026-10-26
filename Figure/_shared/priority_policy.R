@@ -1,8 +1,9 @@
-# Current complete-evidence cohort only; missing score inputs are rejected.
+# Classify unrounded domain sums; never use display bins or a total-score gate.
 derive_priority_tier_shared <- function(
   scores, hazard, exposure, config, statuses = NULL,
-  low_threshold = config$thresholds$low_priority_upper,
-  high_threshold = config$thresholds$high_priority_lower
+  moderate_hazard_min = config$thresholds$moderate_hazard_min,
+  high_hazard_gt = config$thresholds$high_hazard_gt,
+  exposure_min = config$thresholds$exposure_min
 ) {
   if (length(scores) != length(hazard) || length(scores) != length(exposure) ||
       any(!is.finite(c(scores, hazard, exposure))) ||
@@ -10,21 +11,15 @@ derive_priority_tier_shared <- function(
       any(abs(scores - hazard - exposure) > 1e-9)) {
     stop("Tier inputs must be finite, nonnegative and satisfy total = hazard + exposure.", call. = FALSE)
   }
-  moderate_min <- as.numeric(config$thresholds$moderate_component_min)
-  high_min <- as.numeric(config$thresholds$high_component_min)
-  if (length(moderate_min) != 1L || length(high_min) != 1L) {
-    stop("Resolve the locked current priority policy before deriving tiers.", call. = FALSE)
-  }
-  tier <- ifelse(
-    scores >= high_threshold & hazard >= high_min & exposure >= high_min,
+  boundaries <- c(moderate_hazard_min, high_hazard_gt, exposure_min)
+  if (length(boundaries) != 3L || any(!is.finite(boundaries)) ||
+      moderate_hazard_min > high_hazard_gt) stop("Invalid H/E policy boundaries.")
+  tier <- ifelse(hazard > high_hazard_gt & exposure >= exposure_min,
     "High priority",
-    ifelse(scores >= low_threshold & hazard >= moderate_min & exposure >= moderate_min,
-           "Moderate priority", "Low priority")
-  )
+    ifelse((hazard >= moderate_hazard_min & hazard <= high_hazard_gt & exposure >= exposure_min) |
+           (hazard > high_hazard_gt & exposure < exposure_min), "Moderate priority", "Low priority"))
   if (!is.null(statuses)) {
-    if (length(statuses) != length(scores) || anyNA(statuses)) {
-      stop("Priority data status must be present for every row.", call. = FALSE)
-    }
+    if (length(statuses) != length(scores) || anyNA(statuses)) stop("Priority data status must be present for every row.")
     tier[tolower(trimws(statuses)) == "no data"] <- "No data"
   }
   tier

@@ -39,7 +39,7 @@ priority_sensitivity_numeric <- function(
   if (!missing_as_zero && any(!nzchar(text))) {
     stop(column_name, " contains missing values.", call. = FALSE)
   }
-  if (missing_as_zero) stop("Missing-value imputation is prohibited.")
+  if (missing_as_zero) output[!nzchar(text)] <- 0 # Contribution only; source missingness is preserved.
   output
 }
 
@@ -57,10 +57,10 @@ priority_sensitivity_assert_equal <- function(
 }
 
 derive_priority_tier_sensitivity <- function(
-  scores, low_threshold, high_threshold, hazard, exposure, config
+  scores, moderate_hazard_min, high_hazard_gt, hazard, exposure, config
 ) {
   derive_priority_tier_shared(scores, hazard, exposure, config,
-    low_threshold = low_threshold, high_threshold = high_threshold)
+    moderate_hazard_min = moderate_hazard_min, high_hazard_gt = high_hazard_gt)
 }
 
 normalize_priority_tier_sensitivity <- function(values) {
@@ -98,7 +98,7 @@ read_priority_sensitivity_input <- function(snapshot, config) {
     lapply(
       specs$score_column,
       function(column) priority_sensitivity_numeric(
-        compounds[[column]], column, missing_as_zero = FALSE
+        compounds[[column]], column, missing_as_zero = TRUE
       )
     ),
     specs$component
@@ -155,8 +155,8 @@ read_priority_sensitivity_input <- function(snapshot, config) {
 
   baseline_tier <- derive_priority_tier_sensitivity(
     baseline_score,
-    as.numeric(config$thresholds$low_priority_upper),
-    as.numeric(config$thresholds$high_priority_lower),
+    as.numeric(config$thresholds$moderate_hazard_min),
+    as.numeric(config$thresholds$high_hazard_gt),
     hazard_score, exposure_score, config
   )
   reported_tier <- normalize_priority_tier_sensitivity(compounds$Priority_tier)
@@ -178,7 +178,7 @@ read_priority_sensitivity_input <- function(snapshot, config) {
     inventory_listing_count = priority_sensitivity_numeric(
       compounds$Exposure_inventory_listing_count,
       "Exposure_inventory_listing_count",
-      missing_as_zero = FALSE
+      missing_as_zero = TRUE
     ),
     specs = specs
   )
@@ -271,8 +271,8 @@ prepare_priority_sensitivity_data <- function(input, config, include_sensitivity
     exposure <- input$exposure_score - if (input$specs$family[[index]] == "Exposure") removed else 0
     perturbed_tier <- derive_priority_tier_sensitivity(
       perturbed_score,
-      as.numeric(config$thresholds$low_priority_upper),
-      as.numeric(config$thresholds$high_priority_lower),
+      as.numeric(config$thresholds$moderate_hazard_min),
+      as.numeric(config$thresholds$high_hazard_gt),
       hazard, exposure, config
     )
     perturbed_high <- perturbed_tier == "High priority"
@@ -308,8 +308,8 @@ prepare_priority_sensitivity_data <- function(input, config, include_sensitivity
     score <- scenario_values$score; hazard <- scenario_values$hazard; exposure <- scenario_values$exposure
     perturbed_tier <- derive_priority_tier_sensitivity(
       score,
-      as.numeric(scenario$low_threshold),
-      as.numeric(scenario$high_threshold),
+      as.numeric(scenario$moderate_hazard_min),
+      as.numeric(scenario$high_hazard_gt),
       hazard, exposure, config
     )
     perturbed_high <- perturbed_tier == "High priority"
@@ -317,8 +317,8 @@ prepare_priority_sensitivity_data <- function(input, config, include_sensitivity
       scenario_id = scenario$scenario_id,
       scenario = scenario$label,
       note = scenario$note,
-      low_threshold = as.numeric(scenario$low_threshold),
-      high_threshold = as.numeric(scenario$high_threshold),
+      moderate_hazard_min = as.numeric(scenario$moderate_hazard_min),
+      high_hazard_gt = as.numeric(scenario$high_hazard_gt),
       rank_spearman = suppressWarnings(stats::cor(
         input$baseline_score, score, method = "spearman"
       )),

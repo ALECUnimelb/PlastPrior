@@ -23,9 +23,9 @@
     {
       "panel_id": "hazard_exposure_landscape",
       "panel_tag": "b",
-      "title": "Exact hazard and exposure score combinations",
-      "width_mm": 92,
-      "height_mm": 82
+      "title": "Priority heatmap with exact compound counts",
+      "width_mm": 183,
+      "height_mm": 133
     },
     {
       "panel_id": "score_decomposition",
@@ -62,13 +62,9 @@
   },
   "layout": {
     "row_heights": [
-      0.82,
-      1.0,
-      0.92
-    ],
-    "middle_widths": [
-      1.0,
-      1.0
+      65,
+      82,
+      68
     ],
     "bottom_widths": [
       1.0,
@@ -81,7 +77,11 @@
       "top": 1.0,
       "align_to": "full"
     },
-    "tag_size_pt": 8.5
+    "tag_size_pt": 8.5,
+    "middle_widths": [
+      1.2,
+      0.8
+    ]
   },
   "display": {
     "priority_distribution_label_min_count": 1,
@@ -93,16 +93,31 @@
     "audit_profile_label_min_fraction": 0.0,
     "regulatory_internal_label_min_fraction": 0.04,
     "regulatory_show_small_callouts": false,
-    "regulatory_callout_min_separation_degrees": 6.0
+    "regulatory_callout_min_separation_degrees": 6.0,
+    "heatmap_compact": {
+      "number_size_pt": 6,
+      "axis_text_size_pt": 6.5,
+      "axis_title_size_pt": 7.5,
+      "legend_tick_size_pt": 6,
+      "legend_label_size_pt": 6.5,
+      "tile_linewidth_mm": 0.25,
+      "boundary_linewidth_mm": 0.35,
+      "row_heights": [
+        14.5,
+        1.6
+      ],
+      "cell_aspect_ratio": 1
+    }
   },
   "thresholds": {
-    "low_priority_upper": 6,
-    "high_priority_lower": 12,
     "hazard_theoretical_max": 16,
-    "exposure_theoretical_max": 10
+    "exposure_theoretical_max": 10,
+    "moderate_hazard_min": 6,
+    "high_hazard_gt": 10,
+    "exposure_min": 5
   },
   "priority_palette": {
-    "Insufficient evidence": "#C8CED6",
+    "No data": "#C8CED6",
     "Low priority": "#36495D",
     "Moderate priority": "#C88736",
     "High priority": "#A9463E"
@@ -122,7 +137,7 @@
   "hazard_profile_palette": {
     "No usable evidence": "#E3E7EB",
     "Evidence-supported zero (0)": "#A9B6C1",
-    "Low confidence (0.25)": "#8FA4B5",
+    "Score 0.25": "#8FA4B5",
     "Low (0.5)": "#6F92AA",
     "Moderate (1)": "#C88736",
     "High (2)": "#A9463E"
@@ -132,6 +147,7 @@
     "Score 0": "#C8D0D8",
     "Low (0.5)": "#6F92AA",
     "Moderate (1)": "#C88736",
-    "High (2)": "#A9463E"
+    "High (2)": "#A9463E",
+    "Partial evidence": "#B9BED0"
   }
 }

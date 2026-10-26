@@ -32,7 +32,7 @@ def verify_sources():
         assert metadata['run_id'] == source['run_id']
         assert metadata['csv_sha256'] == source['files']['publication']['sha256']
         assert dict(db.execute('SELECT Priority_tier,COUNT(*) FROM compounds GROUP BY Priority_tier')) == source['population']
-        assert db.execute("SELECT COUNT(*) FROM compounds WHERE priority_result_role != 'analysis_after_eligibility_audit' OR ranking_result_role != 'analysis_rank_within_complete_evidence_pool'").fetchone()[0] == 0
+        assert db.execute("SELECT COUNT(*) FROM compounds WHERE priority_result_role != 'analysis_after_eligibility_audit' OR ranking_result_role != 'analysis_rank_with_zero_contribution_policy'").fetchone()[0] == 0
     return source
 
 def run(folder):
@@ -55,21 +55,27 @@ def run(folder):
         png = staging / (folder.name + '.png')
         if not png.is_file():
             raise ValueError('Figure not generated: ' + str(png))
+        data_output = ROOT / source['figure_data_dir'] / folder.name
         manifest = {'figure': folder.name, 'source': source,
+                    'source_data_dir': str(data_output.relative_to(ROOT)),
                     'code': {str(p.relative_to(ROOT)): sha(p) for base in ([folder, FIGURES / '_shared'] + ([FIGURES / 'Fig4'] if folder.name == 'ExtendedDataFig3' else []))
                              for p in base.rglob('*') if p.is_file() and p.suffix in {'.R', '.py', '.yml', '.mjs'}
                              and not any(x in p.parts for x in ['output','reference','audit','inputs'])
                              and not any(x.startswith('.building-') for x in p.parts)},
-                    'outputs': {str(p.relative_to(staging)): sha(p) for p in staging.rglob('*') if p.is_file()}}
+                    'source_data': {str(p.relative_to(staging / 'source_data')): sha(p) for p in (staging / 'source_data').rglob('*') if p.is_file()},
+                    'outputs': {str(p.relative_to(staging)): sha(p) for p in staging.rglob('*') if p.is_file() and 'source_data' not in p.relative_to(staging).parts}}
         (staging / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        # User-approved replacement: no new history copies. Publish only after a successful build.
+        staged_data = staging / 'source_data'
+        if staged_data.exists():
+            data_output.parent.mkdir(parents=True, exist_ok=True)
+            if data_output.exists():
+                shutil.rmtree(data_output)
+            staged_data.rename(data_output)
+        elif data_output.exists():
+            shutil.rmtree(data_output)
         if output.exists():
-            history = FIGURES / '.history' / folder.name
-            history.parent.mkdir(exist_ok=True)
-            if not history.exists():
-                output.rename(history)
-            else:
-                # Subsequent output is reproducible; the original is retained once.
-                shutil.rmtree(output)
+            shutil.rmtree(output)
         staging.rename(output)
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)

@@ -12,6 +12,10 @@ reproduction package.
 
 ## Start here
 
+For this local project, work in `/Users/ruiwang/Projects/APPs/PlastPrior`.
+Current data are in `output/2026-10-26/`; current images and review decks are in
+`Figure/`. See [workspace location and migration checks](docs/workspace_location.md).
+
 | Purpose | Guide |
 | --- | --- |
 | Prepare the exact input collection | [Data preparation](docs/data_preparation.md) |
@@ -121,14 +125,14 @@ folders are moved whole into the archive. See [output layout](docs/results_layou
 
 | File or SQLite view | Purpose |
 | --- | --- |
-| CSV | 59-field publication table, including structural family labels: identity, source memberships, selected evidence, scores, ranks and missingness |
+| CSV | 60-field publication table, including structural family labels: identity, source memberships, selected evidence, scores, ranks and missingness |
 | Data dictionary and README | Definitions, units, null conventions, policy, source tracing and usage |
 | `PlastPrior_dashboard.sqlite` | Browser-sized projection of every final compound field, paired with the CSV by SHA-256 |
 | `publication_results` | Exact text projection of the publication CSV in the full archive |
 | `compounds` | All 251 final fields in the verified collection |
-| `eligible_ranking` | Complete assessments eligible for ranking |
+| `eligible_ranking` | Rankable assessments, including partial evidence with unavailable contributions counted as zero in sums |
 | `top_priority` | Top-N including every boundary tie |
-| `unranked_review` | Incomplete records and exclusion reasons |
+| `unranked_review` | Records with no available evidence and exclusion reasons |
 | `source_records`, `compound_memberships`, `evidence` | Source and audit tracing |
 
 For ranking queries, use `ORDER BY Priority_rank, inchikey`; SQL views do not
@@ -137,9 +141,13 @@ The compact database shares repeated audit bodies and stage values. Its
 [storage contract and decoding helpers](docs/methods.md#final-results) explain
 which parsed records can be reconstructed and which source bytes are external.
 
-The frozen-input validation yielded **15,125 compounds**, **4,244 ranked**,
-**107 in the inclusive Top-100**, and **10,881 unranked**. These counts are
-checks for the specified inputs and policies, not targets for other datasets.
+The repaired frozen-input analysis contains **15,125 compounds**, all rankable,
+with **265 High**, **3,414 Moderate** and **11,446 Low** priority records under
+`priority-hgt10-ege5-v1` (High: raw H>10 and E>=5).
+**10,881 records remain marked Partial**; missingness does not cancel their
+available contributions. The inclusive Top-100 has 100 compounds at a cutoff of 20 points; all 41
+records tied at the boundary are retained.
+See [the current scoring policy](docs/zero_contribution_policy.md).
 Final directories are never overwritten by export. Temporary stages are cleaned only after verified publication; archives are retained.
 
 For the updated ChemicalPrioDashboard, load `PlastPrior_results.csv` followed by
@@ -159,9 +167,9 @@ version 1. Publication field selection is defined in
   evidence is isolated; independent eligible evidence and source links remain.
 - GIC name/identifier and metadata limitations remain visible. Associations
   are not confirmed identities or current regulatory determinations.
-- Ranking requires complete hazard and exposure domains. The ranked 28.1%
-  subset cannot be assumed representative of all compounds. Unranked or
-  low-priority records do not establish low risk or safety.
+- Missing components contribute zero only in sums. Partial evidence remains
+  rankable and visibly marked; zero-contribution or low-priority records do not
+  establish low risk or safety.
 - Scores are screening indicators. Agreement with historical computations
   does not independently validate the weights, thresholds, proxies or models.
 - Direct dependencies are pinned, but the transitive environment is not fully

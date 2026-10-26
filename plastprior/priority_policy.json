@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "policy_version": "priority-complete-domains-v1",
+  "policy_version": "priority-hgt10-ege5-v1",
   "historical_policy_version": "priority-dual-gates-v1",
   "hazard_weights": {
     "Persistence_score": 2,
@@ -12,25 +12,14 @@
     0,
     2
   ],
-  "tiers": {
-    "High priority": {
-      "total": 12,
-      "hazard": 4,
-      "exposure": 4
-    },
-    "Moderate priority": {
-      "total": 6,
-      "hazard": 2,
-      "exposure": 2
-    }
-  },
   "rules": {
-    "historical_missingness": "Zero filling is confined to historical reproduction.",
-    "analysis_missingness": "No imputation or renormalisation; four hazard and five exposure dimensions are required for complete priority.",
-    "incomplete_tier": "Insufficient evidence",
+    "historical_missingness": "Historical reproduction retains the frozen zero-contribution arithmetic.",
+    "analysis_missingness": "Missing components contribute zero only to aggregate sums; retain missing scores, availability and reasons. Completeness does not gate classification or ranking.",
+    "incomplete_tier": "No data",
     "ranking": "Not implemented in Stage 7A",
     "interpretation": "Priority tiers are screening categories, not evidence of safety or measured risk.",
-    "provenance": "Use existing eligible component scores and source decisions without reselection."
+    "provenance": "Use existing eligible component scores and source decisions without reselection.",
+    "classification": "Use unrounded H and E. High: H>10 and E>=5. Moderate: 6<=H<=10 and E>=5, or H>10 and E<5. Otherwise Low for eligible records. Total remains H+E; display bins do not affect scores, tiers or ranks."
   },
   "historical_source": {
     "path_parts": [
@@ -45,5 +34,36 @@
     "run_id": "20261006T233429Z",
     "run_manifest_sha256": "37409fa3ec043f837efa2b64b265a6018dd6d58e3c56f364de9aff6dfe845f59",
     "checkpoint_sha256": "4f760575604cad612aaaaa3754372e89f928e18e00b665c36cd52351aacb2325"
+  },
+  "historical_tiers": {
+    "High priority": {
+      "total": 12,
+      "hazard": 4,
+      "exposure": 4
+    },
+    "Moderate priority": {
+      "total": 6,
+      "hazard": 2,
+      "exposure": 2
+    }
+  },
+  "tiers": {
+    "High priority": {
+      "hazard_gt": 10,
+      "exposure_gte": 5
+    },
+    "Moderate priority": {
+      "any_of": [
+        {
+          "hazard_gte": 6,
+          "hazard_lte": 10,
+          "exposure_gte": 5
+        },
+        {
+          "hazard_gt": 10,
+          "exposure_lt": 5
+        }
+      ]
+    }
   }
 }

@@ -1,8 +1,15 @@
 # Daily results and audit archives
 
+For the current verified local release, use `output/2026-10-26/`, containing
+the publication CSV, full analysis SQLite, paired Dashboard SQLite and numerical
+figure tables. Images and PPTX files are under `Figure/`. The existing `results`
+compatibility link points to this dated directory. See
+[workspace location](workspace_location.md) for migration verification and recovery.
+The remaining sections describe the delivery pipeline's run-archive structure.
+
 Use these two files together:
 
-- `results/PlastPrior_results.csv`: 59 columns; one row per full InChIKey.
+- `results/PlastPrior_results.csv`: 60 columns; one row per full InChIKey.
 - `results/PlastPrior_dashboard.sqlite`: paired browser details, family evidence,
   embedded field dictionary and interpretation guide.
 

@@ -123,7 +123,7 @@ prepare_exposure_overlap <- function(compounds, source_data_dir) {
     ),
     stringsAsFactors = FALSE
   )
-  set_summary$zero_count <- nrow(membership) - set_summary$positive_count
+  set_summary$no_positive_contribution_count <- nrow(membership) - set_summary$positive_count
   set_summary$positive_fraction <- set_summary$positive_count / nrow(membership)
   no_positive_count <- sum(membership$positive_indicator_count == 0L)
   positive_union_count <- nrow(membership) - no_positive_count

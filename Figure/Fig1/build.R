@@ -4,15 +4,15 @@ source('Figure/_shared/current.R')
 # Values come from the current analysis; counts are descriptive, not targets.
 counts <- DBI::dbGetQuery(db,"SELECT Priority_tier, COUNT(*) AS n FROM compounds GROUP BY Priority_tier")
 qc <- DBI::dbGetQuery(db,"SELECT keep_for_vega, COUNT(*) AS n FROM compounds GROUP BY keep_for_vega")
-n <- sum(counts$n); eligible <- sum(counts$n[counts$Priority_tier!='Insufficient evidence'])
+n <- sum(counts$n); eligible <- sum(counts$n[counts$Priority_tier!='No data'])
 unknown <- n-eligible
 fmt <- function(x) format(x,big.mark=',',scientific=FALSE,trim=TRUE)
 nodes <- data.frame(
  x=c(rep(1,6),rep(2,5),rep(3,5)),
  y=c(9,7.55,6.10,4.65,3.20,1.55,9,7.55,5.75,4.30,2.1,9,7.25,5.5,3.6,1.65),
  label=c('Source database records','Record harmonization','Chemical identity resolution\nand structural quality control',paste0('Compound inventory\nn = ',fmt(n)),paste0('QSAR-compatible structures\nn = ',fmt(qc$n[qc$keep_for_vega=='True'])),'Other structures retained\nin the inventory',
- 'PBMT hazard evidence','Persistence (2); Bioaccumulation (2)\nMobility (1); Toxicity (3)','Exposure evidence','Inventory; Production; Patents\nLiterature; Food contact; Biomonitoring','Complete hazard and exposure\nrequired for formal priority',
- 'CSV + audit database','Evidence and source records',paste0('Eligible ranking\nn = ',fmt(eligible)),paste0('Insufficient evidence\nn = ',fmt(unknown)),'Interactive dashboard\nScores, evidence and provenance'),
+ 'PBMT hazard evidence','Persistence (2); Bioaccumulation (2)\nMobility (1); Toxicity (3)','Exposure evidence','Inventory; Production; Patents\nLiterature; Food contact; Biomonitoring','Missing contributions = 0\nMissingness retained separately',
+ 'CSV + audit database','Evidence and source records',paste0('Eligible ranking\nn = ',fmt(eligible)),paste0('No data\nn = ',fmt(unknown)),'Interactive dashboard\nScores, evidence and provenance'),
  fill=c(rep('#3C788B',6),'#B93832','#F7E4E2','#418849','#E7F0E6','#3C788B','#F0D1B5','#E8EDF0','#D9ECDD','#E9EDF1','#D9ECDD'),
  text=c(rep('white',6),'white','#192A36','white','#192A36','white',rep('#192A36',5)))
 nodes$height <- .46; nodes$height[c(8,10)] <- .54
@@ -21,7 +21,7 @@ nodes$x[c(5,6)] <- c(.78,1.22); nodes$y[c(5,6)] <- 1.8; nodes$width[c(5,6)] <- .
 nodes$label[5] <- paste0('QSAR eligible\nn = ',fmt(qc$n[qc$keep_for_vega=='True']))
 nodes$label[6] <- paste0('Other structures\nn = ',fmt(qc$n[qc$keep_for_vega=='False']))
 nodes$x[c(14,15)] <- c(2.78,3.22); nodes$y[c(14,15)] <- 4.8; nodes$width[c(14,15)] <- .19
-nodes$label[14] <- paste0('Ranked\nn = ',fmt(eligible)); nodes$label[15] <- paste0('Insufficient\nevidence\nn = ',fmt(unknown))
+nodes$label[14] <- paste0('Ranked\nn = ',fmt(eligible)); nodes$label[15] <- paste0('No data\nn = ',fmt(unknown))
 edges <- data.frame(x=c(1,1,1,1,1,2,2,2,2,3,3,3,2.78,3.22), xend=c(1,1,1,.78,1.22,2,2,2,2,3,2.78,3.22,3,3),
  y=c(8.52,7.07,5.62,4.17,4.17,8.52,7.07,5.27,3.82,8.52,6.77,6.77,4.32,4.32),
  end=c(8.05,6.60,5.15,2.30,2.30,8.05,6.25,4.80,2.60,7.75,5.30,5.30,2.15,2.15))
@@ -37,5 +37,5 @@ p <- ggplot()+
  scale_fill_identity()+scale_colour_identity()+coord_cartesian(xlim=c(.5,3.5),ylim=c(.5,10.6),expand=FALSE,clip='off')+
  theme_void(base_family='Arial')+theme(plot.background=element_rect(fill='white',colour=NA),plot.margin=margin(4,4,4,4))
 save_table(nodes,'diagram_nodes');save_table(counts,'priority_population');save_table(qc,'qsar_eligibility')
-save_facts(list(total=n,ranked=eligible,insufficient=unknown,role='Schematic of the locked current analysis; QSAR ineligibility does not remove compounds from the inventory.'))
+save_facts(list(total=n,ranked=eligible,no_data=unknown,role='Schematic of the locked current analysis; QSAR ineligibility does not remove compounds from the inventory.'))
 save_plot(p,183,112)

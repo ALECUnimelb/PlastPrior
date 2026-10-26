@@ -15,7 +15,7 @@ pbmt_dimension_schema <- list(
     final_score_field = "Bioaccumulation_score",
     basis_field = "Bioaccumulation_score_basis",
     evidence_field = "Bioaccumulation_evidence",
-    computational_json_path = "$.final_selection.independent_candidate.score",
+    computational_json_path = "$.qsar_bcf_models.selected.bioaccumulation_score",
     plastchem_json_path = "$.curated_db.selected.score",
     final_json_path = "$.final_selection.selected.score"
   ),

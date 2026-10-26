@@ -18,7 +18,7 @@
       "label": "Bioaccumulation",
       "order": 2,
       "panel_tag": "c",
-      "method_label": "QSAR BCF and structural rules"
+      "method_label": "Selected QSAR BCF"
     },
     {
       "dimension_id": "mobility",
@@ -94,5 +94,31 @@
   "score_pair_palette": {
     "low": "#F3F6F8",
     "high": "#365F7D"
+  },
+  "reference": {
+    "analysis_run_id": "20260821T065339Z-phase3-acceptance",
+    "population_total": 15125,
+    "dimensions": {
+      "Toxicity": {
+        "computational_total": 11234,
+        "plastchem_total": 4619,
+        "shared_count": 2968
+      },
+      "Bioaccumulation": {
+        "computational_total": 9573,
+        "plastchem_total": 364,
+        "shared_count": 270
+      },
+      "Mobility": {
+        "computational_total": 11075,
+        "plastchem_total": 180,
+        "shared_count": 135
+      },
+      "Persistence": {
+        "computational_total": 8800,
+        "plastchem_total": 518,
+        "shared_count": 234
+      }
+    }
   }
 }

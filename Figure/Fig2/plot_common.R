@@ -212,7 +212,7 @@ assemble_pbmt_dimension <- function(
       width = as.numeric(config$export$dimension_width_mm),
       height = as.numeric(config$export$dimension_height_mm),
       units = "mm",
-      res = 72,
+      res = 600,
       background = "white"
     )
     capture_device <- grDevices::dev.cur()

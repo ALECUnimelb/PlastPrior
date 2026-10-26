@@ -20,7 +20,7 @@ plot_exposure_component_profiles <- function(panel_data, config, variant = "publ
     FUN = function(value) cumsum(value) - value / 2
   )
   profiles$label_colour <- ifelse(
-    profiles$score_class %in% c("Score 0", "No usable evidence"), "#202830", "white"
+    profiles$score_class %in% c("Score 0", "No usable evidence", "Partial evidence"), "#202830", "white"
   )
   observed_levels <- exposure_profile_levels[
     exposure_profile_levels %in% profiles$score_class[profiles$compound_count > 0]

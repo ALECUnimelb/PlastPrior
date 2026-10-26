@@ -1,38 +1,34 @@
-# Current PlastPrior figures
+# Current manuscript figures
 
-Nine figures, one folder per figure. Their input files are locked by SHA-256 in `figure_sources.json`; changing a file or scoring policy stops the build. Current run: `20261025T084218Z-16d2169b`. Inputs are referenced in `audit_archive/`, never copied into individual figure folders.
+All nine figures use formal run `20261026T024145Z-e97d428a`, policy `priority-hgt10-ege5-v1`. `figure_sources.json` pins the inputs, population and policy hashes.
 
-- `Fig1`–`Fig5`, `ExtendedDataFig1`–`ExtendedDataFig4`: `run_plot.py`, R drawing code (or real dashboard capture), and generated `output/`.
-- `output/`: final figure, `source_data/`, caption facts and a provenance manifest with source, code and output hashes.
-- `_shared/`: read-only source access, shared plotting style and scenario definitions.
-- `captions_draft.md`: revised caption draft; also embedded in PPT speaker notes.
-- `verify_figures.py`: independent source-value, missingness, denominator, sensitivity, capture and alignment checks; writes `verification.json`.
-- `update_ppt.mjs`: updates the nine-slide review deck from verified PNG outputs.
-- `.history/`: ignored local originals and obsolete reproduction paths, retained for recovery. Active builds do not read this directory.
+- Formal inputs: `../output/2026-10-26/PlastPrior_results.csv`, `PlastPrior_results.sqlite` (full analysis), and `PlastPrior_dashboard.sqlite` (Dashboard details).
+- Numerical figure tables: `../output/2026-10-26/figure_data/<figure>/`.
+- Images: `<figure>/output/`. Each successful build replaces that figure's previous output; no history copy is created.
+- Fig. 3b is also exported separately in `Fig3/output/Fig3b.*`.
+- Captions: `captions_draft.md`.
+- Verification: `../audit_archive/figure_refresh_20261026/`.
 
-## Rebuild one figure
+High: raw H>10 and E>=5. Moderate: 6<=H<=10 and E>=5, or H>10 and E<5. Otherwise Low for eligible records. Display bins never enter scores, classifications or rankings. Total-score histograms use floor of raw H+E. The heatmap uses floor H/E except 10<H<11 maps to bin 11; this merges 10<H<12 into a categorical column, while bin 10 contains exactly H=10.
 
-Run from the repository root, for example:
+Fig. 4 uses four scoring perturbations and two strict hazard thresholds (>9, >11), holding E>=5. Fig. 5 stable High means High at baseline and under all four scoring perturbations, without an additional total threshold.
 
-```sh
-.venv/bin/python Figure/Fig2/run_plot.py
-```
+## Rebuild and verify
 
-Use the same command for each other figure. R dependencies include ggplot2, patchwork, DBI, RSQLite, jsonlite, readr, ragg, svglite, scales, dplyr and ggVennDiagram. Python uses the project environment. Statistical figures export SVG/PDF and 600-dpi PNG/TIFF; the dashboard figure remains a genuine raster screenshot.
-
-Extended Data Fig. 4 additionally needs the sibling `ChemicalPrioDashboard/app` dev server on `http://127.0.0.1:5198/` (override with `--dashboard-url`), Chrome and Playwright available to Node. Set `NODE_PATH` to an installed Node module directory when needed. The capture waits for the paired audit evidence, not just the CSV summary. Dashboard source revision and file hashes are recorded with the screenshot.
+Run from the repository root with the project Python environment and installed R packages:
 
 ```sh
+.venv/bin/python Figure/Fig3/run_plot.py
+Rscript Figure/tests/priority_policy.R
+.venv/bin/python scripts/audit_figure_refresh.py
 .venv/bin/python Figure/verify_figures.py
-node Figure/update_ppt.mjs
+.venv/bin/python Figure/ExtendedDataFig1/audit_alignment.py
 ```
 
-The PPT builder requires `@oai/artifact-tool`, the presentations skill finalizer and its bundled Python runtime. Their paths can be supplied through `NODE_PATH`, `PRESENTATIONS_SKILL_DIR` and `PRESENTATIONS_PYTHON`; defaults match this workstation. It preserves the existing deck's layout, embeds the current figures without cropping, and adds captions and provenance to notes. Build previews and receipts stay in `.history/`.
+The same `run_plot.py` entry point exists for each figure. Quantitative figures use R and export editable SVG/PDF and 600 dpi PNG/TIFF. Combined Fig. 3 is 183 x 215 mm in three rows (a / b+c / d+e); standalone Fig. 3b is 183 x 133 mm. The combined heatmap uses compact display settings independently of its standalone export. Final journal sizing remains an author decision.
 
-## Population and missing-data rules
+Extended Data Fig. 4 is an unedited application screenshot. The verified Dashboard implementation and production bundle are preserved locally in `../audit_archive/dashboard_runtime_20261026/app`. Serve that production build on port 5198, then run `Figure/ExtendedDataFig4/run_plot.py` with Playwright available through `NODE_PATH`. Set `PLASTPRIOR_DASHBOARD_ROOT` to select another explicitly verified Dashboard checkout. Capture verifies the served bundle against that local build, uploads the locked CSV/database pair, and records both bundle and source hashes. This does not deploy the application.
 
-The full inventory contains 15,125 compounds. Formal ranking includes 4,244 (365 low, 1,828 moderate, 2,051 high); 10,881 remain insufficient evidence. Total-score, sensitivity and GIC comparisons use the fixed ranked cohort. Full-inventory coverage plots retain unavailable evidence explicitly. Exposure-pattern overlap uses 7,951 complete-exposure compounds and separately reports 7,174 excluded compounds. Missing numeric scores are never filled with zero. Deliberately removing an observed input in a sensitivity scenario is recorded as a perturbation.
+The canonical local project is `/Users/ruiwang/Projects/APPs/PlastPrior`. Run all commands there. The former repair worktree is retained for recovery and is no longer the active workspace. Existing images were copied byte for byte; the relocation receipt in `../audit_archive/workspace_migration_20261026/` records the path-only capture-code change without claiming that the screenshot was regenerated.
 
-Fig. 5 does **not** support the old claim of monotonic strong-action enrichment: high/moderate/low proportions are 17.9%/6.9%/15.6%. The new captions state the denominators and limits. Verification establishes correspondence to the locked PlastPrior analysis; it does not rerun external QSAR tools or validate the correctness of external database records.
-
-`Final_Figures.pptx`, generated figures/tables, verification output, temporary PowerPoint lock files and `.history/` are ignored by Git. The manuscript is not automatically edited.
+`node Figure/update_ppt.mjs [source.pptx] [new-output.pptx]` embeds the current nine figures in a new review deck. Without arguments it uses the most recently modified review deck and a timestamped output name. It never overwrites an existing PPTX. Build files stay in `audit_archive/`.

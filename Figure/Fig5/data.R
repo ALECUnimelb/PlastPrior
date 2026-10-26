@@ -38,7 +38,7 @@ policy_numeric <- function(values, column_name, missing_as_zero = FALSE) {
   if (!missing_as_zero && any(!nzchar(text))) {
     stop(column_name, " contains missing values.", call. = FALSE)
   }
-  if (missing_as_zero) stop("Missing-value imputation is prohibited.")
+  if (missing_as_zero) output[!nzchar(text)] <- 0 # Contribution only; source missingness is preserved.
   output
 }
 
@@ -61,9 +61,9 @@ policy_normalize_tier <- function(values) {
   output
 }
 
-policy_derive_tier <- function(score, low_threshold, high_threshold, hazard, exposure, config) {
+policy_derive_tier <- function(score, moderate_hazard_min, high_hazard_gt, hazard, exposure, config) {
   derive_priority_tier_shared(score, hazard, exposure, config,
-    low_threshold = low_threshold, high_threshold = high_threshold)
+    moderate_hazard_min = moderate_hazard_min, high_hazard_gt = high_hazard_gt)
 }
 
 policy_wilson_interval <- function(successes, total, z) {
@@ -123,7 +123,7 @@ read_policy_concordance_input <- function(snapshot, config) {
     lapply(
       specs$score_column,
       function(column) policy_numeric(
-        compounds[[column]], column, missing_as_zero = FALSE
+        compounds[[column]], column, missing_as_zero = TRUE
       )
     ),
     specs$component
@@ -171,8 +171,8 @@ read_policy_concordance_input <- function(snapshot, config) {
   reported_tier <- policy_normalize_tier(compounds$Priority_tier)
   derived_tier <- policy_derive_tier(
     reported_priority,
-    as.numeric(config$thresholds$low_priority_upper),
-    as.numeric(config$thresholds$high_priority_lower),
+    as.numeric(config$thresholds$moderate_hazard_min),
+    as.numeric(config$thresholds$high_hazard_gt),
     reported_hazard, reported_exposure, config
   )
   if (any(is.na(reported_tier)) || any(reported_tier != derived_tier)) {
@@ -211,7 +211,7 @@ read_policy_concordance_input <- function(snapshot, config) {
     inventory_listing_count = policy_numeric(
       compounds$Exposure_inventory_listing_count,
       "Exposure_inventory_listing_count",
-      missing_as_zero = FALSE
+      missing_as_zero = TRUE
     ),
     gic_status = gic_status,
     analytical_detectability = trimws(ifelse(
@@ -298,22 +298,19 @@ prepare_policy_concordance_data <- function(input, config) {
   inventory_linear_score <- scenario('inventory_linear')
   inventory_halved_score <- scenario('inventory_halved')
   exposure_capped_score <- scenario('exposure_capped')
-  is_high <- function(score, hazard, exposure, threshold) {
-    derive_priority_tier_shared(score, hazard, exposure, config,
-      high_threshold = threshold) == "High priority"
+  is_high <- function(score, hazard, exposure) {
+    derive_priority_tier_shared(score, hazard, exposure, config) == "High priority"
   }
-  baseline_threshold <- as.numeric(config$thresholds$baseline_stable_minimum)
-  alternative_threshold <- as.numeric(config$thresholds$alternative_stable_minimum)
   stable_high_priority <-
-    is_high(input$priority_score, input$hazard_score, input$exposure_score, baseline_threshold) &
+    is_high(input$priority_score, input$hazard_score, input$exposure_score) &
     is_high(equal_pbmt_score, equal_pbmt_score - input$exposure_score,
-            input$exposure_score, alternative_threshold) &
+            input$exposure_score) &
     is_high(inventory_linear_score, input$hazard_score,
-            inventory_linear_score - input$hazard_score, alternative_threshold) &
+            inventory_linear_score - input$hazard_score) &
     is_high(inventory_halved_score, input$hazard_score,
-            inventory_halved_score - input$hazard_score, alternative_threshold) &
+            inventory_halved_score - input$hazard_score) &
     is_high(exposure_capped_score, input$hazard_score,
-            pmin(input$exposure_score, 8), alternative_threshold)
+            pmin(input$exposure_score, 8))
   strong_action <- input$gic_status %in% strong_action_statuses
   priority_pathway <- ifelse(
     input$hazard_score >= 6 & input$exposure_score >= 6,
