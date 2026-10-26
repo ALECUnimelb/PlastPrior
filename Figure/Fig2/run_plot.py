@@ -1,12 +1,8 @@
-"""Reproduce Nature Fig. 2 with unchanged PBMT scientific and R plotting code.
-
-Run Figure/_shared/reproduce.py prepare Fig2 --source-project PATH once.
-The historical module/export names refer to its former Figure 4 position.
-"""
+"""Generate Fig. 2 from the locked PlastPrior analysis."""
 from pathlib import Path
 import sys
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "_shared"))
-from reproduce import run
+from current import run
 if __name__ == "__main__":
     run(HERE)

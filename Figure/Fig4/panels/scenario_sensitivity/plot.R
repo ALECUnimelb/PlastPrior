@@ -46,8 +46,6 @@ plot_priority_scenario_sensitivity <- function(source_data, config) {
       name = "Similarity\nto baseline"
     ) +
     ggplot2::labs(
-      title = "Rank remains stable across scenarios",
-      subtitle = "Tier and high-priority sets are more sensitive",
       x = NULL,
       y = NULL
     ) +

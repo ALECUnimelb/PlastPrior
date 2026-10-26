@@ -1,16 +1,4 @@
-# Versioned figure-side policy; keeps the Figures bundle independent of Python.
-priority_config_for_snapshot <- function(snapshot, config) {
-  version <- snapshot$manifest$scientific_metadata$priority_tier_policy_version
-  if (is.null(version)) version <- "legacy-additive-tiers"
-  if (!version %in% c("legacy-additive-tiers", "priority-dual-gates-v1")) {
-    stop("Unsupported snapshot priority tier policy: ", version, call. = FALSE)
-  }
-  config$priority_tier_policy_version <- version
-  config$thresholds$moderate_component_min <- if (version == "priority-dual-gates-v1") 2 else 0
-  config$thresholds$high_component_min <- if (version == "priority-dual-gates-v1") 4 else 0
-  config
-}
-
+# Current complete-evidence cohort only; missing score inputs are rejected.
 derive_priority_tier_shared <- function(
   scores, hazard, exposure, config, statuses = NULL,
   low_threshold = config$thresholds$low_priority_upper,
@@ -25,7 +13,7 @@ derive_priority_tier_shared <- function(
   moderate_min <- as.numeric(config$thresholds$moderate_component_min)
   high_min <- as.numeric(config$thresholds$high_component_min)
   if (length(moderate_min) != 1L || length(high_min) != 1L) {
-    stop("Resolve the snapshot priority policy before deriving tiers.", call. = FALSE)
+    stop("Resolve the locked current priority policy before deriving tiers.", call. = FALSE)
   }
   tier <- ifelse(
     scores >= high_threshold & hazard >= high_min & exposure >= high_min,

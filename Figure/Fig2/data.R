@@ -15,7 +15,7 @@ pbmt_dimension_schema <- list(
     final_score_field = "Bioaccumulation_score",
     basis_field = "Bioaccumulation_score_basis",
     evidence_field = "Bioaccumulation_evidence",
-    computational_json_path = "$.qsar_bcf_models.selected.bioaccumulation_score",
+    computational_json_path = "$.final_selection.independent_candidate.score",
     plastchem_json_path = "$.curated_db.selected.score",
     final_json_path = "$.final_selection.selected.score"
   ),
@@ -50,13 +50,6 @@ pbmt_required_snapshot_fields <- function() {
   ))
 }
 
-pbmt_required_compact_fields <- function() {
-  unique(c(
-    "Inchikey_std",
-    vapply(pbmt_dimension_schema, function(item) item$final_score_field, character(1))
-  ))
-}
-
 pbmt_numeric <- function(values, column_name) {
   text <- trimws(ifelse(is.na(values), "", as.character(values)))
   output <- suppressWarnings(as.numeric(text))
@@ -78,60 +71,6 @@ pbmt_assert_vectors_equal <- function(observed, expected, message, tolerance = 1
   }
 }
 
-pbmt_sql_literal <- function(value) {
-  paste0("'", gsub("'", "''", as.character(value), fixed = TRUE), "'")
-}
-
-pbmt_evidence_query <- function() {
-  invalid_clauses <- vapply(
-    pbmt_dimension_schema,
-    function(item) {
-      field <- quote_sqlite_identifier_r(item$evidence_field)
-      paste0("(TRIM(COALESCE(", field, ", '')) <> '' AND json_valid(", field, ") = 0)")
-    },
-    character(1)
-  )
-  columns <- c("inchikey_std")
-  for (dimension_id in names(pbmt_dimension_schema)) {
-    item <- pbmt_dimension_schema[[dimension_id]]
-    field <- quote_sqlite_identifier_r(item$evidence_field)
-    extract <- function(path, alias) {
-      paste0(
-        "CASE WHEN TRIM(COALESCE(", field, ", '')) = '' THEN NULL ",
-        "ELSE json_extract(", field, ", ", pbmt_sql_literal(path), ") END AS ",
-        quote_sqlite_identifier_r(alias)
-      )
-    }
-    columns <- c(
-      columns,
-      extract(item$computational_json_path, paste0(dimension_id, "_computational_score")),
-      extract(item$plastchem_json_path, paste0(dimension_id, "_plastchem_score")),
-      extract(item$final_json_path, paste0(dimension_id, "_selected_final_score"))
-    )
-  }
-  paste0(
-    "SELECT ", paste(columns, collapse = ", "), " FROM compound_audit ",
-    "WHERE NOT (", paste(invalid_clauses, collapse = " OR "), ") ",
-    "ORDER BY inchikey_std"
-  )
-}
-
-pbmt_invalid_evidence_count <- function(snapshot) {
-  clauses <- vapply(
-    pbmt_dimension_schema,
-    function(item) {
-      field <- quote_sqlite_identifier_r(item$evidence_field)
-      paste0("(TRIM(COALESCE(", field, ", '')) <> '' AND json_valid(", field, ") = 0)")
-    },
-    character(1)
-  )
-  query <- paste0(
-    "SELECT COUNT(*) AS invalid_count FROM compound_audit WHERE ",
-    paste(clauses, collapse = " OR ")
-  )
-  as.integer(read_snapshot_sql_query(snapshot$audit_path, query)$invalid_count[[1]])
-}
-
 pbmt_agreement_band <- function(difference, config) {
   exact_tolerance <- as.numeric(config$thresholds$exact_tolerance)
   near_max <- as.numeric(config$thresholds$near_difference_max)
@@ -148,23 +87,16 @@ pbmt_agreement_band <- function(difference, config) {
 }
 
 read_pbmt_concordance_input <- function(snapshot, config) {
-  required <- pbmt_required_snapshot_fields()
-  compounds <- read_analysis_snapshot_fields_r(snapshot, required)
-  if (nrow(compounds) != snapshot$row_count || anyDuplicated(compounds$Inchikey_std)) {
-    stop("PBMT figure input identity changed after snapshot validation.", call. = FALSE)
+  compounds <- read_current(pbmt_required_snapshot_fields())
+  stopifnot(nrow(compounds)==snapshot$row_count, !anyDuplicated(compounds$Inchikey_std))
+  columns <- c('inchikey AS inchikey_std')
+  for (id in names(pbmt_dimension_schema)) {
+    item <- pbmt_dimension_schema[[id]]
+    paths <- c(computational_score=item$computational_json_path, plastchem_score=item$plastchem_json_path, selected_final_score=item$final_json_path)
+    for (name in names(paths)) columns <- c(columns, paste0('json_extract(',item$evidence_field,', ',DBI::dbQuoteString(db,paths[[name]]),') AS ',id,'_',name))
   }
-  if (pbmt_invalid_evidence_count(snapshot) != 0L) {
-    stop("PBMT evidence contains malformed non-empty JSON.", call. = FALSE)
-  }
-  evidence <- read_snapshot_sql_query(snapshot$audit_path, pbmt_evidence_query())
-  if (nrow(evidence) != snapshot$row_count || anyDuplicated(evidence$inchikey_std)) {
-    stop("PBMT evidence query did not preserve one row per compound.", call. = FALSE)
-  }
-  row_index <- match(compounds$Inchikey_std, evidence$inchikey_std)
-  if (any(is.na(row_index))) {
-    stop("PBMT CSV and audit identities differ.", call. = FALSE)
-  }
-  evidence <- evidence[row_index, , drop = FALSE]
+  evidence <- DBI::dbGetQuery(db,paste('SELECT',paste(columns,collapse=','),'FROM compounds ORDER BY inchikey'))
+  stopifnot(identical(compounds$Inchikey_std,evidence$inchikey_std))
 
   long_tables <- list()
   for (dimension_id in names(pbmt_dimension_schema)) {
@@ -210,14 +142,14 @@ read_pbmt_concordance_input <- function(snapshot, config) {
     coverage_category <- ifelse(
       has_computational & has_plastchem, "Shared",
       ifelse(
-        has_computational, "Computational only",
+        has_computational, "Independent only",
         ifelse(has_plastchem, "PlastChem only", "Neither")
       )
     )
     comparison_status <- ifelse(
       has_computational & has_plastchem, "Shared",
       ifelse(
-        has_computational, "Computational only",
+        has_computational, "Independent only",
         ifelse(has_plastchem, "PlastChem only", "Neither")
       )
     )
@@ -448,27 +380,6 @@ prepare_pbmt_source_data <- function(compounds, snapshot, config) {
       )
     )
   )
-}
-
-assert_pbmt_reference_results <- function(prepared, snapshot, config) {
-  if (!identical(snapshot$analysis_run_id, config$reference$analysis_run_id)) {
-    return(invisible(FALSE))
-  }
-  metrics <- prepared$source_data$coverage_metrics
-  if (snapshot$row_count != as.integer(config$reference$population_total)) {
-    stop("Accepted PBMT reference snapshot population changed.", call. = FALSE)
-  }
-  for (dimension in names(config$reference$dimensions)) {
-    observed <- metrics[as.character(metrics$dimension) == dimension, , drop = FALSE]
-    expected <- config$reference$dimensions[[dimension]]
-    if (nrow(observed) != 1L ||
-        observed$computational_total != as.integer(expected$computational_total) ||
-        observed$plastchem_total != as.integer(expected$plastchem_total) ||
-        observed$shared_count != as.integer(expected$shared_count)) {
-      stop("Accepted PBMT reference totals changed for ", dimension, ".", call. = FALSE)
-    }
-  }
-  invisible(TRUE)
 }
 
 prepare_pbmt_dimension <- function(prepared, dimension_id) {

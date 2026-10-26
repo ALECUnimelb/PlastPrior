@@ -172,7 +172,7 @@ plot_pbmt_score_matrix <- function(source_data, dimension_id, config, variant) {
         "Cell labels are true counts; outlined cells are exact matches."
       } else NULL,
       x = "PlastChem score",
-      y = "Computational score"
+      y = "Independent score"
     ) +
     pbmt_theme(base_size = 6.2) +
     ggplot2::theme(

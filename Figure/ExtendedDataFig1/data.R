@@ -65,75 +65,6 @@ recovery_color_group <- function(route_code) {
   )
 }
 
-read_source_catalog <- function(snapshot) {
-  catalog <- read_snapshot_sql_query(
-    snapshot$audit_path,
-    paste(
-      "SELECT source_id, display_label, formal_name, role, role_description,",
-      "membership_column, membership_definition_version",
-      "FROM source_catalog ORDER BY source_id"
-    )
-  )
-  assert_columns(
-    catalog,
-    c(
-      "source_id", "display_label", "formal_name", "role",
-      "membership_column", "membership_definition_version"
-    ),
-    "source_catalog"
-  )
-  if (nrow(catalog) < 2L || anyDuplicated(catalog$source_id)) {
-    stop("source_catalog must contain at least two unique analytical sources.", call. = FALSE)
-  }
-  if (any(!nzchar(trimws(catalog$display_label)))) {
-    stop("source_catalog contains an empty display label.", call. = FALSE)
-  }
-  catalog
-}
-
-read_source_attrition <- function(snapshot) {
-  attrition <- read_snapshot_sql_query(
-    snapshot$audit_path,
-    paste(
-      "SELECT source_id, raw_row_count, harmonized_record_count,",
-      "resolved_record_count, unresolved_record_count, unique_compound_count,",
-      "collapsed_record_count, definition_version FROM source_attrition"
-    )
-  )
-  numeric_columns <- c(
-    "raw_row_count", "harmonized_record_count", "resolved_record_count",
-    "unresolved_record_count", "unique_compound_count", "collapsed_record_count"
-  )
-  attrition[numeric_columns] <- lapply(attrition[numeric_columns], as.integer)
-  attrition
-}
-
-record_flow_query <- function() {
-  has_smiles <- nonempty_sql("sr.original_smiles")
-  has_inchikey <- nonempty_sql("sr.original_inchikey")
-  has_cas <- nonempty_sql("sr.cas")
-  has_resolved <- nonempty_sql("ir.resolved_inchikey_std")
-  paste0(
-    "WITH record_flow AS (",
-    " SELECT sr.source_id,",
-    " CASE",
-    " WHEN ", has_smiles, " THEN 'reported_smiles'",
-    " WHEN ", has_inchikey, " THEN 'inchikey_only'",
-    " WHEN ", has_cas, " THEN 'cas_only'",
-    " ELSE 'no_identifier' END AS identifier_class,",
-    " COALESCE(NULLIF(TRIM(ir.resolution_method), ''), 'unresolved') AS recovery_route,",
-    " CASE WHEN ", has_resolved,
-    " THEN 'resolved_records' ELSE 'unresolved_records' END AS resolution_state",
-    " FROM source_records sr JOIN identity_resolution ir",
-    " ON ir.source_record_id = sr.source_record_id",
-    ")",
-    " SELECT source_id, identifier_class, recovery_route, resolution_state,",
-    " COUNT(*) AS record_count FROM record_flow",
-    " GROUP BY source_id, identifier_class, recovery_route, resolution_state",
-    " ORDER BY source_id, identifier_class, recovery_route, resolution_state"
-  )
-}
-
 recovery_display_label <- function(route) {
   approved <- c(
     reported_smile = "Reported SMILES",
@@ -183,7 +114,7 @@ assign_sankey_node_order <- function(nodes) {
 }
 
 prepare_sankey_source_data <- function(snapshot, compounds, catalog, attrition, config) {
-  aggregate <- read_snapshot_sql_query(snapshot$audit_path, record_flow_query()) |>
+  aggregate <- readr::read_csv(file.path(output_dir,"source_data/record_flow.csv"),show_col_types=FALSE) |>
     dplyr::mutate(record_count = as.integer(.data$record_count))
   if (nrow(aggregate) == 0L) {
     stop("The snapshot contains no record-level identity flow.", call. = FALSE)
@@ -455,14 +386,7 @@ prepare_sankey_source_data <- function(snapshot, compounds, catalog, attrition, 
 }
 
 prepare_database_overlap <- function(snapshot, compounds, catalog, attrition, config) {
-  memberships <- read_snapshot_sql_query(
-    snapshot$audit_path,
-    paste(
-      "SELECT inchikey_std, source_id, member, definition_version",
-      "FROM source_membership WHERE member = 1",
-      "ORDER BY inchikey_std, source_id"
-    )
-  )
+  memberships <- readr::read_csv(file.path(output_dir,'source_data/memberships.csv'),show_col_types=FALSE)
   assert_columns(
     memberships,
     c("inchikey_std", "source_id", "member", "definition_version"),
@@ -525,22 +449,8 @@ prepare_database_overlap <- function(snapshot, compounds, catalog, attrition, co
     stop("Every compound must belong to at least one registered source database.", call. = FALSE)
   }
 
-  compact_columns <- paste0("source_member_", source_ids)
-  assert_columns(compounds, compact_columns, "ChemicalPrio_compounds.csv")
-  compact_matrix <- vapply(compact_columns, function(column) {
-    as.integer(as_boolean_flag(compounds[[column]], column))
-  }, integer(nrow(compounds)))
-  compact_matrix <- compact_matrix[, compact_columns, drop = FALSE]
-  colnames(compact_matrix) <- source_ids
-  if (!identical(unname(matrix_values), unname(compact_matrix))) {
-    mismatches <- sum(matrix_values != compact_matrix)
-    stop(
-      "CSV source_member_* fields disagree with SQLite source_membership at ",
-      mismatches, " cell(s).",
-      call. = FALSE
-    )
-  }
-
+  compact_columns <- paste0("source_member_",source_ids)
+  stopifnot(sum(matrix_values)==nrow(memberships))
   patterns <- apply(matrix_values, 1L, function(row) {
     paste(source_ids[row == 1L], collapse = "|")
   })

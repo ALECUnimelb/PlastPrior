@@ -350,11 +350,6 @@ prepare_exposure_overlap <- function(compounds, source_data_dir) {
     ggplot2::ylim(0, 1) +
     ggplot2::theme_void()
 
-  subtitle <- paste0(
-    "Full inventory n = ", scales::comma(nrow(membership)),
-    "; at least one positive indicator = ", scales::comma(positive_union_count),
-    "; score 0 across all five = ", scales::comma(no_positive_count)
-  )
   figure <- patchwork::wrap_plots(
     header = header_plot,
     intersections = bar_plot,
@@ -368,8 +363,6 @@ prepare_exposure_overlap <- function(compounds, source_data_dir) {
     heights = c(0.59, 0.41)
   ) +
     patchwork::plot_annotation(
-      title = "Positive exposure-indicator overlap",
-      subtitle = subtitle,
       theme = ggplot2::theme(
         text = ggplot2::element_text(family = font_family, colour = "#111820"),
         plot.title = ggplot2::element_text(face = "bold", size = 8, hjust = 0.5),

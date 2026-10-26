@@ -39,9 +39,7 @@ priority_sensitivity_numeric <- function(
   if (!missing_as_zero && any(!nzchar(text))) {
     stop(column_name, " contains missing values.", call. = FALSE)
   }
-  if (missing_as_zero) {
-    output[!nzchar(text)] <- 0
-  }
+  if (missing_as_zero) stop("Missing-value imputation is prohibited.")
   output
 }
 
@@ -85,10 +83,7 @@ priority_sensitivity_jaccard <- function(reference, comparison) {
 }
 
 read_priority_sensitivity_input <- function(snapshot, config) {
-  compounds <- read_analysis_snapshot_fields_r(
-    snapshot,
-    priority_sensitivity_required_fields(config)
-  )
+  compounds <- read_current(priority_sensitivity_required_fields(config), "ranked")
   if (nrow(compounds) != snapshot$row_count ||
       anyDuplicated(compounds$Inchikey_std) ||
       any(!nzchar(trimws(compounds$Inchikey_std)))) {
@@ -103,7 +98,7 @@ read_priority_sensitivity_input <- function(snapshot, config) {
     lapply(
       specs$score_column,
       function(column) priority_sensitivity_numeric(
-        compounds[[column]], column, missing_as_zero = TRUE
+        compounds[[column]], column, missing_as_zero = FALSE
       )
     ),
     specs$component
@@ -183,36 +178,13 @@ read_priority_sensitivity_input <- function(snapshot, config) {
     inventory_listing_count = priority_sensitivity_numeric(
       compounds$Exposure_inventory_listing_count,
       "Exposure_inventory_listing_count",
-      missing_as_zero = TRUE
+      missing_as_zero = FALSE
     ),
     specs = specs
   )
 }
 
-priority_scenario_score <- function(
-  scenario_id,
-  input,
-  inventory_component
-) {
-  switch(
-    scenario_id,
-    baseline = input$baseline_score,
-    equal_pbmt_weights =
-      2 * input$raw_scores[["Persistence"]] +
-      2 * input$raw_scores[["Bioaccumulation"]] +
-      2 * input$raw_scores[["Mobility"]] +
-      2 * input$raw_scores[["Toxicity"]] + input$exposure_score,
-    inventory_linear = input$baseline_score - inventory_component +
-      pmin(0.5 * input$inventory_listing_count, 2),
-    inventory_halved = input$baseline_score - 0.5 * inventory_component,
-    exposure_capped = input$hazard_score + pmin(input$exposure_score, 8),
-    high_threshold_11 = input$baseline_score,
-    high_threshold_13 = input$baseline_score,
-    stop("Unknown priority sensitivity scenario: ", scenario_id, call. = FALSE)
-  )
-}
-
-prepare_priority_sensitivity_data <- function(input, config) {
+prepare_priority_sensitivity_data <- function(input, config, include_sensitivity=TRUE) {
   tolerance <- as.numeric(config$thresholds$score_tolerance)
   tiers <- priority_sensitivity_levels
   component_names <- input$specs$component
@@ -283,6 +255,10 @@ prepare_priority_sensitivity_data <- function(input, config) {
   prevalence <- do.call(rbind, prevalence_rows)
   rownames(prevalence) <- NULL
 
+  if (!include_sensitivity) return(list(
+    source_data=list(positive_input_breadth=list(positive_input_breadth=breadth,positive_input_breadth_metrics=breadth_metrics),positive_input_prevalence=list(positive_input_prevalence=prevalence)),
+    audit_tables=list(compound_input_summary=compound_summary),
+    statistics=list(population_total=population_total,excluded_rows=lock$total-population_total,tier_counts=as.list(table(input$baseline_tier)))))
   baseline_high <- input$baseline_tier == "High priority"
   if (!any(baseline_high)) {
     stop("Sensitivity analysis requires at least one high-priority compound.", call. = FALSE)
@@ -328,14 +304,8 @@ prepare_priority_sensitivity_data <- function(input, config) {
 
   inventory_component <- input$contributions[["Inventory presence"]]
   scenario_rows <- lapply(config$scenarios, function(scenario) {
-    score <- priority_scenario_score(
-      scenario$scenario_id, input, inventory_component
-    )
-    # Recompute the modified domain before applying both component gates.
-    hazard <- if (scenario$scenario_id == "equal_pbmt_weights") {
-      score - input$exposure_score
-    } else input$hazard_score
-    exposure <- score - hazard
+    scenario_values <- score_scenario(scenario$scenario_id,input$hazard_score,input$exposure_score,input$raw_scores,inventory_component,input$inventory_listing_count)
+    score <- scenario_values$score; hazard <- scenario_values$hazard; exposure <- scenario_values$exposure
     perturbed_tier <- derive_priority_tier_sensitivity(
       score,
       as.numeric(scenario$low_threshold),
@@ -412,7 +382,7 @@ prepare_priority_sensitivity_data <- function(input, config) {
     audit_tables = list(compound_input_summary = compound_summary),
     statistics = list(
       population_total = population_total,
-      excluded_rows = 0L,
+      excluded_rows = lock$total - population_total,
       tier_counts = stats::setNames(as.list(as.integer(tier_counts)), tiers),
       baseline_high_count = as.integer(sum(baseline_high)),
       worst_leave_one_out_component = worst_leave,
@@ -424,77 +394,4 @@ prepare_priority_sensitivity_data <- function(input, config) {
         min(scenario_sensitivity$high_priority_jaccard)
     )
   )
-}
-
-priority_sensitivity_canonical_hash <- function(table, columns) {
-  assert_columns(table, columns, "Priority sensitivity reference table")
-  table <- table[, columns, drop = FALSE]
-  encode_column <- function(values) {
-    if (is.numeric(values)) {
-      return(ifelse(is.na(values), "<NA>", sprintf("%.9f", values)))
-    }
-    values <- ifelse(is.na(values), "<NA>", as.character(values))
-    gsub("[\\t\\r\\n]", " ", values)
-  }
-  encoded <- lapply(table, encode_column)
-  rows <- vapply(
-    seq_len(nrow(table)),
-    function(index) {
-      paste(
-        vapply(encoded, `[[`, character(1), index),
-        collapse = "\t"
-      )
-    },
-    character(1)
-  )
-  digest::digest(
-    paste(c(paste(columns, collapse = "\t"), rows), collapse = "\n"),
-    algo = "sha256",
-    serialize = FALSE
-  )
-}
-
-assert_priority_sensitivity_reference <- function(
-  prepared,
-  snapshot,
-  config
-) {
-  reference <- config$accepted_reference
-  if (is.null(reference) ||
-      !identical(snapshot$analysis_run_id, reference$analysis_run_id)) {
-    return(NA)
-  }
-  if (!identical(snapshot$row_count, as.integer(reference$population_total))) {
-    stop("Accepted priority sensitivity population total changed.", call. = FALSE)
-  }
-  available <- list(
-    leave_one_input_out =
-      prepared$source_data$leave_one_input_out$leave_one_input_out,
-    scenario_sensitivity =
-      prepared$source_data$scenario_sensitivity$scenario_sensitivity,
-    positive_input_breadth =
-      prepared$source_data$positive_input_breadth$positive_input_breadth,
-    positive_input_breadth_metrics =
-      prepared$source_data$positive_input_breadth$positive_input_breadth_metrics,
-    positive_input_prevalence =
-      prepared$source_data$positive_input_prevalence$positive_input_prevalence
-  )
-  for (record in reference$tables) {
-    table_id <- record$table_id
-    if (!(table_id %in% names(available))) {
-      stop("Unknown accepted reference table: ", table_id, call. = FALSE)
-    }
-    columns <- as.character(unlist(record$columns, use.names = FALSE))
-    observed <- priority_sensitivity_canonical_hash(
-      available[[table_id]], columns
-    )
-    if (!identical(tolower(observed), tolower(record$sha256))) {
-      stop(
-        "Accepted priority sensitivity reference changed for table: ",
-        table_id,
-        call. = FALSE
-      )
-    }
-  }
-  TRUE
 }

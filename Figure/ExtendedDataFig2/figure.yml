@@ -4,14 +4,18 @@
   "backend": "r",
   "manuscript_slot": "supp_01",
   "destination": "supplementary",
-  "parity_status": "pending_real_snapshot",
   "title": "Overlap patterns of hazard and exposure evidence",
   "panels": [
     {
       "panel_id": "hazard_dimension_overlap",
       "panel_tag": "a",
       "title": "Effective hazard-data overlap",
-      "dimensions": ["Persistence", "Bioaccumulation", "Mobility", "Toxicity"]
+      "dimensions": [
+        "Persistence",
+        "Bioaccumulation",
+        "Mobility",
+        "Toxicity"
+      ]
     },
     {
       "panel_id": "exposure_dimension_overlap",
@@ -30,6 +34,11 @@
     "width_mm": 183,
     "height_mm": 220,
     "dpi": 600,
-    "formats": ["svg", "pdf", "png", "tiff"]
+    "formats": [
+      "svg",
+      "pdf",
+      "png",
+      "tiff"
+    ]
   }
 }

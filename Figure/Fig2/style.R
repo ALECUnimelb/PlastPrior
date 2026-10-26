@@ -3,7 +3,7 @@ pbmt_dimension_levels <- c(
 )
 
 pbmt_coverage_levels <- c(
-  "Computational only", "Shared", "PlastChem only", "Neither"
+  "Independent only", "Shared", "PlastChem only", "Neither"
 )
 
 pbmt_agreement_levels <- c(

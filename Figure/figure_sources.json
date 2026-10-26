@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "run_id": "20261025T084218Z-16d2169b",
+  "files": {
+    "analysis": {
+      "path": "audit_archive/20261025T083801Z-03208fa3/package/PlastPrior_results.sqlite",
+      "sha256": "5965dc1fd3487e13c692d8d4b19127b988e56f54537fc5df9324d351433acd5a"
+    },
+    "publication": {
+      "path": "audit_archive/20261025T092546Z-source-details/package/daily/PlastPrior_results.csv",
+      "sha256": "1b60d9ade3c90cb635f8c7bf6c638a0f6f3d253c1cc52bdc7b1262cfa51ee4fb"
+    },
+    "dashboard": {
+      "path": "audit_archive/20261025T092546Z-source-details/package/daily/PlastPrior_dashboard.sqlite",
+      "sha256": "6857f6c4049228dd711ce4372e797fa6297248286b76194dfaeb125dd5bb765b"
+    }
+  },
+  "population": {
+    "High priority": 2051,
+    "Insufficient evidence": 10881,
+    "Low priority": 365,
+    "Moderate priority": 1828
+  },
+  "total": 15125,
+  "ranked": 4244,
+  "missing_policy": "Unknown remains missing; no imputation; formal rank requires complete evidence.",
+  "policies": {
+    "ranking_policy.json": "2a51a17db5cd51c60c70f8a65731c66d17e5d79a117c4613d9c38ebf4d149365",
+    "hazard_policy.json": "f7adc8e6db2c0a02fb308957a23392431e0ca87036d44766afe8a7bcfd36669e",
+    "priority_policy.json": "9c6b57c1c4065711a7da67563cdcd1e33262eda6d8b59027679a5fc566791366",
+    "exposure_policy.json": "1d5c87073796f3d7c2adaec589a589c8523a667ab612b8c1976e85b9a09b771b",
+    "hazard_bt_policy.json": "050e97c4d4c6ac4feaac35d841faaf2e5633571416e1905106c3e5eb27229714"
+  }
+}
