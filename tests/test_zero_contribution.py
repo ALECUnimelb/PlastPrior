@@ -46,8 +46,8 @@ class ZeroContributionTests(unittest.TestCase):
             self.assertEqual(result['Priority_score'], expected_h + expected_e if any(present) else None)
             self.assertEqual(result['Priority_eligible'], any(present))
             expected_tier = ('No data' if not any(present) else
-                             'High priority' if expected_h+expected_e >= 12 and min(expected_h,expected_e) >= 4 else
-                             'Moderate priority' if expected_h+expected_e >= 6 and min(expected_h,expected_e) >= 2 else 'Low priority')
+                             'High priority' if expected_h > 10 and expected_e >= 5 else
+                             'Moderate priority' if (6 <= expected_h <= 10 and expected_e >= 5) or (expected_h > 10 and expected_e < 5) else 'Low priority')
             self.assertEqual(result['Priority_tier'], expected_tier)
 
     def test_joint_contribution_without_false_completeness(self):

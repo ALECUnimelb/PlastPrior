@@ -49,7 +49,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="Keep successful stage files; failed or partial runs always retain them.")
     parser.add_argument("--baseline-csv", type=Path,
                         help="Require all existing publication values to match this CSV before publishing.")
+    parser.add_argument("--priority-migration-baseline", type=Path,
+                        help="Verify classification-only migration from the prior CSV; requires a new output directory.")
     args = parser.parse_args(argv)
+    if args.baseline_csv and args.priority_migration_baseline:
+        parser.error("Choose exact regression or priority migration, not both")
     if args.top_n <= 0:
         parser.error("--top-n must be positive")
     if args.rank_priority:
@@ -201,6 +205,7 @@ def main(argv: list[str] | None = None) -> int:
         package = finish_run(output_dir, daily_dir, archive_dir,
                              keep_intermediates=args.keep_intermediates,
                              baseline_csv=args.baseline_csv,
+                             priority_migration_baseline=args.priority_migration_baseline,
                              progress=lambda message: print(message, flush=True))
         print(f"Daily CSV: {daily_dir / 'PlastPrior_results.csv'}")
         print(f"Daily SQLite: {daily_dir / 'PlastPrior_dashboard.sqlite'}")

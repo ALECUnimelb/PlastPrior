@@ -101,8 +101,8 @@ def compare_priority(baseline, results, output_dir, upstream_results=None, data_
             total_e = sum(v for v in e if v is not None)
             expected_h, expected_total = observed, observed + total_e if eligible else None
             expected_tier = ('No data' if not eligible else
-                             'High priority' if expected_total >= 12 and observed >= 4 and total_e >= 4 else
-                             'Moderate priority' if expected_total >= 6 and observed >= 2 and total_e >= 2 else 'Low priority')
+                             'High priority' if observed > 10 and total_e >= 5 else
+                             'Moderate priority' if (6 <= observed <= 10 and total_e >= 5) or (observed > 10 and total_e < 5) else 'Low priority')
             expected = {'Hazard_score': expected_h, 'Hazard_observed_score': observed,
                         'Hazard_available_dimensions': sum(v is not None for v in h),
                         'Priority_score': expected_total}
@@ -159,6 +159,8 @@ def compare_priority(baseline, results, output_dir, upstream_results=None, data_
             h_old = history_index.loc[key]
             a_row = by_key.loc[key]
             expected_reasons = []
+            if field == 'Priority_tier' and a_row['Priority_eligible'] == 'True':
+                expected_reasons.append('priority_classification_policy_changed')
             if field.endswith('data_status'):
                 expected_reasons.append('availability_status_distinguishes_complete_partial_and_unavailable')
             if not field.startswith('Exposure') and any(number(h_old[c]) != number(a_row[c]) for c in hazard):
@@ -180,7 +182,7 @@ def compare_priority(baseline, results, output_dir, upstream_results=None, data_
         differences.append({'scope': 'priority_validation', 'detail': str(exc)})
     report = {'stage': '7A', 'status': 'passed' if not differences else 'failed',
               'difference_count': len(differences), 'counts': counts, 'checks': checks,
-              'comparison': 'Seven historical final fields and ten input scores; independent analysis aggregates, dual gates, missingness, unchanged upstream evidence and explicit changes. No ranking.'}
+              'comparison': 'Seven historical final fields and ten input scores; independent analysis aggregates, strict hazard / inclusive exposure thresholds, missingness, unchanged upstream evidence and explicit changes. No ranking.'}
     pd.DataFrame(differences).to_csv(output_dir / 'priority_differences.csv', index=False, encoding='utf-8', lineterminator='\n')
     (output_dir / 'priority_validation_summary.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     return report

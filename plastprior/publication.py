@@ -214,8 +214,9 @@ Only assessments with no available evidence in either domain are unranked (No da
 
 Hazard = 2*P + 2*B + M + 3*T (range 0–16). Exposure is the sum of six indicators
 (range 0–10). Priority = hazard + exposure for assessments with any evidence (0–26).
-Policy: `{policy['policy_version']}`. High priority requires total >=12, hazard >=4,
-exposure >=4; moderate requires total >=6, hazard >=2, exposure >=2; otherwise low.
+Policy: `{policy['policy_version']}`. High priority requires hazard >10 and exposure >=5.
+Moderate requires 6<=hazard<=10 and exposure>=5, or hazard>10 and exposure<5; otherwise low.
+Classification uses unrounded domain scores. Display binning does not change scores or ranks.
 These are screening priorities, not measured risk or evidence of safety.
 
 Exposure thresholds (minimum input, score):

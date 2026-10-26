@@ -46,13 +46,38 @@ def flag(value):
     raise ValueError('Availability must be an explicit boolean.')
 
 
+def _matches(h, e, gates):
+    values = {'hazard': h, 'exposure': e}
+    for gate, threshold in gates.items():
+        domain, op = gate.rsplit('_', 1)
+        value = values[domain]
+        threshold = Decimal(str(threshold))
+        matches = {'gt': value > threshold, 'gte': value >= threshold,
+                   'lt': value < threshold, 'lte': value <= threshold}
+        if not matches[op]:
+            return False
+    return True
+
+
 def tier(hazard, exposure):
-    """Classify numeric screening totals with the frozen dual gates."""
+    """Classify unrounded domain scores; display binning never enters this function."""
     h, e = score_value(hazard, 16), score_value(exposure, 10)
     if h is None or e is None:
         return POLICY['rules']['incomplete_tier']
+    if _matches(h, e, POLICY['tiers']['High priority']):
+        return 'High priority'
+    if any(_matches(h, e, gates) for gates in POLICY['tiers']['Moderate priority']['any_of']):
+        return 'Moderate priority'
+    return 'Low priority'
+
+
+def historical_tier(hazard, exposure):
+    """Frozen historical dual gates; never use the current analysis policy here."""
+    h, e = score_value(hazard, 16), score_value(exposure, 10)
+    if h is None or e is None:
+        return 'No data'
     for label in ['High priority', 'Moderate priority']:
-        gates = POLICY['tiers'][label]
+        gates = POLICY['historical_tiers'][label]
         if h + e >= gates['total'] and h >= gates['hazard'] and e >= gates['exposure']:
             return label
     return 'Low priority'
@@ -70,7 +95,7 @@ def historical_scores(row):
     return {'Hazard_score': float(h), 'Exposure_score': float(e), 'Priority_score': float(h + e),
             'Hazard_data_status': 'Has data' if any(v is not None for v in values) else 'No data',
             'Exposure_data_status': 'Has data', 'Priority_data_status': 'Has data',
-            'Priority_tier': tier(h, e)}
+            'Priority_tier': historical_tier(h, e)}
 
 
 def analysis_scores(row):
@@ -135,6 +160,8 @@ def unchanged(a, b, numeric=False):
 
 def change_reasons(old_inputs, row, calculated, field):
     reasons = []
+    if field == 'Priority_tier' and calculated['Priority_eligible']:
+        reasons.append('priority_classification_policy_changed')
     if field.endswith('data_status'):
         reasons.append('availability_status_distinguishes_complete_partial_and_unavailable')
     if not field.startswith('Exposure') and any(not unchanged(old_inputs[c], row[c], True) for c in HAZARD):
@@ -268,7 +295,8 @@ def integrate_priority(exposure_results):
               'ineligible_priority': int((~analysis['Priority_eligible']).sum()),
               'identity_review_compounds': int(analysis['qsar_identity_status'].eq('review_required').sum()),
               'field_changes': len(changes)}
-    manifest = {'schema_version': 1, 'stage': '7A', 'policy_sha256': POLICY_HASH,
+    manifest = {'schema_version': 1, 'stage': '7A', 'policy_version': POLICY['policy_version'],
+                'historical_policy_version': POLICY['historical_policy_version'], 'policy_sha256': POLICY_HASH,
                 'implementation_sha256': IMPLEMENTATION_HASH, 'upstream_manifests_sha256': hashes,
                 'counts': counts, 'rules': POLICY['rules'], 'ranking_computed': False,
                 'runtime': {'python': platform.python_version(), 'pandas': pd.__version__}}

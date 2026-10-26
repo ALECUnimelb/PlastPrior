@@ -1,7 +1,9 @@
 # Missing-evidence contribution policy
 
-The current policy is `priority-zero-contribution-v1`. This supersedes the
-complete-domain ranking gate recorded in earlier verification reports.
+The missing-contribution repair was introduced in `priority-zero-contribution-v1`.
+Its arithmetic and eligibility rules remain in `priority-hgt10-ege5-v1`; see
+[the classification migration](priority_classification_migration.md). This supersedes
+the complete-domain ranking gate recorded in earlier verification reports.
 
 Raw unavailable P/B/M/T and exposure component scores remain null, with their
 availability flags, reasons and source provenance. At aggregation only, a missing
@@ -17,8 +19,9 @@ and no priority score/rank. H and E remain numeric contribution sums, including
 zero for an entirely unavailable domain; domain status distinguishes this from
 observed zero. Partial evidence does not withhold the other domain or total.
 
-The dual gates are unchanged: High requires S >= 12, H >= 4 and E >= 4;
-otherwise Moderate requires S >= 6, H >= 2 and E >= 2; otherwise Low.
+Current analysis: High requires H > 10 and E >= 5. Moderate requires
+6 <= H <= 10 and E >= 5, or H > 10 and E < 5; otherwise Low.
+The historical reproduction retains the original S/H/E dual gates.
 Competition ranks use unrounded scores. Top-N includes all ties at the Nth
 record, and reports requested N, actual size, cutoff and boundary group size.
 
@@ -40,6 +43,10 @@ identify the source record and sufficient independent support, then rerun scores
 
 ## Figures and sensitivity
 
+The existing figures and ADI scripts remain on the previous classification until
+the separate downstream migration. They must not be treated as current-policy
+outputs. The evidence definitions below remain applicable.
+
 Coverage uses raw availability, including supported zero. Positive-contribution
 patterns and sensitivity use the full rankable population and zero numerical
 contribution for missing inputs, while exporting original missingness. BCF
@@ -51,7 +58,10 @@ selection at 0.50, 0.65, 0.80 and 0.85 with fixed exposure and LRTP inputs;
 ## Verification
 
 `tests/test_zero_contribution.py` exhaustively checks all 1,024 patterns of
-availability across ten components. `scripts/audit_zero_contribution.py` uses
+availability across ten components. `scripts/audit_zero_contribution.py` audits the previous missing-contribution repair;
+`scripts/audit_priority_policy_migration.py` verifies the new classification-only
+migration, including unchanged historical/source tables, raw scores and ranks.
+The previous repair audit uses
 independent literal weights and thresholds, checks every compound and tie, and
 compares evidence and source memberships with the pre-repair archive.
 `scripts/adi_sensitivity.py` writes replacement Tables S8–S10 and compound-level
