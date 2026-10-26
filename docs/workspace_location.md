@@ -18,11 +18,28 @@ Historical runs remain under `audit_archive/`, separate from current outputs.
 
 ## Migration and recovery
 
-The former repair worktree remains intact. Both working states, generated files
-and Git histories were backed up before merging in the sibling
+Both working states, generated files and Git histories were backed up before merging in the sibling
 `PlastPrior_backups/20261026_155412_before_merge/` directory. Original input data
 and the shared Python environment were not changed. Backups use independent APFS
 copy-on-write files, not hard links. This is a local rollback copy, not an off-device backup.
+
+The former `missing-contribution-repair/PlastPrior` worktree was removed at the
+user's request on 2026-10-26 after verification. Its final 1,066 regular files
+and 14 symbolic links are preserved in
+`audit_archive/worktree_retirement_20261026/snapshot/`, with a complete
+`repository.bundle`, SHA-256 manifests and `RECOVERY.md` instructions alongside it.
+The pre-merge backups and `codex/missing-contribution-repair` branch remain available.
+The snapshot is recovery material, not an active Git checkout.
+
+Before removal, all 85 formal output files and 56 figure output files matched
+the canonical project byte for byte; all nine figure manifests and both formal
+SQLite databases passed verification. After removal, 43,249 canonical files
+matched their pre-removal hashes and all canonical symbolic links remained valid.
+Only this workspace documentation and `AGENTS.md` were subsequently updated to
+record the cleanup. No scores, rankings, Top-100 membership or figures were
+regenerated. The neighboring Dashboard directories were not removed.
+See `audit_archive/worktree_retirement_20261026/pre_removal_verification.json`
+and `post_removal_verification.json` for the verification records.
 
 `audit_archive/workspace_migration_20261026/` records relocation verification.
 The migration copies scientific data and figures without rerunning scores or
