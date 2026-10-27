@@ -13,10 +13,17 @@ the frozen 2026-10-26 manuscript baseline; they are not switched implicitly.
 ## Current figure maintenance
 
 Use `Figure/INDEX.md` as the single entry point for selecting figures. The approved
-five-level Fig. 3 is in `Figure/Fig3/output/`. Fig. 1, Fig. 2 and Extended Data
+five-level Fig. 3 is in `Figure/Fig3/output/`. The approved Level 1 composition
+Fig. 4 is in `Figure/Fig4/output/`; its three-panel R assets were adopted without
+redrawing. Fig. 1, Fig. 2 and Extended Data
 Figs. 1–2 have one pending version each in `Figure/<figure>/review/`; their old
-formal images remain until approval. Fig. 4, Fig. 5 and Extended Data Fig. 3 are
+formal images remain until approval. Fig. 5 and Extended Data Fig. 3 are
 frozen pending redesign. Extended Data Fig. 4 remains unchanged with Dashboard.
+The former Fig. 4 sensitivity figure is retained in
+`audit_archive/figure_maintenance/fig4_level1_adoption/`; its shared code remains
+unchanged. Use `Figure/Fig4/publish_approved.py` for the new Fig. 4 verification,
+not the legacy sensitivity builders. Sensitivity analysis is deferred to a later
+figure, and the existing Fig. 5 remains unchanged.
 
 `Figure/managed_sources.json` pins the rounded 2026-10-27 inputs for migrated
 figures. Five-level labels are derived only for figures; formal scores, ranks,

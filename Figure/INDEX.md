@@ -7,7 +7,7 @@
 | Fig1 | 历史版，尚未更新 | 暂勿用于新稿 | [PNG](Fig1/review/Fig1.png) · [PDF](Fig1/review/Fig1.pdf) | 新权重、分别取整和五级说明，待审 |
 | Fig2 | 历史版，尚未更新 | 暂勿用于新稿 | [PNG](Fig2/review/Fig2.png) · [PDF](Fig2/review/Fig2.pdf) | 证据统计复核一致，待审 |
 | Fig3 | 五级版，已确认 | [PNG](Fig3/output/Fig3.png) · [PDF](Fig3/output/Fig3.pdf) | — | 已确认，可用于新稿 |
-| Fig4 | 历史版，尚未更新 | 暂勿用于新稿 | — | 待重新设计，旧版勿用于新稿 |
+| Fig4 | 五级版，已确认 | [PNG](Fig4/output/Fig4.png) · [PDF](Fig4/output/Fig4.pdf) | — | Level 1 用途、结构与监管三联图，已确认；旧敏感性分析已留档 |
 | Fig5 | 历史版，尚未更新 | 暂勿用于新稿 | — | 待重新设计，旧版勿用于新稿 |
 | ExtendedDataFig1 | 历史版，尚未更新 | 暂勿用于新稿 | [PNG](ExtendedDataFig1/review/ExtendedDataFig1.png) · [PDF](ExtendedDataFig1/review/ExtendedDataFig1.pdf) | 来源及交集统计一致，对齐检查通过，待审 |
 | ExtendedDataFig2 | 历史版，尚未更新 | 暂勿用于新稿 | [PNG](ExtendedDataFig2/review/ExtendedDataFig2.png) · [PDF](ExtendedDataFig2/review/ExtendedDataFig2.pdf) | 证据可用性及正分交集一致，待审 |

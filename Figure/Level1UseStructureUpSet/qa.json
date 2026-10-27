@@ -1,0 +1,16 @@
+{
+  "compounds": 101,
+  "exclusive_intersections": 40,
+  "sets": 25,
+  "active_dots": 80,
+  "all_intersections_match_compound_assignments": true,
+  "marginal_totals_by_family": [
+    101,
+    101
+  ],
+  "all_set_labels_present_in_pdf": true,
+  "common_linear_count_scales_verified": true,
+  "source_fields_preserved": true,
+  "previous_figures_unchanged": true,
+  "visual_qa": "No overlapping labels or clipped counts; all 40 intersections shown; no top-N filter."
+}

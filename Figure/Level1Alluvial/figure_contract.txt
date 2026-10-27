@@ -1,0 +1,6 @@
+Review question: how do primary uses, structural classes and source GIC annotations correspond within the same 101 Level 1 compounds?
+Single quantitative association diagram, R/grid only. One continuous alluvium per observed three-way combination, weighted by compound count; never infer three-way membership from pairwise tables.
+Retain every compound and every category. Fix the regulatory category order; adjust use and structure display orders to reduce weighted crossings without changing numerical ranks or scores.
+Colour denotes the five source regulatory annotations throughout both ribbon segments. Ribbon thickness has a common linear count scale across all axes. Node spacing accommodates readable labels and is not quantitative. No causal arrows or inference.
+430 x 350 mm review proof, Arial 11.5 pt labels, PDF/SVG editable text, 600 dpi PNG plus 300 dpi preview. No compound names on bands; the existing full list remains available.
+Keep the original data, classification rules and all previous figures unchanged. Descriptive counts only, with no inferential statistics. Regulatory annotations are from the saved source database, not a current legal review.

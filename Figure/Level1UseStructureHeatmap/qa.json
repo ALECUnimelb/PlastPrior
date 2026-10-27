@@ -1,0 +1,16 @@
+{
+  "rows_primary_use": 16,
+  "columns_structural_class": 9,
+  "cells": 144,
+  "positive_cells": 40,
+  "zero_cells": 104,
+  "total_compounds": 101,
+  "all_cell_counts_match_source": true,
+  "row_and_column_marginals_verified": true,
+  "all_axis_labels_in_pdf": true,
+  "source_fields_preserved": true,
+  "previous_figures_unchanged": true,
+  "label_font_pt": 11.5,
+  "cell_font_pt": 12,
+  "visual_qa": "Horizontal column labels, row labels and cell counts have no clipping or overlaps. White unlabelled cells are exact zeros."
+}

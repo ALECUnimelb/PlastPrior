@@ -21,9 +21,11 @@
     },
     "Fig4": {
       "managed": false,
-      "formal": "legacy",
+      "formal": "current",
       "review": false,
-      "note": "待重新设计，旧版勿用于新稿"
+      "note": "Level 1 用途、结构与监管三联图，已确认；旧敏感性分析已留档",
+      "publication_mode": "approved_asset_import",
+      "entrypoint": "Figure/Fig4/publish_approved.py"
     },
     "Fig5": {
       "managed": false,

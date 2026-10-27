@@ -4,6 +4,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from collections import Counter
 import csv
 import json
+import importlib.util
 import sys
 from pypdf import PdfReader
 
@@ -125,6 +126,12 @@ def main():
             assert not (ROOT/'Figure'/figure/'review').exists(), (figure, 'unlisted review')
         if (item['review'] or item['formal'] == 'current') and figure in {'Fig2', 'ExtendedDataFig1', 'ExtendedDataFig2'}:
             record['unchanged_evidence_tables'] = verify_unchanged_evidence(figure, manifest, legacy)
+        if figure == 'Fig4' and item['formal'] == 'current':
+            assert item.get('publication_mode') == 'approved_asset_import'
+            spec = importlib.util.spec_from_file_location('fig4_approved', ROOT/'Figure/Fig4/publish_approved.py')
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            record['approved_composition'] = module.verify_publication(manifest)
         report['figures'][figure] = record
     assert not list((ROOT/'Figure').glob('*/.building-*')), 'Incomplete figure build'
     assert not list((ROOT/'output/figure_data').glob('*/.building-*')), 'Incomplete table build'

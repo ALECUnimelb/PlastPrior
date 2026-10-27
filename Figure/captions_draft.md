@@ -1,6 +1,6 @@
 # Figure caption drafts
 
-For author review; the manuscript has not been modified. See [INDEX.md](INDEX.md) for approval status. Fig. 3 is approved; Fig. 1, Fig. 2 and Extended Data Figs. 1–2 are pending review. The captions for Fig. 4, Fig. 5 and Extended Data Figs. 3–4 remain historical and must not be used as captions for a five-level revision.
+For author review; the manuscript has not been modified. See [INDEX.md](INDEX.md) for approval status. Figs. 3 and 4 are approved; Fig. 1, Fig. 2 and Extended Data Figs. 1–2 are pending review. The captions for Fig. 5 and Extended Data Figs. 3–4 remain historical and must not be used as captions for a five-level revision. The former Fig. 4 sensitivity caption is retained with the archived sensitivity figure.
 
 ## Fig. 2
 
@@ -8,7 +8,7 @@ Fig. 2 | PBMT score coverage and concordance with PlastChem. (a) Availability of
 
 ## Fig. 4
 
-Fig. 4 | Sensitivity of rankings and priority tiers. (a) One weighted input is removed at a time from its domain and total, without rescaling. High retention is the fraction of 265 baseline High compounds still satisfying H>10 and E>=5; rank correlation is Spearman ρ for total scores. (b) Baseline and six alternative scenarios compare rank correlation, overall tier agreement and High-set Jaccard similarity. Equal PBMT weights are all 2; other scenarios alter inventory scoring, cap exposure at 8, or shift the strict High hazard threshold to H>9 or H>11. Exposure remains >=5; the moderate lower hazard boundary remains 6. The moderate upper boundary follows the selected High hazard cutoff. Scores are not changed in the two threshold-only scenarios. These are deterministic stress tests, not uncertainty intervals.
+Fig. 4 | Composition of the 101 Level 1 compounds. (a) Counts by primary use, retaining one supplied primary-use assignment per compound. (b) Counts by nine mutually exclusive structure-based display classes derived from recorded SMILES using the retained ordered classification rules; X denotes F, Cl, Br or I. (c) Counts by GIC regulatory annotation in the source database. All panels include the same 101 unique compounds satisfying H ≥12 and E ≥12 under the figure-only five-level classification, using the existing separately rounded domain scores. Each panel totals 101; the zero-based count axes have panel-specific ranges. General-use annotations do not establish functions specific to plastics, and GIC annotations do not constitute a current jurisdiction-specific legal assessment. These are descriptive counts; scores, ranks and Top-n membership are unchanged.
 
 ## Fig. 5
 

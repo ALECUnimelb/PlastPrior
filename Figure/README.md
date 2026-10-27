@@ -30,6 +30,14 @@ After the user explicitly accepts a particular review, promote that exact output
 
 Promotion verifies the reviewed code, inputs and output hashes, replaces the official image/table pair and removes the pending pair. It does not rerender the approved image. Do not promote all figures automatically.
 
+Fig. 4 uses a dedicated approved-asset entry point, documented in
+[Fig4/README.md](Fig4/README.md). Its PNG/PDF are exact copies of the accepted
+three-panel R figure; no rescaling or redraw was performed. Its source tables
+are paired in `../output/figure_data/Fig4/output/`. Verify this publication with
+`.venv/bin/python -B Figure/Fig4/publish_approved.py`. The legacy Fig. 4
+`run_plot.py` and `build.R` are historical sensitivity builders and must not be
+used to update the new figure. `manage.py approve Fig4` is not its entry point.
+
 ## Scientific sources and scope
 
 The managed figures read `output/2026-10-27/PlastPrior_results.csv` and the read-only `current_compounds`/`scenario_results` views in the matching full SQLite. `managed_sources.json` pins these files. Scores, ranks, Top-N membership and raw evidence are never recalculated by figure maintenance.
@@ -42,7 +50,14 @@ The approved Fig. 3 uses a/b/c+d rows at 183 × 218 mm, plus a standalone 260 ×
 
 ## Deferred figures and historical records
 
-Fig. 4, Fig. 5 and Extended Data Fig. 3 remain frozen pending redesign. Extended Data Fig. 4 also remains frozen because Dashboard has not been migrated. Do not run their legacy builders as part of this update.
+Fig. 4 is now the approved 101-compound composition figure, retaining the accepted
+320 × 245 mm layout. Its former sensitivity images, tables, code and previous
+metadata are retained in
+`../audit_archive/figure_maintenance/fig4_level1_adoption/`. The shared historical
+Fig. 4 code remains unchanged for Extended Data Fig. 3. Sensitivity analysis will
+be prepared as a later figure; the current Fig. 5 has not been replaced.
+
+Fig. 5 and Extended Data Fig. 3 remain frozen pending redesign. Extended Data Fig. 4 also remains frozen because Dashboard has not been migrated. Do not run their legacy builders as part of this update.
 
 `figure_sources.json` and `../output/2026-10-26/figure_data/` retain the old manuscript baseline. Historical formal images for figures awaiting review remain in their existing `output/` directories, clearly marked in INDEX.md. Old baseline verification scripts and policy tests serve historical reproduction; they are not the current mixed-status verification entry point.
 
@@ -58,5 +73,10 @@ Run from `/Users/ruiwang/Projects/APPs/PlastPrior`:
 ```
 
 Verification reads hashes and scientific tables without modifying them. It checks all 289 classification combinations, all 15,125 rounded scores, the five level totals, current manifests and preserved legacy outputs. Extended Data Fig. 1 also runs its exact SVG alignment audit during generation; that temporary SVG is deleted after the audit and the result is stored in the manifest. `audit_archive/figure_maintenance/receipt.json` records this maintenance operation and protected-file checks.
+
+The additional Fig. 4 adoption receipt is
+`../audit_archive/figure_maintenance/fig4_level1_adoption/publication_receipt.json`.
+Fig. 4 verification checks the exact accepted image bytes, all 101 identities,
+unchanged scores/ranks, the three count tables and the sensitivity archive.
 
 All quantitative drawing uses R. Captions are maintained in [captions_draft.md](captions_draft.md). The canonical repository root is `/Users/ruiwang/Projects/APPs/PlastPrior`; the retired worktree is recovery material only.

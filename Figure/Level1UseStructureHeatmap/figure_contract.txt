@@ -1,0 +1,4 @@
+Question: how many of the 101 five-level Level 1 compounds belong to each primary-use and structural-class combination?
+R/grid quantitative matrix. Rows are all 16 primary uses; columns are the existing nine structural classes. Draw the full 16 x 9 matrix; print counts in its 40 positive cells, leave the 104 zero cells white and unlabelled. Colour is a common sequential 0-9 compound-count scale, not a proportion or score.
+Short column labels are nested under Halogenated and Non-halogenated headings, retaining all nine original class definitions. No class regrouping, clustering, ranking or score changes.
+390 x 245 mm review proof. Arial 11.5 pt category labels and 12 pt cell counts. R-generated editable PDF/SVG, 600 dpi PNG and 300 dpi preview. All 101 compounds counted once. Source fields and all earlier figures preserved. Descriptive counts only.

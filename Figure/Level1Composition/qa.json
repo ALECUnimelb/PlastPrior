@@ -1,0 +1,15 @@
+{
+  "cohort": 101,
+  "panel_totals": [
+    101,
+    101,
+    101
+  ],
+  "all_30_category_labels_in_pdf": true,
+  "source_field_values_unchanged": true,
+  "boolean_serialization": "R writes TRUE/FALSE instead of Python True/False; same values",
+  "protected_hashes_unchanged": true,
+  "pdf_pages": 1,
+  "label_font_pt": 11.5,
+  "visual_qa": "All category labels and counts visible; no overlaps; bottom axes aligned."
+}
