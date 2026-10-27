@@ -54,10 +54,15 @@ policies remain available for reproducing the evidence baseline.
 - `score_chart_data.csv` contains the same integer scores, labels and ranks for
   downstream plotting. Do not independently round again in R or other plotting code.
 
-The earlier manuscript figures and PPT remain the 2026-10-26 baseline identified
-by `Figure/figure_sources.json`; they are not relabelled as rounded-policy figures.
-Dashboard charts now consume the active scenario's integer scores. Rebuilding the
-full manuscript figure set must use the new source and four-level classification.
+Figure maintenance now uses a separate five-level display policy in
+`Figure/_shared/five_level_policy.json`, with approval status in `Figure/INDEX.md`.
+The new figure-only Level 1 is vH/vH (101 compounds); other former levels move down
+one, with those 101 excluded from new Level 2. This does not migrate the formal
+CSV/SQLite or Dashboard from their four-level policy. Figures read existing
+integer scores; the maintenance workflow neither rescales nor reranks records.
+Deferred figures and existing PPTX decks remain the frozen 2026-10-26 baseline
+identified by `Figure/figure_sources.json`. Never mix those with approved new
+figures without an explicit status review.
 
 ## Dashboard
 

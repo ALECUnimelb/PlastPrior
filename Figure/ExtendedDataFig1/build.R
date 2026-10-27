@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-source('Figure/_shared/current.R')
+source('Figure/_shared/managed.R')
 library(dplyr)
 for(f in c('data.R','plot_sankey.R','plot_upset.R','assemble.R')) source(file.path(module_dir,f))
 compounds <- read_current(c('Inchikey_std','keep_for_vega','qc_flags'))

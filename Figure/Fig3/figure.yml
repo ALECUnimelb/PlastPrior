@@ -4,7 +4,7 @@
   "backend": "r",
   "manuscript_slot": "main_3",
   "destination": "main",
-  "title": "Priority landscape and score composition",
+  "title": "Five-level priority landscape and component evidence",
   "panels": [
     {
       "panel_id": "priority_score_distribution",
@@ -23,27 +23,20 @@
     {
       "panel_id": "hazard_exposure_landscape",
       "panel_tag": "b",
-      "title": "Priority heatmap with exact compound counts",
-      "width_mm": 183,
-      "height_mm": 133
-    },
-    {
-      "panel_id": "score_decomposition",
-      "panel_tag": "c",
-      "title": "Mean hazard and exposure contribution",
-      "width_mm": 88,
-      "height_mm": 82
+      "title": "Five-level matrix with exact compound counts",
+      "width_mm": 260,
+      "height_mm": 110
     },
     {
       "panel_id": "hazard_component_profiles",
-      "panel_tag": "d",
+      "panel_tag": "c",
       "title": "Hazard-component score profiles",
       "width_mm": 92,
       "height_mm": 72
     },
     {
       "panel_id": "exposure_component_profiles",
-      "panel_tag": "e",
+      "panel_tag": "d",
       "title": "Exposure-component score profiles",
       "width_mm": 88,
       "height_mm": 72
@@ -51,19 +44,17 @@
   ],
   "export": {
     "width_mm": 183,
-    "height_mm": 215,
+    "height_mm": 218,
     "dpi": 600,
     "formats": [
-      "svg",
-      "pdf",
       "png",
-      "tiff"
+      "pdf"
     ]
   },
   "layout": {
     "row_heights": [
       65,
-      82,
+      85,
       68
     ],
     "bottom_widths": [
@@ -72,55 +63,22 @@
     ],
     "inset": {
       "left": 0.58,
-      "bottom": 0.18,
+      "bottom": 0.32,
       "right": 1.0,
       "top": 1.0,
       "align_to": "full"
     },
-    "tag_size_pt": 8.5,
-    "middle_widths": [
-      1.2,
-      0.8
-    ]
+    "tag_size_pt": 8.5
   },
   "display": {
     "priority_distribution_label_min_count": 1,
     "priority_distribution_label_min_fraction": 0.0,
-    "hazard_exposure_label_min_count": 100,
-    "score_decomposition_label_min_contribution": 0.5,
     "hazard_profile_label_min_fraction": 0.03,
     "exposure_profile_label_min_fraction": 0.03,
     "audit_profile_label_min_fraction": 0.0,
     "regulatory_internal_label_min_fraction": 0.04,
     "regulatory_show_small_callouts": false,
-    "regulatory_callout_min_separation_degrees": 6.0,
-    "heatmap_compact": {
-      "number_size_pt": 6,
-      "axis_text_size_pt": 6.5,
-      "axis_title_size_pt": 7.5,
-      "legend_tick_size_pt": 6,
-      "legend_label_size_pt": 6.5,
-      "tile_linewidth_mm": 0.25,
-      "boundary_linewidth_mm": 0.35,
-      "row_heights": [
-        14.5,
-        1.6
-      ],
-      "cell_aspect_ratio": 1
-    }
-  },
-  "thresholds": {
-    "hazard_theoretical_max": 16,
-    "exposure_theoretical_max": 10,
-    "moderate_hazard_min": 6,
-    "high_hazard_gt": 10,
-    "exposure_min": 5
-  },
-  "priority_palette": {
-    "No data": "#C8CED6",
-    "Low priority": "#36495D",
-    "Moderate priority": "#C88736",
-    "High priority": "#A9463E"
+    "regulatory_callout_min_separation_degrees": 6.0
   },
   "regulatory_palette": {
     "Prohibited/phase-out": "#4B247F",
@@ -129,10 +87,6 @@
     "Monitoring/reporting/hazard": "#B5A4C7",
     "Inventory/registration/use": "#D8CFE1",
     "No matched GIC listing": "#AEB7C2"
-  },
-  "score_component_palette": {
-    "Hazard": "#A65F4B",
-    "Exposure": "#3F7784"
   },
   "hazard_profile_palette": {
     "No usable evidence": "#E3E7EB",
@@ -149,5 +103,17 @@
     "Moderate (1)": "#C88736",
     "High (2)": "#A9463E",
     "Partial evidence": "#B9BED0"
+  },
+  "classification_policy": "Figure/_shared/five_level_policy.json",
+  "score_domain": {
+    "Hazard": [
+      0,
+      16
+    ],
+    "Exposure": [
+      0,
+      16
+    ],
+    "representation": "existing rounded integer scores"
   }
 }

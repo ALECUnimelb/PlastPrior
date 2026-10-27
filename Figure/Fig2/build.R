@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-source('Figure/_shared/current.R')
+source('Figure/_shared/managed.R')
 source(file.path(module_dir,'style.R')); source(file.path(module_dir,'data.R')); source(file.path(module_dir,'plot_common.R'))
 source(file.path(module_dir,'panels/coverage/data.R')); source(file.path(module_dir,'panels/coverage/plot.R'))
 for (id in names(pbmt_dimension_schema)) {
@@ -17,4 +17,7 @@ for(id in names(pbmt_dimension_schema)) {
 }
 save_nested(prepared$source_data)
 save_facts(list(population=lock$total,coverage=prepared$source_data$coverage_metrics,agreement=prepared$source_data$agreement_metrics,independent_evidence='Usable computational candidates after identity isolation; B comparison uses selected QSAR BCF only. Structural halogen rules remain part of final B selection.',missing='Unavailable candidates remain NA; paired statistics require both candidates.'))
-save_plot(assemble_pbmt_concordance(plots,config),183,170)
+# Assemble before opening the PDF device: lazy evaluation inside export can
+# switch the active grid device and leave the first output page blank.
+assembled <- assemble_pbmt_concordance(plots,config)
+save_plot(assembled,183,170)

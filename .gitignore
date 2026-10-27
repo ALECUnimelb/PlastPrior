@@ -268,3 +268,8 @@ Desktop.ini
 /Figure/Final_Figures_*.pptx
 
 /Figure/verification.json
+
+# One replaceable review per figure; generated manifests stay with their images.
+/Figure/*/review/
+/Figure/*/.previous-*/
+/Figure/*/.promoting-*/

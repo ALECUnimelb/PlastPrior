@@ -3,12 +3,14 @@ from pathlib import Path
 import csv,json,re,xml.etree.ElementTree as ET
 HERE=Path(__file__).resolve().parent
 
-def check():
-    output=HERE/'output'
+def check(output=None,data=None):
+    output=Path(output) if output else HERE/'review'
     rows=lambda p:list(csv.DictReader(p.open()))
     repo=HERE.parents[1]
-    lock=json.loads((repo/'Figure/figure_sources.json').read_text())
-    data=repo/lock['figure_data_dir']/HERE.name
+    if data is None:
+        manifest=json.loads((output/'manifest.json').read_text())
+        data=repo/manifest['source_data_dir']
+    data=Path(data)
     columns=rows(data/'overlap/selected.csv')
     sizes=rows(data/'overlap/set_sizes.csv')
     colors={r['color'].upper() for r in sizes}
@@ -31,4 +33,5 @@ def check():
     dx=max(abs(a-b) for a,b in zip(centres,xs));dy=max(abs(a-b) for a,b in zip(row_centres,ys))
     assert dx<=.02 and dy<=.02
     return {'passed':True,'columns':len(xs),'rows':len(ys),'max_column_error_pt':dx,'max_row_error_pt':dy}
-if __name__=='__main__':print(json.dumps(check(),indent=2))
+if __name__=='__main__':
+    raise SystemExit('Alignment runs on a temporary SVG during run_plot.py; see review/manifest.json qa.alignment.')

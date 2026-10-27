@@ -1,6 +1,4 @@
-priority_levels <- c(
-  "No data", "Low priority", "Moderate priority", "High priority"
-)
+priority_levels <- paste('Level',1:5)
 
 regulatory_levels <- c(
   "Prohibited/phase-out",

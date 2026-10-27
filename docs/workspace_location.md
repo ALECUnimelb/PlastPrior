@@ -10,14 +10,29 @@ The new weighted, rounded-domain export is in `output/2026-10-27/`. See
 The `results` compatibility link and `Figure/figure_sources.json` still identify
 the frozen 2026-10-26 manuscript baseline; they are not switched implicitly.
 
+## Current figure maintenance
+
+Use `Figure/INDEX.md` as the single entry point for selecting figures. The approved
+five-level Fig. 3 is in `Figure/Fig3/output/`. Fig. 1, Fig. 2 and Extended Data
+Figs. 1–2 have one pending version each in `Figure/<figure>/review/`; their old
+formal images remain until approval. Fig. 4, Fig. 5 and Extended Data Fig. 3 are
+frozen pending redesign. Extended Data Fig. 4 remains unchanged with Dashboard.
+
+`Figure/managed_sources.json` pins the rounded 2026-10-27 inputs for migrated
+figures. Five-level labels are derived only for figures; formal scores, ranks,
+CSV/SQLite and Dashboard are unchanged. Current numerical figure tables are in
+`output/figure_data/<figure>/{output,review}/`, each paired with an image manifest.
+Do not create numbered preview folders. See `Figure/README.md` for rebuild and
+explicit promotion commands. Dated scientific runs remain immutable audits.
+
 ## Frozen baseline files
 
 - `output/2026-10-26/PlastPrior_results.csv`: publication values, ranks and Top-N membership.
 - `output/2026-10-26/PlastPrior_results.sqlite`: full analysis and retained evidence.
 - `output/2026-10-26/PlastPrior_dashboard.sqlite`: paired Dashboard details.
 - `output/2026-10-26/figure_data/`: numerical figure tables.
-- `Figure/<figure>/output/`: final images and original build manifests.
-- `Figure/Final_Figures_20261026_Revised.pptx`: current nine-figure review deck.
+- Image approval status is now tracked in `Figure/INDEX.md`; not every figure still uses this baseline.
+- `Figure/Final_Figures_20261026_Revised.pptx`: historical nine-figure review deck.
 
 The pre-existing `results` compatibility link now resolves to `output/2026-10-26`.
 Use the dated directory when selecting data; no `current` directory is needed.

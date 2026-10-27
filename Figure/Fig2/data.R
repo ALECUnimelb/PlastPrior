@@ -95,7 +95,7 @@ read_pbmt_concordance_input <- function(snapshot, config) {
     paths <- c(computational_score=item$computational_json_path, plastchem_score=item$plastchem_json_path, selected_final_score=item$final_json_path)
     for (name in names(paths)) columns <- c(columns, paste0('json_extract(',item$evidence_field,', ',DBI::dbQuoteString(db,paths[[name]]),') AS ',id,'_',name))
   }
-  evidence <- DBI::dbGetQuery(db,paste('SELECT',paste(columns,collapse=','),'FROM compounds ORDER BY inchikey'))
+  evidence <- DBI::dbGetQuery(db,paste('SELECT',paste(columns,collapse=','),'FROM current_compounds ORDER BY inchikey'))
   stopifnot(identical(compounds$Inchikey_std,evidence$inchikey_std))
 
   long_tables <- list()

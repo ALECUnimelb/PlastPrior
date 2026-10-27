@@ -1,6 +1,6 @@
 # Figure caption drafts
 
-For author review. These captions accompany the revised figures; the manuscript has not been modified. Scientific definitions and cautions are retained from the existing captions.
+For author review; the manuscript has not been modified. See [INDEX.md](INDEX.md) for approval status. Fig. 3 is approved; Fig. 1, Fig. 2 and Extended Data Figs. 1–2 are pending review. The captions for Fig. 4, Fig. 5 and Extended Data Figs. 3–4 remain historical and must not be used as captions for a five-level revision.
 
 ## Fig. 2
 
@@ -20,15 +20,7 @@ Extended Data Fig. 2 | PBMT availability and positive exposure-evidence patterns
 
 ## Extended Data Fig. 3
 
-Extended Data Fig. 3 | Positive-scoring input breadth and prevalence. (a) Within-tier distribution of the number of positive weighted inputs among four PBMT domains and six exposure indicators. (b) Within-tier prevalence of a positive contribution from each input. The median positive-input counts are 4, 6 and 8 for Low, Moderate and High priority, respectively. Positive-input breadth differs from evidence completeness because a scoreable zero is not a positive input. The patterns are descriptive because the same inputs determine the tiers.
-
-## Fig. 1
-
-Fig. 1 | Database assembly and use. Source records are resolved to compound identities, linked to hazard and exposure evidence, and delivered through a database and dashboard. Compounds unsuitable for QSAR remain in the inventory. Missing components contribute zero only when summing scores, and their unavailable status is retained. Partial evidence does not preclude ranking; all 15,125 compounds in this run have at least one available component. Regulatory action and analytical-platform annotations provide context and do not contribute points.
-
-## Fig. 3
-
-Fig. 3 | Priority landscape and component evidence profiles among 15,125 compounds. (a) Total-score distribution in one-point intervals, colored by priority category; labels show bin totals. Intervals use floor of the original total S=H+E, not the sum of displayed H/E bins. The inset shows priority categories and their regulatory context. (b) Hazard–exposure heatmap with exact compound counts in all 187 cells, including seven zero-count cells. High requires raw H>10 and E>=5. Moderate requires 6<=H<=10 and E>=5, or H>10 and E<5; remaining records with evidence are Low. The resulting counts are High 265, Moderate 3,414 and Low 11,446. Classification precedes display binning. Display bins use floor values except that 10<H<11 maps to hazard bin 11: bin 10 contains H=10 only and bin 11 spans 10<H<12. Endpoint bins H=16 and E=10 are singletons. Columns are categorical and equally wide; their areas do not encode equal raw-score interval widths. Hue indicates priority and four opaque shades encode 0–10, 11–50, 51–100 and >100 compounds; zeros use the lightest regional shade. Display bins never alter original scores, tiers or ranks. (c) Mean hazard and exposure contributions within the same intervals. (d) PBMT profiles distinguish missing evidence from supported zero and retain curated scores of 0.25. (e) Five exposure-dimension profiles; food contact and biomonitoring form one joint dimension. The Partial evidence category identifies a joint dimension with only one available indicator; its available contribution is retained in E. A numerical zero contribution does not establish absence of hazard or exposure.
+Extended Data Fig. 3 | Five-level priority landscape and component evidence profiles among 15,125 compounds. (a) Distribution of the integer priority score, defined as the sum of separately rounded weighted H and E scores; labels show score-bin totals. Solid colors indicate priority level, and the inset shows levels and their regulatory context. (b) Hazard–exposure matrix with exact counts in all 289 integer-score cells. Dashed lines and equal-thickness guide bars mark L = 0–3, M = 4–7, H = 8–11 and vH = 12–16. Level 1 comprises vH/vH pairs (101 compounds); Level 2 comprises vH/H pairs in either order (1,119); Level 3 comprises the remaining pairs with vH and the H/H pair (3,482); Level 4 comprises other pairs with at least one H (4,702); Level 5 comprises the remainder (5,721). Color encodes level only, without count-dependent shading. The integer cells have equal widths; because scores include both 0 and 16, the vH band contains five integer values while the other bands contain four. Classification changes only figure labels, not stored scores or ranks. (c) Unweighted PBMT component profiles distinguish missing evidence from supported zero and retain curated fractional scores. (d) Five unweighted exposure-dimension profiles; food contact and biomonitoring form one joint dimension. Partial evidence denotes a joint dimension with only one available indicator, whose contribution remains in E. A numerical zero does not establish absence of hazard or exposure.
 
 ## Extended Data Fig. 4
 

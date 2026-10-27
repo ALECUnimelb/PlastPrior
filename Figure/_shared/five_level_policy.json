@@ -1,0 +1,55 @@
+{
+  "version": "figure-five-level-v1",
+  "cutpoints": [
+    4,
+    8,
+    12
+  ],
+  "level_matrix_L_M_H_vH": [
+    [
+      5,
+      5,
+      4,
+      3
+    ],
+    [
+      5,
+      5,
+      4,
+      3
+    ],
+    [
+      4,
+      4,
+      3,
+      2
+    ],
+    [
+      3,
+      3,
+      2,
+      1
+    ]
+  ],
+  "priority_palette": {
+    "Level 1": "#702721",
+    "Level 2": "#A9463E",
+    "Level 3": "#C88736",
+    "Level 4": "#36495D",
+    "Level 5": "#AEB7C2"
+  },
+  "domain_palette": {
+    "L": "#AEB7C2",
+    "M": "#36495D",
+    "H": "#C88736",
+    "vH": "#A9463E"
+  },
+  "expected_counts": [
+    101,
+    1119,
+    3482,
+    4702,
+    5721
+  ],
+  "scores": "Read rounded scores unchanged; never rescore or rerank in this figure layer"
+}

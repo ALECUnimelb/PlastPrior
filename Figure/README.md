@@ -1,34 +1,62 @@
-# Current manuscript figures
+# Manuscript figures
 
-All nine figures use formal run `20261026T024145Z-e97d428a`, policy `priority-hgt10-ege5-v1`. `figure_sources.json` pins the inputs, population and policy hashes.
+Use [INDEX.md](INDEX.md) to select files. It distinguishes approved current figures, pending reviews and frozen figures. `catalog.json` is the machine-readable status record; rebuild the index with `.venv/bin/python Figure/manage.py index`.
 
-- Formal inputs: `../output/2026-10-26/PlastPrior_results.csv`, `PlastPrior_results.sqlite` (full analysis), and `PlastPrior_dashboard.sqlite` (Dashboard details).
-- Numerical figure tables: `../output/2026-10-26/figure_data/<figure>/`.
-- Images: `<figure>/output/`. Each successful build replaces that figure's previous output; no history copy is created.
-- Fig. 3b is also exported separately in `Fig3/output/Fig3b.*`.
-- Captions: `captions_draft.md`.
-- Verification: `../audit_archive/figure_refresh_20261026/`.
+## One official version and one review
 
-High: raw H>10 and E>=5. Moderate: 6<=H<=10 and E>=5, or H>10 and E<5. Otherwise Low for eligible records. Display bins never enter scores, classifications or rankings. Total-score histograms use floor of raw H+E. The heatmap uses floor H/E except 10<H<11 maps to bin 11; this merges 10<H<12 into a categorical column, while bin 10 contains exactly H=10.
+- Official images: `<figure>/output/`. Replace only after the user accepts the pending figure.
+- Pending images: `<figure>/review/`. Every successful rebuild replaces this one pending version.
+- Numerical tables: `../output/figure_data/<figure>/output/` or `review/`, paired to the corresponding images.
+- Default deliverables: PNG (600 dpi), editable PDF and one `manifest.json`. Fig. 3b also has standalone PNG/PDF exports. Temporary build files are removed on success or failure; a failed replacement restores the previous image/table pair.
+- The manifest contains exact source, code, table and image hashes, caption facts and any build-specific checks. Do not rename, mix or edit the derived tables independently.
+- Do not create `_v2`, `_final`, timestamped previews or copied plotting scripts. Git retains source history; dated scientific input runs remain immutable audit records, not competing current figures.
+- The 101-compound classification handoff under `../output/2026-10-28/level1_classification_handoff/` is research input awaiting a return, and is retained.
 
-Fig. 4 uses four scoring perturbations and two strict hazard thresholds (>9, >11), holding E>=5. Fig. 5 stable High means High at baseline and under all four scoring perturbations, without an additional total threshold.
-
-## Rebuild and verify
-
-Run from the repository root with the project Python environment and installed R packages:
+Running a managed figure builds **review only**:
 
 ```sh
+.venv/bin/python Figure/Fig1/run_plot.py
+.venv/bin/python Figure/Fig2/run_plot.py
 .venv/bin/python Figure/Fig3/run_plot.py
-Rscript Figure/tests/priority_policy.R
-.venv/bin/python scripts/audit_figure_refresh.py
-.venv/bin/python Figure/verify_figures.py
-.venv/bin/python Figure/ExtendedDataFig1/audit_alignment.py
+.venv/bin/python Figure/ExtendedDataFig1/run_plot.py
+.venv/bin/python Figure/ExtendedDataFig2/run_plot.py
 ```
 
-The same `run_plot.py` entry point exists for each figure. Quantitative figures use R and export editable SVG/PDF and 600 dpi PNG/TIFF. Combined Fig. 3 is 183 x 215 mm in three rows (a / b+c / d+e); standalone Fig. 3b is 183 x 133 mm. The combined heatmap uses compact display settings independently of its standalone export. Final journal sizing remains an author decision.
+After the user explicitly accepts a particular review, promote that exact output (example):
 
-Extended Data Fig. 4 is an unedited application screenshot. The verified Dashboard implementation and production bundle are preserved locally in `../audit_archive/dashboard_runtime_20261026/app`. Serve that production build on port 5198, then run `Figure/ExtendedDataFig4/run_plot.py` with Playwright available through `NODE_PATH`. Set `PLASTPRIOR_DASHBOARD_ROOT` to select another explicitly verified Dashboard checkout. Capture verifies the served bundle against that local build, uploads the locked CSV/database pair, and records both bundle and source hashes. This does not deploy the application.
+```sh
+.venv/bin/python Figure/manage.py approve Fig1
+```
 
-The canonical local project is `/Users/ruiwang/Projects/APPs/PlastPrior`. Run all commands there. The former repair worktree is retained for recovery and is no longer the active workspace. Existing images were copied byte for byte; the relocation receipt in `../audit_archive/workspace_migration_20261026/` records the path-only capture-code change without claiming that the screenshot was regenerated.
+Promotion verifies the reviewed code, inputs and output hashes, replaces the official image/table pair and removes the pending pair. It does not rerender the approved image. Do not promote all figures automatically.
 
-`node Figure/update_ppt.mjs [source.pptx] [new-output.pptx]` embeds the current nine figures in a new review deck. Without arguments it uses the most recently modified review deck and a timestamped output name. It never overwrites an existing PPTX. Build files stay in `audit_archive/`.
+## Scientific sources and scope
+
+The managed figures read `output/2026-10-27/PlastPrior_results.csv` and the read-only `current_compounds`/`scenario_results` views in the matching full SQLite. `managed_sources.json` pins these files. Scores, ranks, Top-N membership and raw evidence are never recalculated by figure maintenance.
+
+`_shared/five_level_policy.json` defines the **figure-only** five-level matrix and approved palette. H and E use the existing separately rounded integers. Domain labels are L = 0–3, M = 4–7, H = 8–11, vH = 12–16. Level 1 requires vH/vH (101 compounds); Level 2 requires vH/H in either order (1,119); Level 3 contains the remaining vH pairs and H/H (3,482); Level 4 contains other pairs with at least one H (4,702); Level 5 contains the remainder (5,721). Counts sum to 15,125.
+
+Formal CSV/SQLite and Dashboard still carry their existing four-level classification. Figure labels do not overwrite them. Fig. 1 makes this figure scope explicit. Fig. 2 and Extended Data Figs. 1–2 concern raw evidence/provenance and retain their original membership definitions; their numerical tables are checked against the frozen baseline.
+
+The approved Fig. 3 uses a/b/c+d rows at 183 × 218 mm, plus a standalone 260 × 110 mm matrix. Five solid colors indicate levels, all 289 integer H/E cells show counts, and dashed boundaries mark the 4 × 4 label regions. Color intensity does not encode count. Raw component profiles distinguish missing evidence, supported zero and fractional scores. The axis guides use the four domain-label colors.
+
+## Deferred figures and historical records
+
+Fig. 4, Fig. 5 and Extended Data Fig. 3 remain frozen pending redesign. Extended Data Fig. 4 also remains frozen because Dashboard has not been migrated. Do not run their legacy builders as part of this update.
+
+`figure_sources.json` and `../output/2026-10-26/figure_data/` retain the old manuscript baseline. Historical formal images for figures awaiting review remain in their existing `output/` directories, clearly marked in INDEX.md. Old baseline verification scripts and policy tests serve historical reproduction; they are not the current mixed-status verification entry point.
+
+Existing PPTX decks are historical. No new deck is produced in this update. `update_ppt.mjs` refuses to assemble a deck while any figure is deferred or awaiting approval, preventing accidental mixing of policies. Future deck revision is a separate operation.
+
+## Verification
+
+Run from `/Users/ruiwang/Projects/APPs/PlastPrior`:
+
+```sh
+.venv/bin/python Figure/verify_figures.py
+.venv/bin/python -m unittest discover -s Figure/tests -p 'test_*.py' -v
+```
+
+Verification reads hashes and scientific tables without modifying them. It checks all 289 classification combinations, all 15,125 rounded scores, the five level totals, current manifests and preserved legacy outputs. Extended Data Fig. 1 also runs its exact SVG alignment audit during generation; that temporary SVG is deleted after the audit and the result is stored in the manifest. `audit_archive/figure_maintenance/receipt.json` records this maintenance operation and protected-file checks.
+
+All quantitative drawing uses R. Captions are maintained in [captions_draft.md](captions_draft.md). The canonical repository root is `/Users/ruiwang/Projects/APPs/PlastPrior`; the retired worktree is recovery material only.
