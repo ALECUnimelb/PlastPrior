@@ -79,3 +79,34 @@ class ScenarioTests(unittest.TestCase):
         result = weighted_domain(record, weights, 'exposure', normalize_to=None)
         self.assertEqual(result['score'], Decimal(0))
         self.assertFalse(result['has_active_evidence'])
+
+class RoundedScenarioTests(unittest.TestCase):
+    def test_domain_rounding_before_total_and_labels(self):
+        from plastprior.scoring_scenarios import default_policy, score_population
+        row = {field: 0 for field in COMPONENT_MAXIMA}
+        row.update(inchikey='A', Persistence_score='0.25', Exposure_patent_score='0.25')
+        result = score_population([row], default_policy())[0]
+        self.assertEqual((result['Hazard_score'], result['Exposure_score'], result['Priority_score']), (1, 1, 2))
+        self.assertEqual(Decimal(result['Hazard_score_raw']), Decimal('.5'))
+        row.update(Persistence_score=0, Toxicity_score=2, Mobility_score='1.5')
+        result = score_population([row], default_policy())[0]
+        self.assertEqual((result['Hazard_score'], result['Hazard_label']), (8, 'H'))
+
+    def test_ranking_uses_rounded_total_and_includes_boundary_ties(self):
+        from plastprior.scoring_scenarios import default_policy, score_population
+        base = {field: 0 for field in COMPONENT_MAXIMA}
+        rows = [{**base, 'inchikey': 'B', 'Persistence_score': '.25'},
+                {**base, 'inchikey': 'A', 'Persistence_score': '.5'},
+                {**base, 'inchikey': 'C', 'Persistence_score': '0'}]
+        result = score_population(rows, {**default_policy(), 'top_n': 1})
+        self.assertEqual([r['inchikey'] for r in result], ['A', 'B', 'C'])
+        self.assertEqual([r['Priority_rank'] for r in result], [1, 1, 3])
+        self.assertEqual([r['Top_n_selected'] for r in result], [True, True, False])
+
+    def test_no_evidence_remains_unranked(self):
+        from plastprior.scoring_scenarios import default_policy, score_population
+        row = {field: None for field in COMPONENT_MAXIMA}
+        result = score_population([{**row, 'inchikey': 'A'}], default_policy())[0]
+        self.assertIsNone(result['Priority_level'])
+        self.assertIsNone(result['Priority_rank'])
+        self.assertEqual(result['Hazard_label'], '')

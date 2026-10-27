@@ -100,3 +100,80 @@ def priority_level(hazard_label, exposure_label):
     if high == 2:
         return 3
     return 4
+
+
+def default_policy():
+    import json
+    from pathlib import Path
+    return json.loads(Path(__file__).with_name('scenario_policy.json').read_text())
+
+
+def validate_policy(policy):
+    expected = default_policy()
+    if set(policy) != set(expected):
+        raise ValueError('Scenario configuration has missing or unknown fields.')
+    for field in ['schema_version', 'policy_version', 'rounding', 'normalization', 'ranking', 'missingness']:
+        if policy[field] != expected[field]:
+            raise ValueError('Unsupported scenario policy: ' + field)
+    if isinstance(policy['top_n'], bool) or not isinstance(policy['top_n'], int) or policy['top_n'] < 1:
+        raise ValueError('Top-N must be a positive integer.')
+    if set(policy['thresholds']) != {'hazard', 'exposure'}:
+        raise ValueError('Both domain thresholds are required.')
+    for domain in ['hazard', 'exposure']:
+        weights = policy[domain + '_weights']
+        import re
+        for value in weights.values():
+            if not re.fullmatch(r'\d+(?:\.\d{1,6})?', str(value)) or number(value) > 100:
+                raise ValueError('Weights must be between 0 and 100 with at most six decimal places.')
+        for value in policy['thresholds'][domain]:
+            if not re.fullmatch(r'\d+(?:\.\d{1,6})?', str(value)):
+                raise ValueError('Cutpoints require at most six decimal places.')
+        weighted_domain(COMPONENT_MAXIMA, weights, domain, normalize_to=None)
+        domain_label(0, policy['thresholds'][domain], upper_inclusive=True)
+
+
+def score_record(record, policy):
+    """Caller validates policy once per population; no intermediate rounding."""
+    from decimal import ROUND_HALF_UP
+    import json
+    results = {d: weighted_domain(record, policy[d + '_weights'], d, normalize_to=None)
+               for d in ['hazard', 'exposure']}
+    eligible = any(r['has_active_evidence'] for r in results.values())
+    output = {}
+    for domain, result in results.items():
+        name = domain.capitalize()
+        rounded = int(result['score'].quantize(Decimal('1'), rounding=ROUND_HALF_UP))
+        output.update({name + '_score_raw': str(result['score']), name + '_score': rounded,
+                       name + '_score_max': str(result['maximum']), name + '_observed_score': str(result['score']),
+                       name + '_label': domain_label(rounded, policy['thresholds'][domain], upper_inclusive=True) if eligible else '',
+                       name + '_weighted_contributions': json.dumps({k: str(v) for k, v in result['raw_contributions'].items()}, sort_keys=True)})
+    level = priority_level(output['Hazard_label'], output['Exposure_label']) if eligible else None
+    output.update(Priority_score=output['Hazard_score'] + output['Exposure_score'] if eligible else None,
+                  Priority_level=level, Priority_tier=f'Level {level}' if level else 'No data',
+                  Priority_eligible=eligible, Ranking_eligible=eligible,
+                  Priority_data_status=('Complete' if all(r['complete'] for r in results.values()) else 'Partial') if eligible else 'No data',
+                  Priority_ineligibility_reasons='[]' if eligible else '[{"reason":"no_active_weighted_evidence"}]',
+                  Ranking_exclusion_reasons='[]' if eligible else '[{"reason":"no_active_weighted_evidence"}]',
+                  priority_scoring_policy=policy['policy_version'],
+                  scoring_config_json=json.dumps(policy, sort_keys=True, separators=(',', ':')))
+    return output
+
+
+def score_population(records, policy):
+    from collections import Counter
+    validate_policy(policy)
+    keys = [str(r.get('inchikey', '')).strip() for r in records]
+    if not records or '' in keys or len(set(keys)) != len(keys):
+        raise ValueError('A nonempty population with unique inchikey values is required.')
+    rows = [{**record, **score_record(record, policy)} for record in records]
+    counts = Counter(r['Priority_score'] for r in rows if r['Ranking_eligible'])
+    ranks, seen = {}, 0
+    for score in sorted(counts, reverse=True):
+        ranks[score] = seen + 1
+        seen += counts[score]
+    for row in rows:
+        score = row['Priority_score']
+        rank = ranks.get(score)
+        row.update(Priority_rank=rank, Priority_tie_size=counts.get(score) if rank else None,
+                   Top_n_selected=rank <= policy['top_n'] if rank else None)
+    return sorted(rows, key=lambda r: (r['Priority_rank'] or float('inf'), r['inchikey']))

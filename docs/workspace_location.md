@@ -3,7 +3,14 @@
 Use `/Users/ruiwang/Projects/APPs/PlastPrior` as the repository root. Open
 `PlastPrior.ipynb` from this directory. `plastprior/` contains the Python package.
 
-## Current files
+## Rounded scoring update
+
+The new weighted, rounded-domain export is in `output/2026-10-27/`. See
+[rounded_scoring.md](rounded_scoring.md) for its current-view SQLite contract.
+The `results` compatibility link and `Figure/figure_sources.json` still identify
+the frozen 2026-10-26 manuscript baseline; they are not switched implicitly.
+
+## Frozen baseline files
 
 - `output/2026-10-26/PlastPrior_results.csv`: publication values, ranks and Top-N membership.
 - `output/2026-10-26/PlastPrior_results.sqlite`: full analysis and retained evidence.
