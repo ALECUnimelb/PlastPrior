@@ -46,5 +46,5 @@ p <- ggplot()+
  scale_fill_identity()+scale_colour_identity()+coord_cartesian(xlim=c(.5,3.5),ylim=c(.5,10.6),expand=FALSE,clip='off')+
  theme_void(base_family='Arial')+theme(plot.background=element_rect(fill='white',colour=NA),plot.margin=margin(4,4,4,4))
 save_table(nodes,'diagram_nodes');save_table(counts,'priority_population');save_table(qc,'qsar_eligibility')
-save_facts(list(total=n,ranked=eligible,no_data=unknown,role='Schematic of current integer scoring and figure-only five-level classification; QSAR ineligibility does not remove compounds. The unchanged CSV and Dashboard still use four levels.',scoring_config='output/2026-10-27/scoring_config.json',figure_policy=figure_policy))
+save_facts(list(total=n,ranked=eligible,no_data=unknown,role='Schematic of current integer scoring and figure-only five-level classification; QSAR ineligibility does not remove compounds. The unchanged CSV and Dashboard still use four levels.',scoring_config='result/figure_data/_metadata/scoring_config.json',figure_policy=figure_policy))
 save_plot(p,183,112)

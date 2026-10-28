@@ -13,8 +13,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--require-supporting-inputs", action="store_true",
                         help="Also require all declared auxiliary files and directories to be present; "
                              "this does not validate their contents.")
-    parser.add_argument("--output-dir", type=Path, default=Path("results"),
-                        help="Daily two-file directory (default: results); stages go to the audit archive.")
+    parser.add_argument("--output-dir", type=Path, default=Path("result"),
+                        help="Current result directory (default: result); builds use temporary staging.")
     parser.add_argument("--assemble-records", action="store_true",
                         help="Also assemble source inventory records; no identity resolution or deduplication.")
     parser.add_argument("--resolve-identities", action="store_true",
@@ -43,14 +43,14 @@ def main(argv: list[str] | None = None) -> int:
                         help="Also generate eligible competition ranks and inclusive Top-N (7B).")
     parser.add_argument("--top-n", type=int, default=100,
                         help="Requested eligible Top-N size; boundary ties are included (default: 100).")
-    parser.add_argument("--archive-dir", type=Path, default=Path("audit_archive"),
-                        help="Separate run archives and temporary stages.")
+    parser.add_argument("--archive-dir", type=Path, default=Path(".result-work"),
+                        help="Temporary workspace (removed after successful delivery).")
     parser.add_argument("--keep-intermediates", action="store_true",
                         help="Keep successful stage files; failed or partial runs always retain them.")
     parser.add_argument("--baseline-csv", type=Path,
                         help="Require all existing publication values to match this CSV before publishing.")
     parser.add_argument("--priority-migration-baseline", type=Path,
-                        help="Verify classification-only migration from the prior CSV; requires a new output directory.")
+                        help="Verify classification-only migration from the prior CSV; requires an explicitly selected baseline.")
     args = parser.parse_args(argv)
     if args.baseline_csv and args.priority_migration_baseline:
         parser.error("Choose exact regression or priority migration, not both")
@@ -87,7 +87,7 @@ def main(argv: list[str] | None = None) -> int:
     if archive_dir.absolute() == daily_dir.absolute() or archive_dir.absolute().is_relative_to(daily_dir.absolute()):
         parser.error("--archive-dir must be outside --output-dir")
     output_dir = new_workspace(archive_dir)
-    print(f"Run workspace (retained on failure): {output_dir}", flush=True)
+    print(f"Temporary workspace (retained on failure): {output_dir}", flush=True)
     report.write_reports(output_dir)
     print("\nStage 1 source inspection: " + ("Passed" if report.sources_passed else "Failed"))
     supporting_status = (
@@ -207,8 +207,8 @@ def main(argv: list[str] | None = None) -> int:
                              baseline_csv=args.baseline_csv,
                              priority_migration_baseline=args.priority_migration_baseline,
                              progress=lambda message: print(message, flush=True))
-        print(f"Daily CSV: {daily_dir / 'PlastPrior_results.csv'}")
-        print(f"Daily SQLite: {daily_dir / 'PlastPrior_dashboard.sqlite'}")
+        print(f"Current CSV: {daily_dir / 'PlastPrior_results.csv'}")
+        print(f"Current Dashboard SQLite: {daily_dir / 'PlastPrior_dashboard.sqlite'}")
         print(f"Complete audit archive: {package['directory']}")
     return 0 if passed else 1
 

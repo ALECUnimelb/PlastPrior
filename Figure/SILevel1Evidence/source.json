@@ -1,5 +1,5 @@
 {
-  "run_dir": "output/2026-10-27",
+  "run_dir": "result",
   "run_id": "20261027T080120Z-rounded",
   "csv_sha256": "280fde89c1f3ac2625dd963a6bdf44fd03833f42bb87acfd7fa06824b3fed637",
   "annotations": "Figure/Level1Evidence/inputs/Level1_101_aligned_uses_en.csv",

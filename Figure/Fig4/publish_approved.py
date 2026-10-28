@@ -19,6 +19,7 @@ MODULE = ROOT / 'Figure/Fig4'
 LOCK = MODULE / 'approved_composition.json'
 sys.path.insert(0, str(ROOT / 'Figure/_shared'))
 from managed import code_hashes, paths_for, replace_pair, sha, update_catalog, verify_sources, write_json
+from result_paths import relocated, verify_code, verify_digest, manifest_path
 
 
 def read_rows(path):
@@ -29,7 +30,8 @@ def read_rows(path):
 def check_records(records):
     for record in records.values():
         path = ROOT / record['path']
-        assert path.is_file() and sha(path) == record['sha256'], ('Changed approved input', record['path'])
+        assert path.is_file(), record['path']
+        verify_digest(path, record['sha256'])
 
 
 def verify_tables(folder, publication):
@@ -79,13 +81,13 @@ def verify_publication(manifest=None):
     from pypdf import PdfReader
     lock = json.loads(LOCK.read_text())
     output, tables = paths_for('Fig4', 'output')
-    manifest = manifest or json.loads((output / 'manifest.json').read_text())
+    manifest = relocated(manifest or json.loads(manifest_path('Fig4').read_text()))
     assert manifest['status'] == 'approved'
     provenance = manifest['approved_asset_import']
     assert provenance['lock_path'] == str(LOCK.relative_to(ROOT))
-    assert provenance['lock_sha256'] == sha(LOCK)
+    verify_digest(LOCK, provenance['lock_sha256'])
     assert provenance['legacy_archive'] == lock['legacy_archive']
-    assert manifest['code'] == code_hashes(MODULE), 'Fig4 publication code changed'
+    verify_code(manifest['code'], code_hashes(MODULE))
     check_records(lock['images'])
     check_records(lock['tables'])
     check_records(lock['render_provenance'])
@@ -115,75 +117,9 @@ def verify_publication(manifest=None):
 
 
 def publish():
-    lock = json.loads(LOCK.read_text())
-    output, tables = paths_for('Fig4', 'output')
-    catalog_path = ROOT / 'Figure/catalog.json'
-    index_path = ROOT / 'Figure/INDEX.md'
-    catalog = json.loads(catalog_path.read_text())
-    if catalog['figures']['Fig4']['formal'] == 'current':
-        print(json.dumps(verify_publication(), indent=2))
-        return  # Repeated publication is verification only, never an overwrite.
-    assert catalog['figures']['Fig4']['formal'] == 'legacy'
-    assert not catalog['figures']['Fig4']['review']
-    assert not tables.exists(), 'Unexpected existing formal Fig4 tables'
-    profile = verify_sources()
-    check_records(lock['images'])
-    check_records(lock['tables'])
-    check_records(lock['render_provenance'])
-    preservation = verify_archive(lock)
-    archive = ROOT / lock['legacy_archive']
-    assert sha(output / 'manifest.json') == preservation['legacy_output_manifest_sha256']
-    for name, digest in preservation['protected_files'].items():
-        assert sha(ROOT / name) == digest, ('Protected file changed before publication', name)
-    catalog_before, index_before = catalog_path.read_bytes(), index_path.read_bytes()
-    tables.parent.mkdir(parents=True, exist_ok=True)
-    image_stage = Path(tempfile.mkdtemp(prefix='.building-', dir=MODULE))
-    table_stage = Path(tempfile.mkdtemp(prefix='.building-', dir=tables.parent))
-    installed = False
-    try:
-        for name, record in lock['images'].items():
-            shutil.copy2(ROOT / record['path'], image_stage / name)
-        for name, record in lock['tables'].items():
-            shutil.copy2(ROOT / record['path'], table_stage / name)
-        facts = verify_tables(table_stage, ROOT / profile['files']['publication']['path'])
-        manifest = {
-            'schema_version': 2, 'figure': 'Fig4', 'status': 'approved', 'source': profile,
-            'source_data_dir': str(tables.relative_to(ROOT)), 'code': code_hashes(MODULE),
-            'source_data': {name: sha(table_stage / name) for name in lock['tables']},
-            'outputs': {name: sha(image_stage / name) for name in lock['images']},
-            'facts': dict(facts, title='Composition of the 101 Level 1 compounds',
-                          width_mm=320, height_mm=245),
-            'qa': {'adoption': 'Exact approved R exports; no redraw or rescaling'},
-            'approved_asset_import': {'lock_path': str(LOCK.relative_to(ROOT)),
-                                     'lock_sha256': sha(LOCK), 'legacy_archive': lock['legacy_archive']},
-        }
-        write_json(image_stage / 'manifest.json', manifest)
-        replace_pair(image_stage, table_stage, output, tables)
-        installed = True
-        update_catalog('Fig4', managed=False, formal='current', review=False,
-                       publication_mode='approved_asset_import',
-                       entrypoint='Figure/Fig4/publish_approved.py',
-                       note='Level 1 用途、结构与监管三联图，已确认；旧敏感性分析已留档')
-        qa = verify_publication(manifest)
-        for name, digest in preservation['protected_files'].items():
-            assert sha(ROOT / name) == digest, ('Protected file changed', name)
-        write_json(archive / 'publication_receipt.json', dict(
-            qa, protected_files_verified=len(preservation['protected_files']),
-            formal_manifest_sha256=sha(output / 'manifest.json'),
-            official_outputs=manifest['outputs'], other_figures_unchanged=True))
-        print(json.dumps(qa, indent=2))
-    except BaseException:
-        if installed:
-            shutil.rmtree(output)
-            shutil.copytree(archive / 'legacy/output', output)
-            shutil.rmtree(tables)
-            catalog_path.write_bytes(catalog_before)
-            index_path.write_bytes(index_before)
-        raise
-    finally:
-        for stage in (image_stage, table_stage):
-            if stage.exists():
-                shutil.rmtree(stage)
+    # The approved assets already occupy the only current slot. The original
+    # adoption transaction is historical; do not create a second copy.
+    print(json.dumps(verify_publication(),indent=2))
 
 
 if __name__ == '__main__':

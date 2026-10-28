@@ -88,7 +88,7 @@ for c in config['components']:
  m,high=metrics(hh,ee)
  for k,v in m.items():close(leave[c['component']][k],v)
  close(leave[c['component']]['retained_high_count'],len(high&base_high))
-summary=json.loads((ROOT/'Figure/Fig5/output/caption_facts.json').read_text())
+summary=json.loads((ROOT/'result/figure_data/_metadata/Fig5/caption_facts.json').read_text())
 assert len(stable)==summary['stable_high_priority_count']==125
 policy_rows=rows(DATA/'Fig5/compound_policy_analysis.csv')
 assert {x['Inchikey_std'] for x in policy_rows if x['stable_high_priority'].lower()=='true'}=={r[i]['inchikey'] for i in stable}

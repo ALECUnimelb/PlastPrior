@@ -1,23 +1,24 @@
+stop("This experimental export is retired. Use the current figure entrypoints in Figure/INDEX.md.")
 #!/usr/bin/env Rscript
 # Standard UpSet for all primary-use and structural-class intersections.
 # Review width_mm = 400, height_mm = 350; Arial 11.5 pt set labels.
 suppressPackageStartupMessages(library(grid))
 root <- '/Users/ruiwang/Projects/APPs/PlastPrior'
 module <- file.path(root,'Figure/Level1UseStructureUpSet')
-out <- file.path(module,'output')
-data_out <- file.path(root,'output/figure_data/Level1UseStructureUpSet/review')
+out <- file.path(root,'result/figures',basename(module),'images')
+data_out <- file.path(root,'result/figures/Level1UseStructureUpSet/review/data')
 dir.create(out,recursive=TRUE,showWarnings=FALSE)
 dir.create(data_out,recursive=TRUE,showWarnings=FALSE)
-source_dir <- file.path(root,'output/figure_data/Level1Composition/review')
+source_dir <- file.path(root,'result/figures/Level1Composition/review/data')
 read <- function(p)as.data.frame(readr::read_csv(p,show_col_types=FALSE))
 sha <- function(p)digest::digest(file=p,algo='sha256',serialize=FALSE)
 old_modules <- c('Level1Evidence','Level1Identity','Level1IdentityTree','Level1UseMatrix',
  'Level1UseTreemap','Level1Composition','Level1Alluvial','Level1GroupedStacked')
-protected <- c(list.files(source_dir,full.names=TRUE),file.path(root,'output/2026-10-27/PlastPrior_results.csv'),
- unlist(lapply(old_modules,function(m)list.files(file.path(root,'Figure',m,'output'),full.names=TRUE))))
+protected <- c(list.files(source_dir,full.names=TRUE),file.path(root,'result/PlastPrior_results.csv'),
+ unlist(lapply(old_modules,function(m)list.files(file.path(root,'result/figures',m,'images'),full.names=TRUE))))
 before <- setNames(vapply(protected,sha,character(1)),protected)
 d <- read(file.path(source_dir,'compound_membership.csv'))
-full <- read(file.path(root,'output/2026-10-27/PlastPrior_results.csv'))
+full <- read(file.path(root,'result/PlastPrior_results.csv'))
 idx <- match(d$inchikey,full$inchikey)
 stopifnot(nrow(d)==101L,!anyDuplicated(d$inchikey),!anyNA(idx),all(d$Figure_priority_level==1),
  setequal(d$inchikey,full$inchikey[full$Hazard_score>=12 & full$Exposure_score>=12]))

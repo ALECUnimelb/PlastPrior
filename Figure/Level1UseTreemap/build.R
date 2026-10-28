@@ -1,3 +1,4 @@
+stop("This experimental export is retired. Use the current figure entrypoints in Figure/INDEX.md.")
 #!/usr/bin/env Rscript
 # Nested use treemap: 101 equal-area chemical tiles, full names, structure strips.
 # Header-aware layout keeps the data tile area equal; group headers/gutters are
@@ -5,22 +6,23 @@
 # width_mm = 540, height_mm = 430: full-name review proof.
 suppressPackageStartupMessages(library(grid))
 root<-'/Users/ruiwang/Projects/APPs/PlastPrior'
+source(file.path(root,'Figure/_shared/result_paths.R'))
 module<-file.path(root,'Figure/Level1UseTreemap')
-out<-file.path(module,'output')
-data_out<-file.path(root,'output/figure_data/Level1UseTreemap/review')
-input<-file.path(root,'output/figure_data/Level1Identity/review/compound_identity.csv')
+out<-file.path(root,'result/figures',basename(module),'images')
+data_out<-file.path(root,'result/figures/Level1UseTreemap/review/data')
+input<-file.path(root,'result/figures/Level1Identity/review/data/compound_identity.csv')
 dir.create(out,recursive=TRUE,showWarnings=FALSE)
 dir.create(data_out,recursive=TRUE,showWarnings=FALSE)
 source(file.path(root,'Figure/_shared/theme.R'))
 font<-resolve_manuscript_font()
 sha<-function(p) digest::digest(file=p,algo='sha256',serialize=FALSE)
 protected<-unlist(lapply(c('Level1Identity','Level1IdentityTree','Level1UseMatrix'),function(m)
- list.files(file.path(root,'Figure',m,'output'),full.names=TRUE)))
+ list.files(file.path(root,'result/figures',m,'images'),full.names=TRUE)))
 before<-setNames(vapply(c(input,protected),sha,character(1)),c(input,protected))
 d<-read.csv(input,stringsAsFactors=FALSE,check.names=FALSE)
-classification<-jsonlite::fromJSON(file.path(root,'output/figure_data/Level1Identity/review/classification.json'))
-for(p in names(classification$source_hashes)) stopifnot(sha(file.path(root,p))==classification$source_hashes[[p]])
-full<-readr::read_csv(file.path(root,'output/2026-10-27/PlastPrior_results.csv'),show_col_types=FALSE)
+classification<-jsonlite::fromJSON(file.path(root,'result/figures/Level1Identity/review/data/classification.json'))
+for(p in names(classification$source_hashes)) stopifnot(sha(relocated_result_path(root,p))==classification$source_hashes[[p]])
+full<-readr::read_csv(file.path(root,'result/PlastPrior_results.csv'),show_col_types=FALSE)
 idx<-match(d$inchikey,full$inchikey)
 stopifnot(nrow(d)==101L,!anyDuplicated(d$inchikey),!anyNA(idx),all(d$Figure_priority_level==1))
 for(f in c('Name','CAS','SMILES','Hazard_score','Exposure_score','Priority_score','Priority_rank'))

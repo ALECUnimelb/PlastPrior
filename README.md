@@ -4,7 +4,7 @@
 
 Current rounded H/E scores, four-level labels and configurable Dashboard scenarios
 are documented in [docs/rounded_scoring.md](docs/rounded_scoring.md). Use
-`output/2026-10-27/` for the new CSV and paired SQLite files; the 2026-10-26
+`result/` for the new CSV and paired SQLite files; the 2026-10-26
 export and manuscript figures remain the frozen baseline.
 
 
@@ -21,8 +21,8 @@ reproduction package.
 ## Start here
 
 For this local project, work in `/Users/ruiwang/Projects/APPs/PlastPrior`.
-Current data are in `output/2026-10-26/`; current images and review decks are in
-`Figure/`. See [workspace location and migration checks](docs/workspace_location.md).
+Current data are in `result/`; generated figures and decks are in
+`result/figures/` and the single `result/Figures.pptx`. Source code remains in `Figure/`. See [workspace location and migration checks](docs/workspace_location.md).
 
 | Purpose | Guide |
 | --- | --- |
@@ -34,7 +34,7 @@ Current data are in `output/2026-10-26/`; current images and review decks are in
 | Review source access and unresolved release requirements | [Data access review](docs/data_access_review.md) and [publication review](docs/publication_review.md) |
 
 The local result links require the retained files on the reader's machine.
-`data/` and `results/` are excluded from Git. A public result download or an
+`data/` and generated `result/` files are excluded from Git. A public result download or an
 approved exact-input acquisition route has not yet been established.
 
 ## Installation
@@ -75,7 +75,7 @@ frozen files.
 An optional initial inspection is:
 
 ```text
-python main.py --require-supporting-inputs --output-dir results/inspection
+python main.py --require-supporting-inputs --output-dir result
 ```
 
 This inspects primary tables and auxiliary presence. It does not calculate
@@ -95,13 +95,13 @@ python -m jupyterlab
 
 The setup cell exposes `DATA_ROOT` and `REPORT_DIR`. To preserve earlier
 intermediate files, set `REPORT_DIR` to a new directory, for example
-`Path("results") / "reproduction_01"`.
+`Path("result")`.
 
 **Command line:** the ranking option runs every prerequisite stage and final
-export. Choose an unused output directory for each independent run.
+export. Use the fixed result directory; delivery validates before replacement.
 
 ```text
-python main.py --rank-priority --top-n 100 --require-supporting-inputs --output-dir results/reproduction_01
+python main.py --rank-priority --top-n 100 --require-supporting-inputs --output-dir result
 ```
 
 Add `--data-root "path to the frozen data directory"` for external inputs.
@@ -117,19 +117,21 @@ guarantees. Allow additional disk space and time on other systems.
 
 ## Read the results
 
-The last Notebook cell prints the daily pair and separate archive paths:
+The current files are in one fixed directory:
 
 ```text
-results/                         # directory link switched after verification (POSIX)
+result/
   PlastPrior_results.csv
+  PlastPrior_results.sqlite
   PlastPrior_dashboard.sqlite
-audit_archive/<run>/package/      # complete scientific archive and documentation
+  figures/                       # images and their source tables
+  baseline/                      # required frozen evidence, not current scores
 ```
 
-Stage files use `audit_archive/<run>/work/`. Successful temporary stages are removed
-only after archive validation and pair publication; `--keep-intermediates` retains
-them. Failed and partial runs retain their workspace. Existing physical results
-folders are moved whole into the archive. See [output layout](docs/results_layout.md).
+Builds use temporary `.result-work/` staging. Successful delivery replaces the
+current result set without accumulating dated runs. Changed data cannot replace
+an existing result with dependent figure tables until a coordinated refresh is
+prepared. See [output layout](docs/results_layout.md) for checks and recovery.
 
 | File or SQLite view | Purpose |
 | --- | --- |

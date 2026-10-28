@@ -1,49 +1,26 @@
-# Local workspace and verified results
+# Local workspace and current results
 
-Use `/Users/ruiwang/Projects/APPs/PlastPrior` as the repository root. Open
-`PlastPrior.ipynb` from this directory. `plastprior/` contains the Python package.
+Use `/Users/ruiwang/Projects/APPs/PlastPrior` as the repository root. The
+`plastprior/` subdirectory is the Python package, not a separate workspace.
 
-## Rounded scoring update
+The current CSV and databases are in `result/`. Required frozen evidence is in
+`result/figure_data/_dependencies/baseline/`. Generated images, figure tables, reviews, supplementary files
+and presentations are under `result/`; plotting source remains under `Figure/`.
+The former result directories and compatibility link are retired. See
+[the result layout](results_layout.md) for exact locations and update behaviour.
 
-The new weighted, rounded-domain export is in `output/2026-10-27/`. See
-[rounded_scoring.md](rounded_scoring.md) for its current-view SQLite contract.
-The `results` compatibility link and `Figure/figure_sources.json` still identify
-the frozen 2026-10-26 manuscript baseline; they are not switched implicitly.
+Use `Figure/INDEX.md` and `Figure/SI_INDEX.md` to select figures. Fig. 3 and Fig. 4
+retain their approvals. Pending reviews and frozen figures retain their previous
+states. Five-level labels remain a figure-only interpretation; the data files,
+scores, ranks and Top-N membership were not changed by relocation.
 
-## Current figure maintenance
+`Figure/managed_sources.json` pins the current rounded data;
+`Figure/figure_sources.json` pins the required baseline. Original build records
+remain unchanged with their assets. `result/figure_data/_metadata/manifest.json` records their relocation
+and the code changes needed to read the new locations.
 
-Use `Figure/INDEX.md` as the single entry point for selecting figures. The approved
-five-level Fig. 3 is in `Figure/Fig3/output/`. The approved Level 1 composition
-Fig. 4 is in `Figure/Fig4/output/`; its three-panel R assets were adopted without
-redrawing. Fig. 1, Fig. 2 and Extended Data
-Figs. 1–2 have one pending version each in `Figure/<figure>/review/`; their old
-formal images remain until approval. Fig. 5 and Extended Data Fig. 3 are
-frozen pending redesign. Extended Data Fig. 4 remains unchanged with Dashboard.
-The former Fig. 4 sensitivity figure is retained in
-`audit_archive/figure_maintenance/fig4_level1_adoption/`; its shared code remains
-unchanged. Use `Figure/Fig4/publish_approved.py` for the new Fig. 4 verification,
-not the legacy sensitivity builders. Sensitivity analysis is deferred to a later
-figure, and the existing Fig. 5 remains unchanged.
-
-`Figure/managed_sources.json` pins the rounded 2026-10-27 inputs for migrated
-figures. Five-level labels are derived only for figures; formal scores, ranks,
-CSV/SQLite and Dashboard are unchanged. Current numerical figure tables are in
-`output/figure_data/<figure>/{output,review}/`, each paired with an image manifest.
-Do not create numbered preview folders. See `Figure/README.md` for rebuild and
-explicit promotion commands. Dated scientific runs remain immutable audits.
-
-## Frozen baseline files
-
-- `output/2026-10-26/PlastPrior_results.csv`: publication values, ranks and Top-N membership.
-- `output/2026-10-26/PlastPrior_results.sqlite`: full analysis and retained evidence.
-- `output/2026-10-26/PlastPrior_dashboard.sqlite`: paired Dashboard details.
-- `output/2026-10-26/figure_data/`: numerical figure tables.
-- Image approval status is now tracked in `Figure/INDEX.md`; not every figure still uses this baseline.
-- `Figure/Final_Figures_20261026_Revised.pptx`: historical nine-figure review deck.
-
-The pre-existing `results` compatibility link now resolves to `output/2026-10-26`.
-Use the dated directory when selecting data; no `current` directory is needed.
-Historical runs remain under `audit_archive/`, separate from current outputs.
+The sections below describe earlier workspace recovery operations. Their recorded
+paths are historical evidence, not instructions to use or recreate old locations.
 
 ## Migration and recovery
 

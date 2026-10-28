@@ -1,17 +1,12 @@
-"""Keep the daily pair separate from immutable run archives and temporary stages.
-
-On POSIX, results is an atomically replaced directory symlink. Both files therefore
-switch generations together; an interrupted publication cannot mix two runs.
-"""
+"""Validate and replace one current result set; no dated delivery directories."""
 import csv
-from datetime import datetime, timezone
 import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
 import sqlite3
-from uuid import uuid4
+from .result_storage import install_package
 
 DAILY_NAMES = ('PlastPrior_results.csv', 'PlastPrior_dashboard.sqlite')
 
@@ -22,10 +17,13 @@ def sha256(path):
 
 
 def new_workspace(archive_root):
+    # The argument name is retained for API compatibility; this is temporary work.
     root = Path(archive_root).expanduser().absolute()
-    run = root / (datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:8])
-    (run / 'work').mkdir(parents=True)
-    return run / 'work'
+    work = root / 'work'
+    if root.exists() and any(root.iterdir()):
+        raise FileExistsError(f'Previous or active work exists; inspect before retrying: {root}')
+    work.mkdir(parents=True)
+    return work
 
 
 def compare_csv(baseline, candidate):
@@ -54,62 +52,35 @@ def compare_csv(baseline, candidate):
 
 
 def publish_daily(package, results_dir, archive_root, *, baseline_csv=None):
-    """Verify first, preserve any legacy directory, then atomically select the pair."""
-    requested = Path(results_dir).expanduser().absolute()
-    results = requested.parent.resolve() / requested.name  # Resolve parent aliases, not the active link.
-    archive = Path(archive_root).expanduser().resolve()
-    if archive == results or archive.is_relative_to(results):
-        raise ValueError('Audit archives must be outside the daily results directory.')
-    if os.name != 'posix':
-        raise RuntimeError('Atomic directory-link publication requires POSIX; verified archive retained.')
+    """Validate the paired package and replace a fixed, real result directory."""
+    results = Path(results_dir).expanduser().absolute()
+    work_root = Path(archive_root).expanduser().resolve()
     directory = Path(package['directory']).resolve()
-    if not directory.is_relative_to(archive):
-        raise ValueError('Package must be in the separate audit archive.')
+    if results == work_root or work_root.is_relative_to(results):
+        raise ValueError('Temporary work must be outside the current result directory.')
+    if not directory.is_relative_to(work_root):
+        raise ValueError('Package must be in the temporary workspace.')
     csv_path, detail_path = Path(package['csv']), Path(package['dashboard_sqlite'])
-    with sqlite3.connect(f'file:{detail_path}?mode=ro', uri=True) as db:
+    with sqlite3.connect(detail_path.as_uri()+'?mode=ro', uri=True) as db:
         if db.execute('PRAGMA integrity_check').fetchall() != [('ok',)]:
-            raise ValueError('Daily database integrity check failed.')
+            raise ValueError('Result database integrity check failed.')
         meta = dict(db.execute('SELECT key,value FROM metadata'))
         if meta['csv_sha256'] != sha256(csv_path):
-            raise ValueError('Daily CSV/database mismatch.')
+            raise ValueError('Result CSV/database mismatch.')
         if int(meta['row_count']) != db.execute('SELECT count(*) FROM compound_audit').fetchone()[0]:
-            raise ValueError('Daily row count mismatch.')
+            raise ValueError('Result row count mismatch.')
     baseline = Path(baseline_csv) if baseline_csv else results / DAILY_NAMES[0]
     regression = compare_csv(baseline, csv_path) if baseline.is_file() else None
-    daily = directory / 'daily'
-    daily.mkdir()
-    for source, name in zip((csv_path, detail_path), DAILY_NAMES):
-        # Hard links avoid a second large database while preserving a simple two-file directory.
-        try:
-            os.link(source, daily / name)
-        except OSError:
-            shutil.copy2(source, daily / name)
-        if sha256(source) != sha256(daily / name):
-            raise ValueError('Daily copy verification failed.')
-    manifest = dict(run_id=meta['run_id'], daily_files={name: sha256(daily / name) for name in DAILY_NAMES},
-                    regression=regression, archive=str(directory), results=str(results))
-    (directory / 'delivery_manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
-    results.parent.mkdir(parents=True, exist_ok=True)
-    pointer = results.with_name('.' + results.name + '-' + uuid4().hex + '.tmp')
-    pointer.symlink_to(os.path.relpath(daily, results.parent), target_is_directory=True)
-    legacy = None
-    try:
-        if results.exists() and not results.is_symlink():
-            if not results.is_dir():
-                raise ValueError('Daily destination is not a directory.')
-            legacy = archive / ('legacy-results-' + uuid4().hex[:8])
-            # Same-filesystem rename preserves every byte; never delete old audit records.
-            results.rename(legacy)
-            (directory / 'legacy_migration.json').write_text(json.dumps({
-                'original_path': str(results), 'archived_path': str(legacy),
-                'method': 'whole-directory rename; no files deleted or rewritten'}, indent=2) + '\n')
-        os.replace(pointer, results)
-    except BaseException:
-        if legacy is not None and not results.exists() and not results.is_symlink():
-            legacy.rename(results)
-        raise
-    finally:
-        pointer.unlink(missing_ok=True)
+    # The low-level export nests the browser projection; the current result
+    # directory presents the CSV and both databases together at its root.
+    dashboard_target = directory / DAILY_NAMES[1]
+    if detail_path.resolve() != dashboard_target:
+        shutil.move(str(detail_path), dashboard_target)
+        package['dashboard_sqlite'] = dashboard_target
+    manifest = dict(run_id=meta['run_id'], daily_files={name:sha256(directory/name) for name in DAILY_NAMES},
+                    regression=regression, result=str(results))
+    (directory/'delivery_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    install_package(directory, results)
     return manifest
 
 
@@ -124,9 +95,6 @@ def finish_run(work, results_dir, archive_root, *, keep_intermediates=False, bas
     if priority_migration_baseline is not None:
         if baseline_csv is not None:
             raise ValueError('Choose exact regression or explicit priority migration, not both.')
-        destination = Path(results_dir).expanduser().absolute()
-        if destination.exists() or destination.is_symlink():
-            raise ValueError('Priority migration requires a new results directory; preserve the old version.')
     package = export_results(work, work.parent / 'package', progress=progress)
     if priority_migration_baseline is not None:
         from .priority_migration import verify_priority_migration
@@ -134,5 +102,15 @@ def finish_run(work, results_dir, archive_root, *, keep_intermediates=False, bas
         (Path(package['directory']) / 'priority_migration.json').write_text(json.dumps(report, indent=2) + '\n')
     publish_daily(package, results_dir, archive, baseline_csv=baseline_csv)
     if not keep_intermediates:
-        shutil.rmtree(work)
+        shutil.rmtree(work.parent)
+    # Return usable current paths, not the removed temporary package.
+    old_directory = Path(package['directory'])
+    for key, value in list(package.items()):
+        if isinstance(value, Path) and value.is_relative_to(old_directory):
+            relative = value.relative_to(old_directory)
+            target = Path(results_dir).absolute()/relative
+            if not target.exists():
+                prefix = 'figure_data/_metadata' if relative.suffix=='.json' else 'figure_data/_dependencies'
+                target = Path(results_dir).absolute()/prefix/relative
+            package[key] = target
     return package

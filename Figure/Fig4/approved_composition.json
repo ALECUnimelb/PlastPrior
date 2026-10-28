@@ -4,37 +4,37 @@
   "approval": "User confirmed the three-panel Level1Composition figure and authorised formal Fig4 publication without other figure or scoring changes.",
   "images": {
     "Fig4.png": {
-      "path": "Figure/Level1Composition/output/Level1_composition.png",
+      "path": "result/figures/Fig4.png",
       "sha256": "7a2dc70758afbcd87982cd724b820c69ce758f91f7b323f5faaded02f0b90553"
     },
     "Fig4.pdf": {
-      "path": "Figure/Level1Composition/output/Level1_composition.pdf",
+      "path": "result/figures/Fig4.pdf",
       "sha256": "9a7d20db5eefe9b91b763fb3e4a6566d11e8421e340b35014c501fe26ecf9744"
     }
   },
   "tables": {
     "compound_membership.csv": {
-      "path": "output/figure_data/Level1Composition/review/compound_membership.csv",
+      "path": "result/figure_data/Fig4/compound_membership.csv",
       "sha256": "db51ef2f5ada6810de23d64b5f99f16de36a917bead4efc188a9340ae8f69415"
     },
     "use_counts.csv": {
-      "path": "output/figure_data/Level1Composition/review/use_counts.csv",
+      "path": "result/figure_data/Fig4/use_counts.csv",
       "sha256": "10b9af8b681321915beb5792ef4facca1934bfdfe4b8100485962062e9a52b8f"
     },
     "structure_counts.csv": {
-      "path": "output/figure_data/Level1Composition/review/structure_counts.csv",
+      "path": "result/figure_data/Fig4/structure_counts.csv",
       "sha256": "9cb9feaa8fa636ae24b44a35eed8193102d680b8684e660c1817742f2fcc79d0"
     },
     "reg_counts.csv": {
-      "path": "output/figure_data/Level1Composition/review/reg_counts.csv",
+      "path": "result/figure_data/Fig4/reg_counts.csv",
       "sha256": "5cfe67ecea56e1e46388ff83723e559dd7a13a55915bf1cdbb0505107b1835d0"
     },
     "compound_identity.csv": {
-      "path": "output/figure_data/Level1Identity/review/compound_identity.csv",
+      "path": "result/figure_data/Level1Identity/compound_identity.csv",
       "sha256": "c6d6263116cd7fa1b12b92c3beeacf9bbd16bab5dfe9cc2c33cb9442f7296248"
     },
     "classification.json": {
-      "path": "output/figure_data/Level1Identity/review/classification.json",
+      "path": "result/figure_data/Level1Identity/classification.json",
       "sha256": "fd2d5533d5d2b2357bc3c60880f1c6fb77ed6f240b2d82dd3bf9e9cfe356b03f"
     },
     "primary_use_annotations.csv": {
@@ -47,8 +47,8 @@
       "path": "Figure/Level1Composition/build.R",
       "sha256": "357f64d6c0c43d358bd956ca66d6f143fb375829baa022b05a4b5fd9622b5b97"
     },
-    "Figure/Level1Composition/output/manifest.json": {
-      "path": "Figure/Level1Composition/output/manifest.json",
+    "result/figure_data/_metadata/Level1Composition/manifest.json": {
+      "path": "result/figure_data/_metadata/Level1Composition/manifest.json",
       "sha256": "5d19a5f591d3ac343c740bf5d5a3b6959c5f4ecae35739a46d5aa1d6d0ef4fd8"
     },
     "Figure/Level1Identity/prepare.py": {

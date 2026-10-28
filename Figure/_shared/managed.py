@@ -1,19 +1,17 @@
-"""One official output and one review output per migrated figure.
-
-Legacy builders stay frozen. Running a migrated builder only replaces review;
-promotion is a separate explicit action after the user accepts that review.
-"""
+"""One current image/data set per figure; approval is catalog metadata only."""
 from pathlib import Path
 import argparse
 import csv
 import hashlib
 import importlib.util
 import json
+import os
 import shutil
 import sqlite3
 import subprocess
 import sys
 import tempfile
+from result_paths import figure_paths, relocated, verify_code, RESULT, manifest_path, artifact_path
 
 ROOT = Path(__file__).resolve().parents[2]
 FIGURES = ROOT / 'Figure'
@@ -47,37 +45,48 @@ def verify_sources():
 def code_hashes(folder):
     paths = [p for p in folder.rglob('*') if p.is_file() and p.suffix in {'.R','.py','.yml'}
              and not any(part in {'output','review','reference','audit','inputs','__pycache__'} or part.startswith('.') for part in p.relative_to(folder).parts)]
-    paths += [FIGURES/'_shared'/n for n in ('managed.py','managed.R','five_level_policy.json','palette.R','theme.R','export.R','validation.R')]
+    paths += [FIGURES/'_shared'/n for n in ('result_paths.py','managed.py','managed.R','five_level_policy.json','palette.R','theme.R','export.R','validation.R')]
     return {str(p.relative_to(ROOT)):sha(p) for p in sorted(paths)}
 
 def paths_for(figure,state):
-    return FIGURES/figure/state, ROOT/'output/figure_data'/figure/state
+    return figure_paths(figure, state)
 
 def replace_pair(image_stage,data_stage,image_target,data_target):
-    """Rollback both targets on an ordinary failure; discard temporary backups on success."""
-    pairs = [(image_stage,image_target),(data_stage,data_target)]
-    backups = []
-    installed = []
-    try:
-        for stage,target in pairs:
-            target.parent.mkdir(parents=True,exist_ok=True)
-            backup = None
-            if target.exists():
-                backup = Path(tempfile.mkdtemp(prefix='.previous-',dir=target.parent))
-                backup.rmdir()
-                target.rename(backup)
-            backups.append((target,backup))
-            stage.rename(target)
-            installed.append(target)
-    except Exception:
-        for target in installed:
-            shutil.rmtree(target)
-        for target,backup in reversed(backups):
-            if backup and backup.exists(): backup.rename(target)
-        raise
-    else:
-        for _,backup in backups:
-            if backup: shutil.rmtree(backup)
+    """Publish one figure's validated files without deleting neighbouring figures."""
+    sys.path.insert(0,str(ROOT))
+    from plastprior.result_storage import update_lock, replace_directory
+    if image_target != RESULT/'figures' or data_target.parent != RESULT/'figure_data':
+        raise ValueError('Figure destinations must be the fixed current result paths')
+    if not image_stage.is_dir() or not data_stage.is_dir():
+        raise FileNotFoundError('Both figure and table staging directories are required')
+    name = data_target.name
+    with update_lock(RESULT):
+        stage = Path(tempfile.mkdtemp(prefix='.figure-install-',dir=ROOT))
+        try:
+            shutil.copytree(RESULT,stage,dirs_exist_ok=True,copy_function=os.link)
+            # Hard links are only for untouched files. Never write through one.
+            old = manifest_path(name)
+            if old.exists():
+                record=json.loads(old.read_text())
+                for filename in record.get('outputs',record.get('output_hashes',{})):
+                    target=stage/artifact_path(name,filename).relative_to(RESULT)
+                    target.unlink(missing_ok=True)
+            new_data=stage/'figure_data'/name
+            if new_data.exists(): shutil.rmtree(new_data)
+            shutil.copytree(data_stage,new_data)
+            metadata=stage/'figure_data/_metadata'/name
+            if metadata.exists(): shutil.rmtree(metadata)
+            metadata.mkdir(parents=True)
+            (stage/'figures').mkdir(exist_ok=True)
+            for source in image_stage.iterdir():
+                if not source.is_file(): continue
+                target=(stage/'figures' if source.suffix in {'.png','.pdf','.xlsx'} else metadata)/source.name
+                target.unlink(missing_ok=True)
+                shutil.copy2(source,target)
+            replace_directory(stage,RESULT)
+        finally:
+            if stage.exists(): shutil.rmtree(stage)
+
 
 def update_catalog(figure,**changes):
     path = FIGURES/'catalog.json'
@@ -88,16 +97,18 @@ def update_catalog(figure,**changes):
 
 def refresh_index():
     catalog = json.loads((FIGURES/'catalog.json').read_text())
-    lines = ['# 图表清单','', '取图以本表为准。正式图位于 `output/`，待审图位于 `review/`。同一张图不保留编号预览。','',
-             '| 图 | 正式版状态 | 正式文件 | 待审文件 | 说明 |','|---|---|---|---|---|']
+    lines = ['# 图表清单','', '每个图号只有一套当前文件。状态由本表记录，生成新版替换同名文件，不保留并行正式/待审目录。','',
+             '| 图 | 当前状态 | 文件 | 说明 |','|---|---|---|---|']
     for fig,item in catalog['figures'].items():
-        formal = '五级版，已确认' if item['formal']=='current' else '历史版，尚未更新'
-        approved = f'[PNG]({fig}/output/{fig}.png) · [PDF]({fig}/output/{fig}.pdf)' if item['formal']=='current' else '暂勿用于新稿'
-        review = f'[PNG]({fig}/review/{fig}.png) · [PDF]({fig}/review/{fig}.pdf)' if item.get('review') else '—'
-        lines.append(f'| {fig} | {formal} | {approved} | {review} | {item["note"]} |')
-    lines += ['', '新版图读取 2026-10-27 的整数评分；五级分类仅在绘图层派生。正式 CSV、SQLite 和 Dashboard 未随之改为五级。',
-              '', '101 个 Level 1 化合物的外部分类型交接文件是待回传的研究输入，不属于待清理的图形预览。','']
+        status = '待审' if item['review'] else ('已确认' if item['formal']=='current' else '旧版，待更新')
+        links = f'[PNG](../result/figures/{fig}.png)'
+        if (RESULT/'figures'/f'{fig}.pdf').exists(): links += f' · [PDF](../result/figures/{fig}.pdf)'
+        lines.append(f'| {fig} | {status} | {links} | {item["note"]} |')
+    lines += ['', '五级分类仅在绘图层派生，当前 CSV 和 SQLite 的评分排名未改变。', '',
+              '明确保留：Level1_identity（名单）、Level1_classification_tree（分类树）、Sensitivity_analysis（旧敏感性分析）。',
+              '所有图片位于 `result/figures/`，数据位于 `result/figure_data/`，唯一审阅文件为 `result/Figures.pptx`。','']
     (FIGURES/'INDEX.md').write_text('\n'.join(lines))
+
 
 def run(folder):
     parser = argparse.ArgumentParser(description=__doc__)
@@ -142,24 +153,12 @@ def run(folder):
 
 def approve(figure):
     if figure not in MANAGED: raise ValueError('Figure is deferred, not eligible for promotion')
-    review,data_review=paths_for(figure,'review')
-    output,data_output=paths_for(figure,'output')
-    manifest=json.loads((review/'manifest.json').read_text())
+    manifest=relocated(json.loads(manifest_path(figure).read_text()))
+    assert manifest['status']=='review'
     assert manifest['source']==verify_sources()
-    assert manifest['code']==code_hashes(FIGURES/figure), 'Code changed after review; rebuild first'
-    for name,digest in manifest['outputs'].items(): assert sha(review/name)==digest
-    for name,digest in manifest['source_data'].items(): assert sha(data_review/name)==digest
-    image_stage=Path(tempfile.mkdtemp(prefix='.promoting-',dir=output.parent))
-    data_stage=Path(tempfile.mkdtemp(prefix='.promoting-',dir=data_output.parent))
-    try:
-        shutil.copytree(review,image_stage,dirs_exist_ok=True)
-        shutil.copytree(data_review,data_stage,dirs_exist_ok=True)
-        manifest['status']='approved'
-        manifest['source_data_dir']=str(data_output.relative_to(ROOT))
-        write_json(image_stage/'manifest.json',manifest)
-        replace_pair(image_stage,data_stage,output,data_output)
-        shutil.rmtree(review);shutil.rmtree(data_review)
-        update_catalog(figure,formal='current',review=False,note='已确认，可用于新稿')
-    finally:
-        for path in (image_stage,data_stage):
-            if path.exists(): shutil.rmtree(path)
+    verify_code(manifest['code'],code_hashes(FIGURES/figure))
+    for name,digest in manifest['outputs'].items(): assert sha(artifact_path(figure,name))==digest
+    for name,digest in manifest['source_data'].items(): assert sha(paths_for(figure,'review')[1]/name)==digest
+    manifest['status']='approved'
+    write_json(manifest_path(figure),manifest)
+    update_catalog(figure,formal='current',review=False,note='已确认，可用于新稿')

@@ -4,11 +4,11 @@ import csv,json,re,xml.etree.ElementTree as ET
 HERE=Path(__file__).resolve().parent
 
 def check(output=None,data=None):
-    output=Path(output) if output else HERE/'review'
+    output=Path(output) if output else HERE.parents[1]/'result/figures'
     rows=lambda p:list(csv.DictReader(p.open()))
     repo=HERE.parents[1]
     if data is None:
-        manifest=json.loads((output/'manifest.json').read_text())
+        manifest=json.loads((repo/'result/figure_data/_metadata'/HERE.name/'manifest.json').read_text())
         data=repo/manifest['source_data_dir']
     data=Path(data)
     columns=rows(data/'overlap/selected.csv')

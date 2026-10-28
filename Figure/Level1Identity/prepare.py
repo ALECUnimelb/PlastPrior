@@ -13,9 +13,12 @@ from rdkit.Chem import inchi
 
 ROOT = Path('/Users/ruiwang/Projects/APPs/PlastPrior')
 MODULE = ROOT / 'Figure/Level1Identity'
-DATA = ROOT / 'output/figure_data/Level1Identity/review'
+import os
+if 'PLASTPRIOR_CLASSIFICATION_STAGE' not in os.environ:
+    raise SystemExit('Provide PLASTPRIOR_CLASSIFICATION_STAGE for temporary classification preparation; current figure data are immutable inputs.')
+DATA = Path(os.environ['PLASTPRIOR_CLASSIFICATION_STAGE'])
 INPUT = ROOT / 'Figure/Level1Evidence/inputs/Level1_101_aligned_uses_en.csv'
-RESULT = ROOT / 'output/2026-10-27/PlastPrior_results.csv'
+RESULT = ROOT / 'result/PlastPrior_results.csv'
 POLICY = ROOT / 'Figure/_shared/five_level_policy.json'
 GROUPS = {
  'hal_non_aromatic': 'Halogenated non-aromatics',

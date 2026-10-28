@@ -24,6 +24,7 @@ preparation=importlib.util.module_from_spec(spec);spec.loader.exec_module(prepar
 sha=preparation.sha
 sys.path.insert(0,str(ROOT/'Figure/_shared'))
 from managed import replace_pair
+from result_paths import figure_paths, relocated, resolve, verify_code, RESULT, manifest_path
 
 
 def write_json(path,value):
@@ -31,12 +32,12 @@ def write_json(path,value):
 
 
 def paths(state):
-    return MODULE/state,ROOT/'output/figure_data'/NAME/state
+    return figure_paths(NAME, state)
 
 
 def code_hashes():
     files=[MODULE/n for n in ['prepare.py','build.R','export_excel.mjs','run_plot.py','source.json']]
-    files.append(ROOT/'Figure/_shared/managed.py')
+    files.extend([ROOT/'Figure/_shared/managed.py', ROOT/'Figure/_shared/result_paths.py'])
     return {str(p.relative_to(ROOT)):sha(p) for p in files}
 
 
@@ -106,16 +107,15 @@ def verify_pdf(path,payload,qa):
 
 def verify(state='review',working=True):
     folder,data=paths(state)
-    manifest=json.loads((folder/'manifest.json').read_text())
+    manifest=relocated(json.loads(manifest_path(NAME).read_text()))
     assert manifest['status']==('review' if state=='review' else 'approved')
     assert manifest['source_data_dir']==str(data.relative_to(ROOT))
-    assert set(p.name for p in folder.iterdir())==set(manifest['outputs'])|{'manifest.json'}
     assert {str(p.relative_to(data)) for p in data.rglob('*') if p.is_file()}==set(manifest['source_data'])
     for name,digest in manifest['outputs'].items():assert sha(folder/name)==digest,('Output changed',name)
     for name,digest in manifest['source_data'].items():assert sha(data/name)==digest,('Data changed',name)
     if working:
-        assert manifest['code']==code_hashes(),'SI code changed after review; rebuild before approval'
-        for path,digest in manifest['sources'].items():assert sha(ROOT/path)==digest,('Input changed',path)
+        verify_code(manifest['code'], code_hashes())
+        for path,digest in manifest['sources'].items():assert sha(resolve(path))==digest,('Input changed',path)
     payload=json.loads((data/'si_payload.json').read_text())
     qa=verify_xlsx(folder/f'{STEM}.xlsx',payload,manifest['qa']['workbook'])
     pdf=verify_pdf(folder/f'{NAME}.pdf',payload,manifest['qa']['figure'])
@@ -124,12 +124,13 @@ def verify(state='review',working=True):
 
 def refresh_index():
     catalog=json.loads((ROOT/'Figure/catalog.json').read_text())
-    lines=['# SI 文件清单','','每项只保留一个正式版和一个待审版。数据更新后先生成待审版；认可后才替换正式版。','',
-           '| 项目 | 正式版 | 待审版 | 说明 |','|---|---|---|---|']
+    lines=['# SI 文件清单','','每项只保留一套当前文件；确认与待审是状态，不是并行目录。','',
+           '| 项目 | 当前状态 | 文件 | 说明 |','|---|---|---|---|']
     for name,item in catalog.get('supplementary',{}).items():
-        links=lambda state:f'[Excel]({name}/{state}/{STEM}.xlsx) · [PDF]({name}/{state}/{name}.pdf)'
-        lines.append(f'| Level 1 evidence | {links("output") if item["formal"]=="current" else "尚无正式版"} | {links("review") if item["review"] else "—"} | {item["note"]} |')
-    lines+=['','[主图与扩展图清单](INDEX.md) · [SI 更新说明](SILevel1Evidence/README.md)','']
+        status='待审' if item['review'] else '已确认'
+        links=f'[Excel](../result/figures/{STEM}.xlsx) · [PDF](../result/figures/{name}.pdf)'
+        lines.append(f'| Level 1 evidence | {status} | {links} | {item["note"]} |')
+    lines+=['','[主图与扩展图清单](INDEX.md)','']
     (ROOT/'Figure/SI_INDEX.md').write_text('\n'.join(lines))
 
 
@@ -171,7 +172,7 @@ def build(args):
         shutil.rmtree(stage/'.qa');(stage/'figure_qa.json').unlink();(stage/'workbook_qa.json').unlink()
         (stage/f'{STEM}.xlsx.inspect.ndjson').unlink(missing_ok=True)
         for path,digest in payload['metadata']['sources'].items():
-            assert sha(ROOT/path)==digest,('Input modified during generation',path)
+            assert sha(resolve(path))==digest,('Input modified during generation',path)
         images,data_target=paths('review')
         manifest={'schema_version':1,'kind':'supplementary_table','status':'review','figure':NAME,
                   'run_id':payload['metadata']['run_id'],'sources':payload['metadata']['sources'],'code':code_hashes(),
@@ -196,20 +197,10 @@ def build(args):
 
 def approve():
     verify('review',working=True)
-    review,data_review=paths('review');output,data_output=paths('output')
-    stage=Path(mkdtemp(prefix='.promoting-',dir=MODULE))
-    data_output.parent.mkdir(parents=True,exist_ok=True)
-    data_stage=Path(mkdtemp(prefix='.promoting-',dir=data_output.parent))
-    try:
-        shutil.copytree(review,stage,dirs_exist_ok=True);shutil.copytree(data_review,data_stage,dirs_exist_ok=True)
-        manifest=json.loads((stage/'manifest.json').read_text());manifest['status']='approved'
-        manifest['source_data_dir']=str(data_output.relative_to(ROOT));write_json(stage/'manifest.json',manifest)
-        replace_pair(stage,data_stage,output,data_output)
-        shutil.rmtree(review);shutil.rmtree(data_review)
-        register(formal='current',review=False,note=f'{manifest["facts"]["cohort_size"]} 个化合物，已认可')
-    finally:
-        for p in [stage,data_stage]:
-            if p.exists():shutil.rmtree(p)
+    manifest=relocated(json.loads(manifest_path(NAME).read_text()))
+    manifest['status']='approved'
+    write_json(manifest_path(NAME),manifest)
+    register(formal='current',review=False,note=f'{manifest["facts"]["cohort_size"]} 个化合物，已认可')
 
 
 if __name__=='__main__':
@@ -221,6 +212,6 @@ if __name__=='__main__':
     args=parser.parse_args()
     if args.approve:approve()
     elif args.verify:
-        state='review' if paths('review')[0].exists() else 'output'
+        state='review' if json.loads(manifest_path(NAME).read_text())['status']=='review' else 'output'
         print(json.dumps(verify(state,working=state=='review'),ensure_ascii=False,indent=2))
     else:build(args)

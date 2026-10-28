@@ -1,3 +1,4 @@
+stop("This experimental export is retired. Use the current figure entrypoints in Figure/INDEX.md.")
 #!/usr/bin/env Rscript
 # Figure contract: quantitative grid; complete five-level Level 1 cohort.
 # Claim: identify all 101 dual-vH compounds and describe their uses and evidence.
@@ -8,8 +9,8 @@
 suppressPackageStartupMessages({library(ggplot2); library(grid)})
 root <- '/Users/ruiwang/Projects/APPs/PlastPrior'
 module <- file.path(root, 'Figure/Level1Evidence')
-out <- file.path(module, 'output')
-data_out <- file.path(root, 'output/figure_data/Level1Evidence/review')
+out <- file.path(root,'result/figures',basename(module),'images')
+data_out <- file.path(root, 'result/figures/Level1Evidence/review/data')
 dir.create(out, recursive=TRUE, showWarnings=FALSE)
 dir.create(data_out, recursive=TRUE, showWarnings=FALSE)
 source(file.path(root, 'Figure/_shared/theme.R'))
@@ -19,9 +20,9 @@ for (p in c('readr','jsonlite','digest','ragg','svglite')) stopifnot(requireName
 sha <- function(p) digest::digest(file=p, algo='sha256', serialize=FALSE)
 write_json <- function(x,p) jsonlite::write_json(x,p,auto_unbox=TRUE,pretty=TRUE,na='null')
 input_path <- file.path(module, 'inputs/Level1_101_aligned_uses_en.csv')
-result_path <- file.path(root, 'output/2026-10-27/PlastPrior_results.csv')
+result_path <- file.path(root, 'result/PlastPrior_results.csv')
 policy_path <- file.path(root, 'Figure/_shared/five_level_policy.json')
-config_path <- file.path(root, 'output/2026-10-27/scoring_config.json')
+config_path <- file.path(root, 'result/scoring_config.json')
 lock <- jsonlite::fromJSON(file.path(root,'Figure/managed_sources.json'))
 source_paths <- c(input_path,result_path,policy_path,config_path)
 hashes_before <- setNames(vapply(source_paths,sha,character(1)),source_paths)

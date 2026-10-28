@@ -1,58 +1,40 @@
-# Daily results and audit archives
+# Current result storage
 
-For the current verified local release, use `output/2026-10-26/`, containing
-the publication CSV, full analysis SQLite, paired Dashboard SQLite and numerical
-figure tables. Images and PPTX files are under `Figure/`. The existing `results`
-compatibility link points to this dated directory. See
-[workspace location](workspace_location.md) for migration verification and recovery.
-The remaining sections describe the delivery pipeline's run-archive structure.
+`result/` is the only persistent generated-result location. Its public entries are:
 
-Use these two files together:
+- `PlastPrior_results.csv`
+- `PlastPrior_results.sqlite`
+- `PlastPrior_dashboard.sqlite`
+- `figure_data/`: one numerical input set per figure
+- `figures/`: flat PNG/PDF images and current SI workbook
+- `Figures.pptx` by default: the single review presentation, replaced on update.
+  A user-renamed sole PPTX keeps its name; the generator does not add another.
 
-- `results/PlastPrior_results.csv`: 60 columns; one row per full InChIKey.
-- `results/PlastPrior_dashboard.sqlite`: paired browser details, family evidence,
-  embedded field dictionary and interpretation guide.
+`figure_data/_metadata/` holds scoring configuration, source/build records and
+validation. Its `manifest.json` records verified relocation mappings without
+rewriting original provenance. `figure_data/_dependencies/` holds the immutable
+baseline still needed by frozen figures/scenario export and the classification
+handoff awaiting a return. These are research dependencies, not alternative
+current result sets. Do not delete them until their consumers no longer need them.
 
-`results` is a directory symlink on POSIX, pointing to one verified run's `package/daily`.
-The link is switched atomically, so CSV and SQLite always come from the same run.
-The browser verifies the exact CSV SHA-256. Do not edit or re-save one member of a pair.
-Native Windows atomic publication is not implemented; export_results still produces
-an independently verified package and does not require symbolic links.
+Each figure has one current image/data set. `Figure/catalog.json`, `INDEX.md` and
+`SI_INDEX.md` record approval, pending review or legacy status. Rebuilding replaces
+the same files and marks review; acceptance changes status without making a second
+copy. Retained identity-list, tree and sensitivity images are explicit exceptions
+to manuscript-only selection. Other exploratory outputs are retired.
 
-## Archives
+Build in temporary staging, validate, then replace the complete set with rollback.
+Figure publication swaps a staged result tree so images and tables stay paired.
+Unchanged files may be hard-linked into temporary staging; never edit those links
+in place. New files must replace links. Stop readers during the replacement window.
+Data refresh with existing figures is blocked until dependent data are refreshed
+together. Layout/storage maintenance must not recalculate scores or ranks.
 
-`audit_archive/<run>/package/` retains the complete `PlastPrior_results.sqlite`,
-publication CSV, browser database, readable dictionary and README, and delivery
-manifest. Daily files are hard links when supported, avoiding duplicate database
-storage. Treat generated files as read-only; edit a separate copy for analysis.
-
-The full archive preserves all 251 original compound fields, historical results,
-source memberships and retained intermediate evidence under the compact-v2 contract.
-`chemical_family_audit` adds per-compound structural annotations separately.
-`run_metadata.chemical_families` records rules, version, RDKit version and coverage.
-Original source input bytes remain in `data/`; the audit database does not contain
-all original input files or original stage-file bytes.
-
-Pre-existing `results` directories are moved whole into `audit_archive/legacy-results-*`.
-The migration record maps their old and new root paths; files are not deleted or
-rewritten. Historical logs retain their original paths. Earlier audit artifacts and
-online verification evidence remain in that preserved directory tree.
-
-## Running
-
-```sh
-python main.py --rank-priority --require-supporting-inputs
-```
-
-Both CLI and Notebook create a fresh `audit_archive/<run>/work` directory. Successful
-runs export and validate the archive, compare existing publication values with the
-previous daily CSV, publish the pair, and remove temporary stage files. Failures keep
-the old daily pair and retain their workspace. `--keep-intermediates` (Notebook:
-`KEEP_INTERMEDIATES=True`) preserves stage files for partial-stage investigation.
-`--baseline-csv PATH` can supply an explicit regression baseline. A scientific change
-stops publication for investigation; family labels alone may differ.
-
-If a run fails after export, its package and any delivery manifest remain available;
-inspect the recorded state before retrying. Run archives are never automatically pruned.
-The complete rerun has a multi-gigabyte working peak even though only two files are
-visible in results. These artifacts and archives are ignored by Git.
+Run `.venv/bin/python Figure/verify_figures.py` for scientific/provenance checks,
+and `node Figure/update_ppt.mjs` for the fixed presentation. It uses current
+catalog status and never auto-approves a figure. The deck contains only Fig. 1–5
+and Extended Data Fig. 1–4 (nine slides). Standalone Fig. 3b, SI evidence pages,
+identity/tree figures and old sensitivity plots are excluded from the deck.
+Temporary QA renders are removed.
+No `output/`, `results`, dated result directories or extra PPTs are created.
+Generated results and the local AGENTS.md agreement remain excluded from Git.

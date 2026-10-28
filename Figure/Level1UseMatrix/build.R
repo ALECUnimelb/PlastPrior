@@ -1,3 +1,4 @@
+stop("This experimental export is retired. Use the current figure entrypoints in Figure/INDEX.md.")
 #!/usr/bin/env Rscript
 # Companion panel to the unchanged large-font Level 1 classification tree.
 # All 101 compounds counted once by primary_use and structural display group.
@@ -5,12 +6,13 @@
 # width_mm = 260, height_mm = 260; separate review panel, not yet assembled.
 suppressPackageStartupMessages(library(grid))
 root <- '/Users/ruiwang/Projects/APPs/PlastPrior'
+source(file.path(root,'Figure/_shared/result_paths.R'))
 module <- file.path(root,'Figure/Level1UseMatrix')
-out <- file.path(module,'output')
-data_out <- file.path(root,'output/figure_data/Level1UseMatrix/review')
-input <- file.path(root,'output/figure_data/Level1Identity/review/compound_identity.csv')
-classification_path <- file.path(root,'output/figure_data/Level1Identity/review/classification.json')
-tree_out <- file.path(root,'Figure/Level1IdentityTree/output')
+out <- file.path(root,'result/figures',basename(module),'images')
+data_out <- file.path(root,'result/figures/Level1UseMatrix/review/data')
+input <- file.path(root,'result/figures/Level1Identity/review/data/compound_identity.csv')
+classification_path <- file.path(root,'result/figures/Level1Identity/review/data/classification.json')
+tree_out <- file.path(root,'result/figures/Level1IdentityTree/images')
 tree_manifest_path <- file.path(tree_out,'manifest.json')
 dir.create(out,recursive=TRUE,showWarnings=FALSE)
 dir.create(data_out,recursive=TRUE,showWarnings=FALSE)
@@ -23,9 +25,9 @@ tree_manifest <- jsonlite::fromJSON(tree_manifest_path)
 classification <- jsonlite::fromJSON(classification_path)
 stopifnot(tree_manifest$body_font_pt==11.5,tree_manifest$source_data_hash==sha(input))
 for(f in names(tree_manifest$output_hashes)) stopifnot(sha(file.path(tree_out,f))==tree_manifest$output_hashes[[f]])
-for(p in names(classification$source_hashes)) stopifnot(sha(file.path(root,p))==classification$source_hashes[[p]])
+for(p in names(classification$source_hashes)) stopifnot(sha(relocated_result_path(root,p))==classification$source_hashes[[p]])
 d <- read.csv(input,stringsAsFactors=FALSE,check.names=FALSE)
-full <- readr::read_csv(file.path(root,'output/2026-10-27/PlastPrior_results.csv'),show_col_types=FALSE)
+full <- readr::read_csv(file.path(root,'result/PlastPrior_results.csv'),show_col_types=FALSE)
 idx <- match(d$inchikey,full$inchikey)
 stopifnot(nrow(d)==101L,!anyDuplicated(d$inchikey),!anyNA(idx),all(nzchar(d$primary_use)),
           all(d$Figure_priority_level==1),all(d$Hazard_score>=12),all(d$Exposure_score>=12))
@@ -37,7 +39,7 @@ colours <- setNames(c('#3A7582','#687FA9','#947BAC','#AA8650','#A45F62','#658B66
 codes <- setNames(LETTERS[1:9],groups)
 stopifnot(setequal(groups,unique(d$structure_group)))
 # Verify the companion actually uses the same A-I mapping as the tree.
-tree_leaves <- readr::read_csv(file.path(root,'output/figure_data/Level1IdentityTree/review/tree_leaves.csv'),show_col_types=FALSE)
+tree_leaves <- readr::read_csv(file.path(root,'result/figures/Level1IdentityTree/review/data/tree_leaves.csv'),show_col_types=FALSE)
 stopifnot(all(tree_leaves$tree_group_code==unname(codes[tree_leaves$structure_group])))
 use_counts <- as.data.frame(table(d$primary_use),stringsAsFactors=FALSE)
 names(use_counts)<-c('primary_use','compound_count')

@@ -21,16 +21,17 @@ class DeliveryTests(unittest.TestCase):
         work.mkdir(parents=True)
         fixture(work)
         self.package = export_results(work, work.parent / 'package')
-        self.results = self.root / 'results'
+        self.results = self.root / 'result'
 
-    def test_legacy_directory_preserved_and_only_pair_visible(self):
+    def test_current_directory_replaced_and_inputs_preserved(self):
         self.results.mkdir()
         (self.results / 'important.txt').write_text('old evidence')
         manifest = publish_daily(self.package, self.results, self.archive)
-        self.assertTrue(self.results.is_symlink())
-        self.assertEqual({p.name for p in self.results.iterdir()}, set(DAILY_NAMES))
-        old = next(self.archive.glob('legacy-results-*'))
-        self.assertEqual((old / 'important.txt').read_text(), 'old evidence')
+        self.assertFalse(self.results.is_symlink())
+        self.assertTrue(set(DAILY_NAMES) <= {p.name for p in self.results.iterdir()})
+        self.assertTrue((self.results/'PlastPrior_results.sqlite').is_file())
+        self.assertEqual((self.results/'figure_data/_dependencies/important.txt').read_text(), 'old evidence')
+        self.assertFalse(list(self.archive.glob('legacy-results-*')))
         self.assertEqual(len(manifest['daily_files']), 2)
 
     def test_regression_blocks_publication_and_preserves_previous_directory(self):
@@ -46,11 +47,11 @@ class DeliveryTests(unittest.TestCase):
     def test_pointer_failure_restores_legacy_directory(self):
         self.results.mkdir()
         (self.results / 'evidence').write_text('preserve')
-        with patch('plastprior.delivery.os.replace', side_effect=OSError('interrupted')):
+        with patch('plastprior.result_storage.os.replace', side_effect=OSError('interrupted')):
             with self.assertRaises(OSError):
                 publish_daily(self.package, self.results, self.archive)
         self.assertEqual((self.results / 'evidence').read_text(), 'preserve')
-        self.assertFalse(list(self.root.glob('.results-*.tmp')))
+        self.assertFalse(list(self.root.glob('.result-*')))
 
     def test_comparison_preserves_missing_zero_and_ties(self):
         result = compare_csv(self.package['csv'], self.package['csv'])
@@ -63,7 +64,7 @@ class DeliveryTests(unittest.TestCase):
             publish_daily(self.package, self.results, self.archive)
         self.assertFalse(self.results.exists())
 
-    def test_second_generation_switches_both_files_and_retains_old_package(self):
+    def test_second_generation_replaces_fixed_directory(self):
         publish_daily(self.package, self.results, self.archive)
         old = self.results.resolve()
         work = self.archive / 'second' / 'work'
@@ -71,7 +72,7 @@ class DeliveryTests(unittest.TestCase):
         fixture(work)
         second = export_results(work, work.parent / 'package')
         manifest = publish_daily(second, self.results, self.archive)
-        self.assertNotEqual(self.results.resolve(), old)
+        self.assertEqual(self.results.resolve(), old)
         self.assertTrue(all((old / name).exists() for name in DAILY_NAMES))
         self.assertEqual(manifest['regression']['changed_values'], 0)
 

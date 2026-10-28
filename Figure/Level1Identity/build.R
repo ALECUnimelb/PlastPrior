@@ -5,8 +5,10 @@
 suppressPackageStartupMessages(library(grid))
 root <- '/Users/ruiwang/Projects/APPs/PlastPrior'
 module <- file.path(root,'Figure/Level1Identity')
-data_dir <- file.path(root,'output/figure_data/Level1Identity/review')
-out <- file.path(module,'output')
+data_dir <- file.path(root,'result/figure_data/Level1Identity')
+args <- commandArgs(trailingOnly=TRUE)
+if (length(args)!=1) stop('Run through Figure/run_retained.py')
+out <- args[[1]]
 dir.create(out,recursive=TRUE,showWarnings=FALSE)
 source(file.path(root,'Figure/_shared/theme.R'))
 font <- resolve_manuscript_font()
@@ -106,9 +108,9 @@ caption <- c(
  'Full identifiers, CAS numbers, input SMILES, original use annotations, structure flags, scores and ranks are provided in the accompanying source-data CSV. No food-contact, biomonitoring, score-distribution or regulatory panel is included in this identity figure.',
  sprintf('Review layout: %.0f x %.0f mm; body text %.1f pt. This wide full-name proof is not intended to be reduced to a journal double-column width without reflow.',width_mm,height_mm,body_size)
 )
-writeLines(caption,file.path(module,'captions.txt'))
+writeLines(caption,file.path(out,'captions.txt'))
 sha <- function(p) digest::digest(file=p,algo='sha256',serialize=FALSE)
-outputs <- list.files(out,full.names=TRUE);outputs<-outputs[basename(outputs)!='manifest.json']
+outputs <- list.files(out,full.names=TRUE);outputs<-outputs[basename(outputs)!='manifest.json' & !dir.exists(outputs)]
 manifest <- list(status='review',backend='R',width_mm=width_mm,height_mm=height_mm,
  font=font,body_font_pt=body_size,cohort_count=101,rendered_unique_names=101,
  group_counts=report$group_counts,classification=report,source_scores_ranks_unchanged=TRUE,

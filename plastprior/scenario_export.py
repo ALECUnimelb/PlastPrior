@@ -1,6 +1,6 @@
 """Versioned rescore of a frozen export, retaining all original evidence tables.
 
-Run: python -m plastprior.scenario_export --source output/2026-10-26 --output output/2026-10-27
+Run: python -m plastprior.scenario_export --source result/figure_data/_dependencies/baseline --output result
 The source and its embedded stage archives are never rewritten. In the new full
 archive, current_compounds is the authoritative current view; compounds and
 embedded stage artifacts retain their baseline meaning for audit reconstruction.
@@ -35,8 +35,8 @@ def quote(value):
 def export_scenario(source, output, policy=None):
     source, output = Path(source).resolve(), Path(output).absolute()
     policy = default_policy() if policy is None else policy
-    if output.exists() or output.is_relative_to(source):
-        raise ValueError('Output must be a new directory outside the source export.')
+    if output == source or output.is_relative_to(source):
+        raise ValueError('Output must not replace the evidence baseline or a directory inside it.')
     names = ['PlastPrior_results.csv', 'PlastPrior_results.sqlite', 'PlastPrior_dashboard.sqlite']
     hashes = {name: sha(source / name) for name in names}
     with (source / names[0]).open(newline='') as f:
@@ -119,7 +119,8 @@ def export_scenario(source, output, policy=None):
         (staging/'scenario_manifest.json').write_text(json.dumps(summary,indent=2)+'\n')
         if {name:sha(source/name) for name in names} != hashes:
             raise ValueError('Source changed during scoring.')
-        staging.rename(output)
+        from .result_storage import install_package
+        install_package(staging, output)
     return summary
 
 

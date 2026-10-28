@@ -129,7 +129,7 @@ but an exact frozen bundle must be obtained separately.
 3. Run the initial inspection from the project root:
 
    ```text
-   python main.py --require-supporting-inputs --output-dir results/inspection
+   python main.py --require-supporting-inputs --output-dir result
    ```
 
 4. Review `source_inventory.csv`, `table_dimensions.csv` and

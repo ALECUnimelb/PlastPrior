@@ -163,8 +163,8 @@ def make_payload(run_dir=None, annotations=None, policy_path=None):
     annotation=Path(annotations).resolve() if annotations else ROOT/default['annotations']
     policy_file=Path(policy_path).resolve() if policy_path else ROOT/default['policy']
     source=run_dir/'PlastPrior_results.csv'
-    manifest_file=run_dir/'scenario_manifest.json'
-    config_file=run_dir/'scoring_config.json'
+    manifest_file=run_dir/'figure_data/_metadata/scenario_manifest.json'
+    config_file=run_dir/'figure_data/_metadata/scoring_config.json'
     manifest=json.loads(manifest_file.read_text())
     config=json.loads(config_file.read_text())
     if sha(source) != manifest['csv_sha256'] or config != manifest['policy']:

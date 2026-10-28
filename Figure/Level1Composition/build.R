@@ -1,28 +1,30 @@
+stop("This experimental export is retired. Use the current figure entrypoints in Figure/INDEX.md.")
 #!/usr/bin/env Rscript
 # Three descriptive composition panels. No scoring or ranking calculations.
 # Review canvas: width_mm = 320, height_mm = 245; Arial 11.5 pt labels.
 suppressPackageStartupMessages(library(grid))
 root <- '/Users/ruiwang/Projects/APPs/PlastPrior'
+source(file.path(root,'Figure/_shared/result_paths.R'))
 module <- file.path(root,'Figure/Level1Composition')
-out <- file.path(module,'output')
-data_out <- file.path(root,'output/figure_data/Level1Composition/review')
+out <- file.path(root,'result/figures',basename(module),'images')
+data_out <- file.path(root,'result/figures/Level1Composition/review/data')
 dir.create(out,recursive=TRUE,showWarnings=FALSE)
 dir.create(data_out,recursive=TRUE,showWarnings=FALSE)
 source(file.path(root,'Figure/_shared/theme.R'))
 font <- if(tolower(resolve_manuscript_font())=='arial') 'Arial' else 'sans'
 sha <- function(p) digest::digest(file=p,algo='sha256',serialize=FALSE)
-identity_path <- file.path(root,'output/figure_data/Level1Identity/review/compound_identity.csv')
-classification_path <- file.path(root,'output/figure_data/Level1Identity/review/classification.json')
-full_path <- file.path(root,'output/2026-10-27/PlastPrior_results.csv')
+identity_path <- file.path(root,'result/figures/Level1Identity/review/data/compound_identity.csv')
+classification_path <- file.path(root,'result/figures/Level1Identity/review/data/classification.json')
+full_path <- file.path(root,'result/PlastPrior_results.csv')
 protected <- c(identity_path,classification_path,full_path,unlist(lapply(
  c('Level1Evidence','Level1Identity','Level1IdentityTree','Level1UseMatrix','Level1UseTreemap'),
- function(m) list.files(file.path(root,'Figure',m,'output'),full.names=TRUE))))
+ function(m) list.files(file.path(root,'result/figures',m,'images'),full.names=TRUE))))
 before <- setNames(vapply(protected,sha,character(1)),protected)
 d <- as.data.frame(readr::read_csv(identity_path,show_col_types=FALSE))
 full <- as.data.frame(readr::read_csv(full_path,show_col_types=FALSE))
 classification <- jsonlite::fromJSON(classification_path)
 for(p in names(classification$source_hashes))
- stopifnot(sha(file.path(root,p))==classification$source_hashes[[p]])
+ stopifnot(sha(relocated_result_path(root,p))==classification$source_hashes[[p]])
 idx <- match(d$inchikey,full$inchikey)
 stopifnot(nrow(d)==101L,!anyDuplicated(d$inchikey),!anyNA(idx),all(d$Figure_priority_level==1),
  setequal(d$inchikey,full$inchikey[full$Hazard_score>=12 & full$Exposure_score>=12]))

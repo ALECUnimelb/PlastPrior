@@ -5,10 +5,13 @@
 # width_mm = 380, height_mm = 380: a full-name review figure, not a reduced print.
 suppressPackageStartupMessages(library(grid))
 root <- '/Users/ruiwang/Projects/APPs/PlastPrior'
+source(file.path(root,'Figure/_shared/result_paths.R'))
 module <- file.path(root,'Figure/Level1IdentityTree')
-out <- file.path(module,'output')
-data_dir <- file.path(root,'output/figure_data/Level1Identity/review')
-tree_data <- file.path(root,'output/figure_data/Level1IdentityTree/review')
+args <- commandArgs(trailingOnly=TRUE)
+if (length(args)!=1) stop('Run through Figure/run_retained.py')
+out <- args[[1]]
+data_dir <- file.path(root,'result/figure_data/Level1Identity')
+tree_data <- file.path(out,'source_data')
 dir.create(out,recursive=TRUE,showWarnings=FALSE)
 dir.create(tree_data,recursive=TRUE,showWarnings=FALSE)
 source(file.path(root,'Figure/_shared/theme.R'))
@@ -17,7 +20,7 @@ d <- read.csv(file.path(data_dir,'compound_identity.csv'),stringsAsFactors=FALSE
 report <- jsonlite::fromJSON(file.path(data_dir,'classification.json'))
 sha <- function(p) digest::digest(file=p,algo='sha256',serialize=FALSE)
 input_hash <- sha(file.path(data_dir,'compound_identity.csv'))
-for(p in names(report$source_hashes)) stopifnot(sha(file.path(root,p))==report$source_hashes[[p]])
+for(p in names(report$source_hashes)) stopifnot(sha(relocated_result_path(root,p))==report$source_hashes[[p]])
 stopifnot(nrow(d)==101L,!anyDuplicated(d$inchikey),all(d$inchikey==d$regenerated_inchikey))
 groups <- c('hal_non_aromatic','hal_aromatic_chx','hal_aromatic_o','hal_aromatic_ns','hal_heterocycle',
             'nonhal_aromatic_ch','nonhal_o','nonhal_heterocycle','nonhal_other')
@@ -155,8 +158,8 @@ writeLines(c('Structure-based classification tree of 101 Level 1 compounds.',
  'The central cohort connects to nine structure-based display groups (A–I), each of which connects to its member compounds. Each outer point represents one unique InChIKey; all 101 full names are shown. Group definitions and names are identical to the accompanying approved identity list. Counts appear in the central key.',
  'This is a categorical membership tree, not a molecular similarity network, clustering dendrogram or phylogeny. Branch lengths, angles and point positions do not encode risk, rank, similarity or quantitative distance. Angular spacing allows complete names to remain legible; it is not a proportional composition chart. Leaf order is alphabetical within each group.',
  'X denotes F, Cl, Br or I. The mutually exclusive assignment rules are preserved in the accompanying classification.json; the structures all regenerate their supplied InChIKeys. Original scores, ranks, Level 1 membership and the liked list figure are unchanged.',
- 'The 380 x 380 mm full-name version uses 11.5 pt outer names and 10.5 pt central group labels. Long names wrap and angular spacing is reallocated to avoid overlap. Final manuscript sizing requires reflow rather than direct reduction.'),file.path(module,'captions.txt'))
-outputs<-list.files(out,full.names=TRUE);outputs<-outputs[basename(outputs)!='manifest.json']
+ 'The 380 x 380 mm full-name version uses 11.5 pt outer names and 10.5 pt central group labels. Long names wrap and angular spacing is reallocated to avoid overlap. Final manuscript sizing requires reflow rather than direct reduction.'),file.path(out,'captions.txt'))
+outputs<-list.files(out,full.names=TRUE);outputs<-outputs[basename(outputs)!='manifest.json' & !dir.exists(outputs)]
 jsonlite::write_json(list(status='review',backend='R',width_mm=380,height_mm=380,body_font_pt=body_size,
  cohort_count=101,group_count=9,edge_count=110,source_data_hash=input_hash,
  label_rectangle_overlaps=length(collisions),label_bounds_mm=label_bounds,

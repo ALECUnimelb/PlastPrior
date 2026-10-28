@@ -40,4 +40,7 @@ class ExportTests(unittest.TestCase):
             with sqlite3.connect(output/detail.name) as db:
                 meta=dict(db.execute('SELECT key,value FROM metadata'))
                 self.assertEqual(meta['csv_sha256'],sha(output/csv_path.name))
-            with self.assertRaises(ValueError): export_scenario(source,output)
+            export_scenario(source,output)
+            self.assertFalse(output.is_symlink())
+            self.assertFalse(list(root.glob('.new-previous')))
+            self.assertEqual(before,{p.name:sha(p) for p in source.iterdir()})

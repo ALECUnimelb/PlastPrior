@@ -21,7 +21,7 @@ class ApprovedDataTests(unittest.TestCase):
         lock = json.loads((ROOT/'Figure/Fig4/approved_composition.json').read_text())
         for name, record in lock['tables'].items():
             shutil.copy2(ROOT/record['path'], self.folder/name)
-        self.publication = ROOT/'output/2026-10-27/PlastPrior_results.csv'
+        self.publication = ROOT/'result/PlastPrior_results.csv'
 
     def mutate(self, name, change):
         path = self.folder/name

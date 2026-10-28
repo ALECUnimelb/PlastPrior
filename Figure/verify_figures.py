@@ -11,11 +11,12 @@ from pypdf import PdfReader
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'Figure/_shared'))
 from managed import code_hashes, paths_for, sha, verify_sources
+from result_paths import relocated, verify_code, verify_digest, manifest_path, artifact_path, receipt
 
 
 def verify_manifest(figure, state, current, profile, legacy, relocations, working_snapshot=True):
-    folder = ROOT/'Figure'/figure/state
-    manifest = json.loads((folder/'manifest.json').read_text())
+    folder = paths_for(figure, state)[0]
+    manifest = relocated(json.loads(manifest_path(figure).read_text()))
     if not current:
         assert manifest['source'] == legacy, (figure, state, 'source')
     elif working_snapshot:
@@ -25,22 +26,20 @@ def verify_manifest(figure, state, current, profile, legacy, relocations, workin
     if current:
         assert manifest['status'] == ('review' if state == 'review' else 'approved')
         if working_snapshot:
-            assert manifest['code'] == code_hashes(folder.parent), (figure, state, 'stale code')
-        assert set(p.name for p in folder.iterdir()) == set(manifest['outputs']) | {'manifest.json'}
+            verify_code(manifest['code'], code_hashes(ROOT/'Figure'/figure))
         assert all(Path(name).suffix in {'.png', '.pdf'} for name in manifest['outputs'])
         assert manifest['source_data_dir'] == str(paths_for(figure, state)[1].relative_to(ROOT))
     elif figure in {'Fig4', 'Fig5', 'ExtendedDataFig3', 'ExtendedDataFig4'}:
         for name, expected in manifest['code'].items():
-            observed = sha(ROOT/name)
-            if observed != expected:
-                record = relocations.get(name, {})
-                assert record.get('before_sha256') == expected and record.get('after_sha256') == observed, (figure, name, 'changed frozen code')
+            verify_digest(name, expected)
     # A superseded formal image remains verifiable against its original build
     # record, even when the working source has advanced to a pending review.
     for name, expected in manifest['outputs'].items():
-        assert sha(folder/name) == expected, (figure, state, name, 'changed output')
+        if receipt().get('layout_cleanup',{}).get('retired_outputs',{}).get(figure,{}).get(name)==expected:
+            continue
+        assert sha(artifact_path(figure,name)) == expected, (figure, state, name, 'changed output')
         if current and Path(name).suffix == '.pdf':
-            document = PdfReader(folder/name)
+            document = PdfReader(artifact_path(figure,name))
             assert len(document.pages) == 1
             assert len(document.pages[0].extract_text()) > 100, (figure, state, name, 'blank or non-editable PDF')
     data = ROOT/manifest['source_data_dir']
@@ -116,15 +115,9 @@ def main():
     relocations = json.loads(ledger.read_text()) if ledger.exists() else {}
     report = {'passed': True, 'run_id': profile['run_id'], 'level_counts': verify_policy(profile), 'figures': {}}
     for figure, item in catalog.items():
-        # An approved snapshot keeps its own provenance while a newer review is
-        # pending. Working code/policy must match the review, not both versions.
-        manifest = verify_manifest(figure, 'output', item['formal'] == 'current', profile, legacy, relocations, working_snapshot=not item['review'])
-        record = {'formal': item['formal'], 'review': item['review']}
-        if item['review']:
-            assert item['managed']
-            manifest = verify_manifest(figure, 'review', True, profile, legacy, relocations)
-        else:
-            assert not (ROOT/'Figure'/figure/'review').exists(), (figure, 'unlisted review')
+        state = 'review' if item['review'] else 'output'
+        manifest = verify_manifest(figure,state,item['review'] or item['formal']=='current',profile,legacy,relocations)
+        record = {'formal':item['formal'],'review':item['review']}
         if (item['review'] or item['formal'] == 'current') and figure in {'Fig2', 'ExtendedDataFig1', 'ExtendedDataFig2'}:
             record['unchanged_evidence_tables'] = verify_unchanged_evidence(figure, manifest, legacy)
         if figure == 'Fig4' and item['formal'] == 'current':
@@ -140,13 +133,28 @@ def main():
         module=importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         states={}
-        if item['formal']=='current':states['output']=module.verify('output',working=False)
-        else:assert not (ROOT/'Figure'/name/'output').exists(),(name,'unlisted official SI')
+        if item['formal']=='current' and not item['review']:states['output']=module.verify('output',working=False)
         if item['review']:states['review']=module.verify('review',working=True)
-        else:assert not (ROOT/'Figure'/name/'review').exists(),(name,'unlisted SI review')
         report['supplementary'][name]=states
+    expected=set()
+    for name in catalog:
+        record=json.loads(manifest_path(name).read_text())
+        expected.update(n for n in record['outputs'] if Path(n).suffix in {'.png','.pdf','.xlsx'})
+    for name in full_catalog.get('supplementary',{}):
+        expected.update(json.loads(manifest_path(name).read_text())['outputs'])
+    for name in ['Level1Identity','Level1IdentityTree']:
+        record=json.loads(manifest_path(name).read_text())
+        for filename,digest in record['output_hashes'].items():
+            if Path(filename).suffix in {'.png','.pdf'} and '.preview.' not in filename:
+                assert sha(ROOT/'result/figures'/filename)==digest
+                expected.add(filename)
+    for ext in ['png','pdf']:
+        name='Sensitivity_analysis.'+ext
+        assert sha(ROOT/'result/figures'/name)==sha(ROOT/'audit_archive/figure_maintenance/fig4_level1_adoption/legacy/output'/('Fig4.'+ext))
+        expected.add(name)
+    assert {p.name for p in (ROOT/'result/figures').iterdir() if p.name!='.DS_Store'}==expected, 'Unexpected or missing figure files'
     assert not list((ROOT/'Figure').glob('*/.building-*')), 'Incomplete figure build'
-    assert not list((ROOT/'output/figure_data').glob('*/.building-*')), 'Incomplete table build'
+    assert not list((ROOT/'result/figures').glob('*/.building-*')), 'Incomplete table build'
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 

@@ -1,7 +1,7 @@
 # Rounded-domain scoring and Dashboard scenarios
 
-The current rounded scoring export is `output/2026-10-27/`. The frozen evidence
-baseline remains `output/2026-10-26/`; it is never overwritten.
+The current rounded scoring export is `result/`. The frozen evidence
+baseline remains `result/figure_data/_dependencies/baseline/`; it is never overwritten.
 
 ## Rules
 
@@ -31,7 +31,7 @@ From `/Users/ruiwang/Projects/APPs/PlastPrior`:
 
 ```sh
 .venv/bin/python -m plastprior.scenario_export \
-  --source output/2026-10-26 --output output/NEW-DIRECTORY
+  --source result/figure_data/_dependencies/baseline --output result
 ```
 
 The output directory must not already exist. `--config` accepts the plain JSON
@@ -80,3 +80,6 @@ formal database. The upload hash remains tied to the original source during edit
 
 The Python Decimal and browser BigInt implementations are compared across the
 entire 15,125-compound formal export. Both round only after domain aggregation.
+
+The destination is fixed. Replacement is validated and rejects changed data when
+existing figure tables have not been refreshed. The retained baseline is read-only.

@@ -9,7 +9,7 @@ import unittest
 ROOT=Path(__file__).resolve().parents[2]
 spec=importlib.util.spec_from_file_location('si_prepare_test',ROOT/'Figure/SILevel1Evidence/prepare.py')
 p=importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
-CONFIG=json.loads((ROOT/'output/2026-10-27/scoring_config.json').read_text())
+CONFIG=json.loads((ROOT/'result/figure_data/_metadata/scoring_config.json').read_text())
 POLICY=json.loads((ROOT/'Figure/_shared/five_level_policy.json').read_text())
 
 

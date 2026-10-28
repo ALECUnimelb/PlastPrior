@@ -8,6 +8,8 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+from result_paths import figure_paths
+from managed import replace_pair
 
 ROOT = Path(__file__).resolve().parents[2]
 FIGURES = ROOT / 'Figure'
@@ -37,12 +39,12 @@ def verify_sources():
 
 def run(folder):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output-dir', type=Path, default=folder / 'output')
+    # Destinations are fixed; alternate/versioned paths are intentionally unsupported.
     if folder.name == 'ExtendedDataFig4':
         parser.add_argument('--dashboard-url', default='http://127.0.0.1:5198/')
     args = parser.parse_args()
     source = verify_sources()
-    output = args.output_dir.resolve()
+    output, data_output = figure_paths(folder.name)
     output.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix='.building-', dir=output.parent))
     try:
@@ -55,7 +57,7 @@ def run(folder):
         png = staging / (folder.name + '.png')
         if not png.is_file():
             raise ValueError('Figure not generated: ' + str(png))
-        data_output = ROOT / source['figure_data_dir'] / folder.name
+        data_output = figure_paths(folder.name)[1]
         manifest = {'figure': folder.name, 'source': source,
                     'source_data_dir': str(data_output.relative_to(ROOT)),
                     'code': {str(p.relative_to(ROOT)): sha(p) for base in ([folder, FIGURES / '_shared'] + ([FIGURES / 'Fig4'] if folder.name == 'ExtendedDataFig3' else []))
@@ -65,18 +67,13 @@ def run(folder):
                     'source_data': {str(p.relative_to(staging / 'source_data')): sha(p) for p in (staging / 'source_data').rglob('*') if p.is_file()},
                     'outputs': {str(p.relative_to(staging)): sha(p) for p in staging.rglob('*') if p.is_file() and 'source_data' not in p.relative_to(staging).parts}}
         (staging / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
-        # User-approved replacement: no new history copies. Publish only after a successful build.
-        staged_data = staging / 'source_data'
-        if staged_data.exists():
-            data_output.parent.mkdir(parents=True, exist_ok=True)
-            if data_output.exists():
-                shutil.rmtree(data_output)
-            staged_data.rename(data_output)
-        elif data_output.exists():
-            shutil.rmtree(data_output)
-        if output.exists():
-            shutil.rmtree(output)
-        staging.rename(output)
+        staged_data = staging/'source_data'
+        staged_data.mkdir(exist_ok=True)
+        detached=Path(tempfile.mkdtemp(prefix='.tables-',dir=ROOT))
+        detached.rmdir();staged_data.rename(detached)
+        try: replace_pair(staging,detached,output,data_output)
+        finally: shutil.rmtree(detached,ignore_errors=True)
+        shutil.rmtree(staging)
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)
         raise

@@ -43,7 +43,7 @@ save_table <- function(data, name) {
 }
 save_facts <- function(facts) jsonlite::write_json(facts,file.path(output_dir,'caption_facts.json'),pretty=TRUE,auto_unbox=TRUE,na='null')
 save_plot <- function(plot, width, height) {
-  export_figure(plot,file.path(output_dir,basename(module_dir)),width_mm=width,height_mm=height,dpi=600,formats=c('svg','pdf','png','tiff'))
+  export_figure(plot,file.path(output_dir,basename(module_dir)),width_mm=width,height_mm=height,dpi=600,formats=c('pdf','png'))
 }
 save_nested <- function(tables, prefix='') {
   for(name in names(tables)) {

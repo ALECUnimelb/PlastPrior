@@ -277,3 +277,12 @@ Desktop.ini
 # Generated figure checks; keep plotting code and configuration tracked.
 /Figure/**/preflight.txt
 /Figure/**/qa.json
+
+# Local workspace instructions
+/AGENTS.md
+
+# Single current generated result and temporary replacement workspaces
+/result/
+/.result-*/
+/.figure-install-*/
+/.retained-*/

@@ -38,9 +38,10 @@ Native Windows and a fresh independent installation remain unverified.
 ## Output directories and execution
 
 The Notebook uses `DATA_ROOT`, `RESULTS_DIR`, `ARCHIVE_DIR` and `KEEP_INTERMEDIATES`.
-Its setup cell creates a unique `REPORT_DIR` under `audit_archive/<run>/work/`.
-Do not set REPORT_DIR to results. Restart the kernel and execute all 17 code cells.
-The final cell exports and verifies the complete archive, then publishes the daily pair.
+`RESULTS_DIR` defaults to `result/`; `ARCHIVE_DIR` is the temporary `.result-work/`
+workspace (the variable name is retained for compatibility). Restart the kernel
+and execute all cells. The final cell validates and replaces the current complete
+package; no dated result directories are created.
 
 Run the equivalent CLI from the project root:
 
@@ -51,8 +52,8 @@ python main.py --rank-priority --top-n 100 --require-supporting-inputs
 Optional settings:
 
 - `--data-root PATH`: the complete frozen input collection.
-- `--output-dir PATH`: daily pair location, default `results`.
-- `--archive-dir PATH`: separate archive root, default `audit_archive`.
+- `--output-dir PATH`: current result directory, default `result`.
+- `--archive-dir PATH`: temporary workspace, default `.result-work`.
 - `--keep-intermediates`: retain successful stage files for stage-level checks.
 - `--baseline-csv PATH`: explicitly compare previous publication values before publishing.
 
@@ -74,19 +75,14 @@ VEGA outputs are read; no live query or new VEGA prediction is invoked.
 ## Expected artifacts and resource use
 
 ```text
-results/                              # POSIX directory link to verified daily pair
+result/
   PlastPrior_results.csv
+  PlastPrior_results.sqlite
   PlastPrior_dashboard.sqlite
-audit_archive/<run>/
-  work/                               # retained on failure or --keep-intermediates
-  package/
-    PlastPrior_results.sqlite         # full audit archive, for offline use
-    PlastPrior_results.csv
-    PlastPrior_data_dictionary.csv
-    README.md
-    dashboard/PlastPrior_dashboard.sqlite
-    delivery_manifest.json
-    daily/                            # two files exposed through results
+  figures/                            # current flat images and SI workbook
+  figure_data/                        # paired tables, metadata and dependencies
+  Figures.pptx                        # single current review deck
+.result-work/                         # temporary, removed on success
 ```
 
 The CSV has 60 publication fields. The small SQLite contains all final details,
@@ -94,17 +90,16 @@ family audit, embedded dictionary and interpretation guide. The complete archive
 retains all 251 original final fields and retained intermediate evidence. Scores
 and ranks remain independent of structural family annotations.
 
-On POSIX, a single directory-link replacement switches both daily files together.
-Existing physical results directories are preserved whole in `legacy-results-*`.
-Windows users can call the cross-platform `export_results` on completed stage files;
-atomic daily-link publication is currently POSIX-only. Native Windows end-to-end
-execution remains unverified.
+Delivery uses a validated temporary package and a directory replacement with
+rollback on failure. Stop readers and figure writers before whole-data updates.
+An existing figure-data dependency blocks changed-data publication until a
+coordinated refresh is prepared. Scientific regressions are never bypassed by
+renaming or relocating directories.
 
-Successful managed workspaces are removed only after validation and publication.
-Original source files and existing archives are retained. Stage data occupy several
-GB and the full archive roughly 3 GB; peak storage exceeds the two visible daily files.
-An earlier local full run took about 13 minutes. This is not a portable runtime guarantee.
-See [output layout](results_layout.md) for recovery and preservation details.
+Successful temporary workspaces are removed after delivery. Original research
+inputs and existing recovery archives are retained. The full database is several
+GB, so generation requires more space than the final current result set. See
+[the result layout](results_layout.md) for details.
 
 ## Verification
 
