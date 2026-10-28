@@ -1,0 +1,5 @@
+sensitivity_dir <- file.path(figures_dir,'_shared/sensitivity')
+config <- configure_current(jsonlite::fromJSON(file.path(sensitivity_dir,'figure.yml'),simplifyVector=FALSE))
+source(file.path(sensitivity_dir,'style.R'));source(file.path(sensitivity_dir,'data.R'));source(file.path(sensitivity_dir,'assemble.R'))
+ids <- c('positive_input_breadth','positive_input_prevalence')
+for(id in ids) source(file.path(sensitivity_dir,'panels',id,'plot.R'))

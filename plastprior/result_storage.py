@@ -72,6 +72,9 @@ def normalise_package(directory):
     directory = Path(directory)
     public = {'PlastPrior_results.csv','PlastPrior_results.sqlite',
               'PlastPrior_dashboard.sqlite','figure_data','figures','Figures.pptx'}
+    decks = [p for p in directory.iterdir() if p.suffix.lower() == '.pptx' and not p.name.startswith('~$')]
+    if len(decks) > 1: raise ValueError('Keep only one current presentation in result')
+    public.update(p.name for p in decks)
     for item in list(directory.iterdir()):
         if item.name in public: continue
         if item.name == '.DS_Store':

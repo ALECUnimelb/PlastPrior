@@ -1,0 +1,11 @@
+source('FigureCode/_shared/managed.R')
+source(file.path(module_dir,'setup.R'))
+compounds <- read_current(c('Inchikey_std','keep_for_vega','qc_flags'))
+catalog <- readr::read_csv(file.path(output_dir,'source_data/source_catalog.csv'),show_col_types=FALSE)
+attrition <- readr::read_csv(file.path(output_dir,'source_data/source_attrition.csv'),show_col_types=FALSE)
+sankey <- prepare_sankey_source_data(NULL,compounds,catalog,attrition,config)
+overlap <- prepare_database_overlap(NULL,compounds,catalog,attrition,config)
+save_nested(sankey,'flow/'); save_nested(overlap[vapply(overlap,is.data.frame,logical(1))],'overlap/')
+save_facts(list(flow=sankey$summary,overlap=overlap$summary,source_definition='Distinct full InChIKey and source-table membership, derived from retained record links; FCChumon S1/S2 remain separate.',missing='Source membership is an observed record relation, not imputed scoring evidence.'))
+
+save_plot_data(list(sankey=sankey,overlap=overlap))

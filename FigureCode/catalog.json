@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "figures": {
+    "Fig1": {
+      "managed": true,
+      "formal": "legacy",
+      "review": true,
+      "note": "新权重、分别取整和五级说明，待审"
+    },
+    "Fig2": {
+      "managed": true,
+      "formal": "legacy",
+      "review": true,
+      "note": "证据统计复核一致，待审"
+    },
+    "Fig3": {
+      "managed": true,
+      "formal": "current",
+      "review": false,
+      "note": "已确认，可用于新稿"
+    },
+    "Fig4": {
+      "managed": true,
+      "formal": "current",
+      "review": false,
+      "note": "Level 1 用途、结构与监管三联图，已确认；旧敏感性分析已留档",
+      "publication_mode": "approved_asset_import",
+      "entrypoint": "FigureCode/Fig4/run_plot.py"
+    },
+    "Fig5": {
+      "managed": false,
+      "formal": "legacy",
+      "review": false,
+      "note": "待重新设计，旧版勿用于新稿"
+    },
+    "ExtendedDataFig1": {
+      "managed": true,
+      "formal": "legacy",
+      "review": true,
+      "note": "来源及交集统计一致，对齐检查通过，待审"
+    },
+    "ExtendedDataFig2": {
+      "managed": true,
+      "formal": "legacy",
+      "review": true,
+      "note": "证据可用性及正分交集一致，待审"
+    },
+    "ExtendedDataFig3": {
+      "managed": false,
+      "formal": "legacy",
+      "review": false,
+      "note": "待重新设计，旧版勿用于新稿"
+    },
+    "ExtendedDataFig4": {
+      "managed": false,
+      "formal": "legacy",
+      "review": false,
+      "note": "等待 Dashboard 更新"
+    }
+  },
+  "supplementary": {
+    "SILevel1Evidence": {
+      "formal": "none",
+      "review": true,
+      "entrypoint": "FigureCode/Supplementary/SILevel1Evidence/run_plot.py",
+      "note": "101 个化合物，Excel 与完整 PDF 待审"
+    }
+  }
+}

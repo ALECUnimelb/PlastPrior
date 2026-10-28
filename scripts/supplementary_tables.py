@@ -2,7 +2,7 @@
 from pathlib import Path
 import json,sqlite3,shutil
 import pandas as pd
-ROOT=Path(__file__).resolve().parents[1];lock=json.loads((ROOT/'Figure/figure_sources.json').read_text());out=ROOT/'result/figure_data/SupplementaryTables';out.mkdir(parents=True,exist_ok=True)
+ROOT=Path(__file__).resolve().parents[1];lock=json.loads((ROOT/'FigureCode/figure_sources.json').read_text());out=ROOT/'result/figure_data/SupplementaryTables';out.mkdir(parents=True,exist_ok=True)
 with sqlite3.connect(ROOT/lock['files']['analysis']['path']) as db:
  f=pd.read_sql_query('SELECT inchikey,Priority_tier,Hazard_available_dimensions,Analytical_detectability FROM compounds',db)
 tiers=['Low priority','Moderate priority','High priority'];rows=[];coverage=[];platforms=[]

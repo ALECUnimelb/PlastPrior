@@ -1,7 +1,0 @@
-Review figure: composition of the 101 five-level Level 1 compounds.
-Question: what are their primary uses, structure classes, and source-database regulatory annotations?
-Quantitative grid, with the 16-use panel on the left and the 9-structure and 5-regulatory panels stacked on the right.
-R/grid only. Three plain horizontal bar charts with direct count labels, all axes start at zero. Each panel uses its own explicitly labelled count range. No pie, flow diagram, molecule sampling or decorative marks.
-One observation is one unique InChIKey. All panels contain 101 observations without exclusions. Uses and structure categories retain the previous definitions. GIC categories are source-database annotations, not a new assessment of current legal status.
-320 x 245 mm review size, 11.5 pt category labels and counts, 13.5 pt panel headings. PDF/SVG editable text; 600 dpi PNG and 300 dpi preview. This is a review proof, not final journal sizing.
-Retain source scores/ranks, all existing figures and lists. No inferential statistics or error bars apply to these descriptive cohort counts.

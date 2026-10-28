@@ -3,7 +3,7 @@ from pathlib import Path
 import collections,csv,hashlib,json,math,statistics,subprocess,os
 ROOT=Path(__file__).resolve().parents[1]
 AUDIT=ROOT/'audit_archive/figure_refresh_20261026'
-LOCK=json.loads((ROOT/'Figure/figure_sources.json').read_text())
+LOCK=json.loads((ROOT/'FigureCode/figure_sources.json').read_text())
 DATA=ROOT/LOCK['figure_data_dir']
 def rows(p):
  with Path(p).open(newline='') as f:return list(csv.DictReader(f))
@@ -79,7 +79,7 @@ for row in scenario_table:
  sid=row['scenario_id'];hh,ee,cutoff=scenario(sid);m,high=metrics(hh,ee,cutoff)
  for k,v in m.items():close(row[k],v)
  if sid in ['equal_pbmt_weights','inventory_linear','inventory_halved','exposure_capped']:stable&=high
-config=json.loads((ROOT/'Figure/Fig4/figure.yml').read_text())
+config=json.loads((ROOT/'FigureCode/_shared/sensitivity/figure.yml').read_text())
 leave={x['component']:x for x in rows(DATA/'Fig4/leave_one_input_out/leave_one_input_out.csv')}
 for c in config['components']:
  removed=[number(x,c['score_column'])*c['multiplier'] for x in r]

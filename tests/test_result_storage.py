@@ -65,6 +65,6 @@ class ResultStorageTests(TestCase):
 
     def test_project_inputs_and_retired_locations_are_not_destinations(self):
         project=Path(__file__).resolve().parents[1]
-        for name in ['data','output','results','Figure']:
+        for name in ['data','output','results','FigureCode']:
             with self.subTest(name=name), self.assertRaisesRegex(ValueError,'Project results'):
                 install_package(self.package,project/name)

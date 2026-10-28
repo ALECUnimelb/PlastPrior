@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "module_id": "priority_landscape",
+  "backend": "r",
+  "manuscript_slot": "main_3",
+  "destination": "main",
+  "title": "Five-level priority landscape and component evidence",
+  "panels": [
+    {
+      "panel_id": "priority_score_distribution",
+      "panel_tag": "a",
+      "title": "Priority-score distribution",
+      "width_mm": 183,
+      "height_mm": 66
+    },
+    {
+      "panel_id": "regulatory_context_inset",
+      "panel_tag": null,
+      "title": "GIC regulatory context",
+      "width_mm": 94,
+      "height_mm": 58
+    },
+    {
+      "panel_id": "hazard_exposure_landscape",
+      "panel_tag": "b",
+      "title": "Five-level matrix with exact compound counts",
+      "width_mm": 260,
+      "height_mm": 110
+    },
+    {
+      "panel_id": "hazard_component_profiles",
+      "panel_tag": "c",
+      "title": "Hazard-component score profiles",
+      "width_mm": 92,
+      "height_mm": 72
+    },
+    {
+      "panel_id": "exposure_component_profiles",
+      "panel_tag": "d",
+      "title": "Exposure-component score profiles",
+      "width_mm": 88,
+      "height_mm": 72
+    }
+  ],
+  "export": {
+    "width_mm": 183,
+    "height_mm": 218,
+    "dpi": 600,
+    "formats": [
+      "png",
+      "pdf"
+    ]
+  },
+  "layout": {
+    "row_heights": [
+      65,
+      85,
+      68
+    ],
+    "bottom_widths": [
+      1.0,
+      1.0
+    ],
+    "inset": {
+      "left": 0.58,
+      "bottom": 0.32,
+      "right": 1.0,
+      "top": 1.0,
+      "align_to": "full"
+    },
+    "tag_size_pt": 8.5
+  },
+  "display": {
+    "priority_distribution_label_min_count": 1,
+    "priority_distribution_label_min_fraction": 0.0,
+    "hazard_profile_label_min_fraction": 0.03,
+    "exposure_profile_label_min_fraction": 0.03,
+    "audit_profile_label_min_fraction": 0.0,
+    "regulatory_internal_label_min_fraction": 0.04,
+    "regulatory_show_small_callouts": false,
+    "regulatory_callout_min_separation_degrees": 6.0
+  },
+  "regulatory_palette": {
+    "Prohibited/phase-out": "#4B247F",
+    "Restricted/authorisation": "#6D4C9B",
+    "Candidate/high concern": "#8F77A8",
+    "Monitoring/reporting/hazard": "#B5A4C7",
+    "Inventory/registration/use": "#D8CFE1",
+    "No matched GIC listing": "#AEB7C2"
+  },
+  "hazard_profile_palette": {
+    "No usable evidence": "#E3E7EB",
+    "Evidence-supported zero (0)": "#A9B6C1",
+    "Score 0.25": "#8FA4B5",
+    "Low (0.5)": "#6F92AA",
+    "Moderate (1)": "#C88736",
+    "High (2)": "#A9463E"
+  },
+  "exposure_profile_palette": {
+    "No usable evidence": "#E3E7EB",
+    "Score 0": "#C8D0D8",
+    "Low (0.5)": "#6F92AA",
+    "Moderate (1)": "#C88736",
+    "High (2)": "#A9463E",
+    "Partial evidence": "#B9BED0"
+  },
+  "classification_policy": "FigureCode/_shared/five_level_policy.json",
+  "score_domain": {
+    "Hazard": [
+      0,
+      16
+    ],
+    "Exposure": [
+      0,
+      16
+    ],
+    "representation": "existing rounded integer scores"
+  }
+}

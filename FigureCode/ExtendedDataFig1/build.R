@@ -1,0 +1,11 @@
+#!/usr/bin/env Rscript
+source('FigureCode/_shared/managed.R')
+source(file.path(module_dir,'setup.R'))
+load_plot_data()
+sankey_panel <- plot_identity_resolution_flow(sankey$edges,sankey$nodes,config)
+upset <- plot_source_database_intersections(overlap,config)
+for(name in setdiff(names(sankey_panel),'plot')) if(is.data.frame(sankey_panel[[name]])) save_table(sankey_panel[[name]],paste0('layout/',name))
+checks <- c('label_collisions','label_node_collisions','connector_intersections','connector_node_collisions','connector_label_collisions','connector_orthogonality','connector_clearance_violations','order_violations')
+for(name in checks) if(nrow(sankey_panel[[name]])>0) stop('Sankey layout failed: ',name)
+save_table(upset$matrix_data,'layout/upset_matrix');save_table(upset$connector_data,'layout/upset_connectors')
+save_plot(assemble_source_assembly_and_overlap(sankey_panel$plot,upset$plot),183,218)

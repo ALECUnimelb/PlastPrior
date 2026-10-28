@@ -22,7 +22,7 @@ reproduction package.
 
 For this local project, work in `/Users/ruiwang/Projects/APPs/PlastPrior`.
 Current data are in `result/`; generated figures and decks are in
-`result/figures/` and the single `result/Figures.pptx`. Source code remains in `Figure/`. See [workspace location and migration checks](docs/workspace_location.md).
+`result/figures/` and the single `result/Figures.pptx`. Source code remains in `FigureCode/`. See [workspace location and migration checks](docs/workspace_location.md).
 
 | Purpose | Guide |
 | --- | --- |

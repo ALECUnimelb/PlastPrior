@@ -5,17 +5,17 @@ Use `/Users/ruiwang/Projects/APPs/PlastPrior` as the repository root. The
 
 The current CSV and databases are in `result/`. Required frozen evidence is in
 `result/figure_data/_dependencies/baseline/`. Generated images, figure tables, reviews, supplementary files
-and presentations are under `result/`; plotting source remains under `Figure/`.
+and presentations are under `result/`; plotting source remains under `FigureCode/`.
 The former result directories and compatibility link are retired. See
 [the result layout](results_layout.md) for exact locations and update behaviour.
 
-Use `Figure/INDEX.md` and `Figure/SI_INDEX.md` to select figures. Fig. 3 and Fig. 4
+Use `FigureCode/INDEX.md` and `FigureCode/SI_INDEX.md` to select figures. Fig. 3 and Fig. 4
 retain their approvals. Pending reviews and frozen figures retain their previous
 states. Five-level labels remain a figure-only interpretation; the data files,
 scores, ranks and Top-N membership were not changed by relocation.
 
-`Figure/managed_sources.json` pins the current rounded data;
-`Figure/figure_sources.json` pins the required baseline. Original build records
+`FigureCode/managed_sources.json` pins the current rounded data;
+`FigureCode/figure_sources.json` pins the required baseline. Original build records
 remain unchanged with their assets. `result/figure_data/_metadata/manifest.json` records their relocation
 and the code changes needed to read the new locations.
 
@@ -64,8 +64,8 @@ that repository. `PLASTPRIOR_DASHBOARD_ROOT` can explicitly select another check
 Run from this repository root:
 
 ```sh
-.venv/bin/python Figure/verify_figures.py
-Rscript Figure/tests/priority_policy.R
+.venv/bin/python FigureCode/verify_figures.py
+Rscript FigureCode/tests/priority_policy.R
 .venv/bin/python -m unittest discover -s tests
 ```
 
