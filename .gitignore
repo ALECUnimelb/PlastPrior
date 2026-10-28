@@ -273,3 +273,7 @@ Desktop.ini
 /Figure/*/review/
 /Figure/*/.previous-*/
 /Figure/*/.promoting-*/
+
+# Generated figure checks; keep plotting code and configuration tracked.
+/Figure/**/preflight.txt
+/Figure/**/qa.json
