@@ -103,11 +103,16 @@ class SourceRecordTests(unittest.TestCase):
             self.build()
 
     def test_csv_positions_are_parsed_records_not_physical_line_numbers(self):
-        self.write_csv('001,"Two\nlines",50-00-0,C=O,,KEY\n\n002,B,,,,\n')
-        records = self.build().records
-        self.assertEqual(records["source_record_number"].tolist(), [1, 2])
-        self.assertTrue(records["source_row_number"].isna().all())
-        self.assertEqual(records.iloc[0]["name_reported"], "Two\nlines")
+        for newline in ("\n", "\r\n"):
+            with self.subTest(newline=repr(newline)):
+                content = ('local_id,Name,CAS,Isomeric,Canonical,Key\n'
+                           '001,"Two\nlines",50-00-0,C=O,,KEY\n\n002,B,,,,\n').replace("\n", newline)
+                self.path.write_bytes(content.encode("utf-8"))
+                records = self.build().records
+                self.assertEqual(records["source_record_number"].tolist(), [1, 2])
+                self.assertTrue(records["source_row_number"].isna().all())
+                self.assertEqual(records.iloc[0]["name_reported"], "Two" + newline + "lines")
+                self.assertEqual(self.path.read_bytes(), content.encode("utf-8"))
 
     def test_excel_positions_include_header_offset_and_internal_empty_rows(self):
         self.path = self.source_dir / "inventory.xlsx"

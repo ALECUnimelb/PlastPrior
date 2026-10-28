@@ -38,18 +38,24 @@ class InputTests(unittest.TestCase):
         return inspect_inputs(self.root, catalog_path=self.catalog)
 
     def test_csv_counts_multiline_cells_and_preserves_literal_na(self):
-        (self.sources / "example.csv").write_text(
-            'id,name\n001,NA\n002,"two\nlines"\n,\n', encoding="utf-8")
-        with patch("plastprior.inputs.CSV_CHUNK_SIZE", 1):
-            report = self.inspect()
-        self.assertTrue(report.passed)
-        self.assertEqual(report.tables.iloc[0]["parsed_rows"], 3)
-        self.assertEqual(report.tables.iloc[0]["nonempty_rows"], 2)
-        self.assertEqual(report.sources.iloc[0]["version"], "Not recorded")
-        frame = read_source_table("example", data_root=self.root, catalog_path=self.catalog)
-        self.assertEqual(frame.iloc[0]["id"], "001")
-        self.assertEqual(frame.iloc[0]["name"], "NA")
-        self.assertEqual(frame.iloc[1]["name"], "two\nlines")
+        for newline in ("\n", "\r\n"):
+            with self.subTest(newline=repr(newline)):
+                # Fix the input bytes explicitly; Windows text-mode writes would
+                # otherwise translate LF before the reader is exercised.
+                content = 'id,name\n001,NA\n002,"two\nlines"\n,\n'.replace("\n", newline)
+                path = self.sources / "example.csv"
+                path.write_bytes(content.encode("utf-8"))
+                with patch("plastprior.inputs.CSV_CHUNK_SIZE", 1):
+                    report = self.inspect()
+                self.assertTrue(report.passed)
+                self.assertEqual(report.tables.iloc[0]["parsed_rows"], 3)
+                self.assertEqual(report.tables.iloc[0]["nonempty_rows"], 2)
+                self.assertEqual(report.sources.iloc[0]["version"], "Not recorded")
+                frame = read_source_table("example", data_root=self.root, catalog_path=self.catalog)
+                self.assertEqual(frame.iloc[0]["id"], "001")
+                self.assertEqual(frame.iloc[0]["name"], "NA")
+                self.assertEqual(frame.iloc[1]["name"], "two" + newline + "lines")
+                self.assertEqual(path.read_bytes(), content.encode("utf-8"))
 
     def test_missing_file_is_not_reported_as_zero_records(self):
         report = self.inspect()
