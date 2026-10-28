@@ -57,5 +57,13 @@
       "review": false,
       "note": "等待 Dashboard 更新"
     }
+  },
+  "supplementary": {
+    "SILevel1Evidence": {
+      "formal": "none",
+      "review": true,
+      "entrypoint": "Figure/SILevel1Evidence/run_plot.py",
+      "note": "101 个化合物，Excel 与完整 PDF 待审"
+    }
   }
 }

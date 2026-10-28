@@ -1,0 +1,8 @@
+{
+  "run_dir": "output/2026-10-27",
+  "run_id": "20261027T080120Z-rounded",
+  "csv_sha256": "280fde89c1f3ac2625dd963a6bdf44fd03833f42bb87acfd7fa06824b3fed637",
+  "annotations": "Figure/Level1Evidence/inputs/Level1_101_aligned_uses_en.csv",
+  "annotation_sha256": "17e8e31542c522ffaf8ff0c7d466884948b1f20a87738f6fcf8e0bb88f1610d8",
+  "policy": "Figure/_shared/five_level_policy.json"
+}

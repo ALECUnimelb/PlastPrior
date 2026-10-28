@@ -2,6 +2,12 @@
 
 Use [INDEX.md](INDEX.md) to select files. It distinguishes approved current figures, pending reviews and frozen figures. `catalog.json` is the machine-readable status record; rebuild the index with `.venv/bin/python Figure/manage.py index`.
 
+Supplementary Excel tables and their complete figure PDFs have a separate
+[SI file index](SI_INDEX.md). The [Level 1 evidence module](SILevel1Evidence/README.md)
+regenerates the complete cohort from a selected published data run without
+altering other figures, formal CSV/SQLite files or Dashboard. It follows the same
+one-official/one-review rule, with native Excel and PDF generated together.
+
 ## One official version and one review
 
 - Official images: `<figure>/output/`. Replace only after the user accepts the pending figure.

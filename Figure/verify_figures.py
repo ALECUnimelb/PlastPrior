@@ -110,7 +110,8 @@ def main():
     legacy = json.loads((ROOT/'Figure/figure_sources.json').read_text())
     for item in legacy['files'].values():
         assert sha(ROOT/item['path']) == item['sha256'], ('legacy source', item['path'])
-    catalog = json.loads((ROOT/'Figure/catalog.json').read_text())['figures']
+    full_catalog = json.loads((ROOT/'Figure/catalog.json').read_text())
+    catalog = full_catalog['figures']
     ledger = ROOT/'audit_archive/workspace_migration_20261026/code_relocations.json'
     relocations = json.loads(ledger.read_text()) if ledger.exists() else {}
     report = {'passed': True, 'run_id': profile['run_id'], 'level_counts': verify_policy(profile), 'figures': {}}
@@ -133,6 +134,17 @@ def main():
             spec.loader.exec_module(module)
             record['approved_composition'] = module.verify_publication(manifest)
         report['figures'][figure] = record
+    report['supplementary'] = {}
+    for name,item in full_catalog.get('supplementary',{}).items():
+        spec=importlib.util.spec_from_file_location('si_verification',ROOT/item['entrypoint'])
+        module=importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        states={}
+        if item['formal']=='current':states['output']=module.verify('output',working=False)
+        else:assert not (ROOT/'Figure'/name/'output').exists(),(name,'unlisted official SI')
+        if item['review']:states['review']=module.verify('review',working=True)
+        else:assert not (ROOT/'Figure'/name/'review').exists(),(name,'unlisted SI review')
+        report['supplementary'][name]=states
     assert not list((ROOT/'Figure').glob('*/.building-*')), 'Incomplete figure build'
     assert not list((ROOT/'output/figure_data').glob('*/.building-*')), 'Incomplete table build'
     print(json.dumps(report, ensure_ascii=False, indent=2))
