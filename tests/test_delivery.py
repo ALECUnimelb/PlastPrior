@@ -1,11 +1,12 @@
 """Daily-pair publication must preserve old results and stop on scientific drift."""
 import json
+import sqlite3
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
 
-from plastprior.delivery import publish_daily, compare_csv, DAILY_NAMES
+from plastprior.delivery import publish_daily, compare_csv, finish_run, DAILY_NAMES
 from plastprior.export import export_results
 from test_export import fixture
 
@@ -75,6 +76,39 @@ class DeliveryTests(unittest.TestCase):
         self.assertEqual(self.results.resolve(), old)
         self.assertTrue(all((old / name).exists() for name in DAILY_NAMES))
         self.assertEqual(manifest['regression']['changed_values'], 0)
+
+    def test_finish_closes_databases_before_move_and_workspace_cleanup(self):
+        # Retain references so garbage collection cannot hide a leaked handle.
+        connections = []
+        connect = sqlite3.connect
+        def track(*args, **kwargs):
+            db = connect(*args, **kwargs)
+            connections.append(db)
+            return db
+        workspace = self.root / 'work space # 中文 100%'
+        work = workspace / 'work'
+        work.mkdir(parents=True)
+        fixture(work)
+        with patch('sqlite3.connect', side_effect=track):
+            package = finish_run(work, self.results, workspace, progress=lambda _: None)
+        self.addCleanup(lambda: [db.close() for db in connections])
+        self.assertFalse(workspace.exists())
+        self.assertTrue(connections)
+        for db in connections:
+            with self.assertRaises(sqlite3.ProgrammingError):
+                db.execute('SELECT 1')
+        for key in ('csv', 'sqlite', 'dashboard_sqlite', 'dictionary'):
+            self.assertTrue(package[key].is_file(), key)
+
+    def test_rejected_pair_closes_validation_connection(self):
+        self.package['csv'].write_bytes(self.package['csv'].read_bytes() + b'\n')
+        db = sqlite3.connect(self.package['dashboard_sqlite'])
+        self.addCleanup(db.close)
+        with patch('plastprior.delivery.sqlite3.connect', return_value=db):
+            with self.assertRaisesRegex(ValueError, 'mismatch'):
+                publish_daily(self.package, self.results, self.archive)
+        with self.assertRaises(sqlite3.ProgrammingError):
+            db.execute('SELECT 1')
 
 
 if __name__ == '__main__':

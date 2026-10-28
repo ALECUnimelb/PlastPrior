@@ -7,6 +7,7 @@ embedded stage artifacts retain their baseline meaning for audit reconstruction.
 """
 import argparse
 from collections import Counter
+from contextlib import closing
 import csv
 from datetime import datetime, timezone
 import hashlib
@@ -39,11 +40,11 @@ def export_scenario(source, output, policy=None):
         raise ValueError('Output must not replace the evidence baseline or a directory inside it.')
     names = ['PlastPrior_results.csv', 'PlastPrior_results.sqlite', 'PlastPrior_dashboard.sqlite']
     hashes = {name: sha(source / name) for name in names}
-    with (source / names[0]).open(newline='') as f:
+    with (source / names[0]).open(encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f)
         original_fields = reader.fieldnames
         baseline = list(reader)
-    with sqlite3.connect((source / names[2]).as_uri() + '?mode=ro', uri=True) as db:
+    with closing(sqlite3.connect((source / names[2]).as_uri() + '?mode=ro', uri=True)) as db:
         meta = dict(db.execute('select key,value from metadata'))
         if meta['csv_sha256'] != hashes[names[0]]:
             raise ValueError('Source CSV and Dashboard database are not paired.')
@@ -55,7 +56,7 @@ def export_scenario(source, output, policy=None):
     with tempfile.TemporaryDirectory(prefix='.scenario-', dir=output.parent) as temp:
         staging = Path(temp) / 'export'; staging.mkdir()
         csv_path = staging / names[0]
-        with csv_path.open('w', newline='') as f:
+        with csv_path.open('w', encoding='utf-8', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fields, lineterminator='\n')
             writer.writeheader()
             writer.writerows({k: cell(row.get(k)) for k in fields} for row in scored)
@@ -69,7 +70,7 @@ def export_scenario(source, output, policy=None):
         for name in names[1:]:
             shutil.copy2(source / name, staging / name)
         # Preserve the original archive tables, including delta snapshots that depend on them.
-        with sqlite3.connect(staging / names[1]) as db:
+        with closing(sqlite3.connect(staging / names[1])) as db, db:
             if db.execute("select 1 from sqlite_master where name='scenario_results'").fetchone():
                 raise ValueError('Use the immutable original export as the scenario source.')
             db.execute('CREATE TABLE scenario_results (' + ','.join(quote(f)+' TEXT'+(' PRIMARY KEY' if f=='inchikey' else '') for f in fields)+')')
@@ -81,7 +82,7 @@ def export_scenario(source, output, policy=None):
             db.execute('CREATE VIEW current_compounds AS SELECT '+','.join(select)+' FROM compounds c JOIN scenario_results s USING(inchikey)')
             db.execute('CREATE TABLE scenario_metadata (key TEXT PRIMARY KEY,value_json TEXT NOT NULL)')
             db.executemany('INSERT INTO scenario_metadata VALUES (?,?)', [(k,json.dumps(v)) for k,v in provenance.items()])
-        with sqlite3.connect(staging / names[2]) as db:
+        with closing(sqlite3.connect(staging / names[2])) as db, db:
             old = [r[1] for r in db.execute('pragma table_info(compound_audit)')]
             db.execute('CREATE TABLE baseline_scoring AS SELECT inchikey_std,'+','.join(quote(f) for f in derived_fields if f in old)+' FROM compound_audit')
             for field in derived_fields:
@@ -98,7 +99,7 @@ def export_scenario(source, output, policy=None):
                 db.execute('INSERT OR REPLACE INTO data_dictionary VALUES (?,?)',(field,json.dumps(spec)))
         # Verify every CSV field against the current archive and every changed detail field.
         for name, table, key in [(names[1],'scenario_results','inchikey'),(names[2],'compound_audit','inchikey_std')]:
-            with sqlite3.connect(staging / name) as db:
+            with closing(sqlite3.connect(staging / name)) as db:
                 if db.execute('pragma integrity_check').fetchall() != [('ok',)]:
                     raise ValueError('SQLite integrity failed: '+name)
                 check_fields = fields if table == 'scenario_results' else derived_fields
@@ -106,17 +107,17 @@ def export_scenario(source, output, policy=None):
                     actual = db.execute('SELECT '+','.join(map(quote,check_fields))+' FROM '+table+' WHERE '+key+'=?',(row['inchikey'],)).fetchone()
                     if actual != tuple(cell(row.get(f)) for f in check_fields):
                         raise ValueError('Export mismatch: '+row['inchikey'])
-        (staging/'scoring_config.json').write_text(json.dumps(policy,indent=2)+'\n')
+        (staging/'scoring_config.json').write_text(json.dumps(policy,indent=2)+'\n', encoding='utf-8')
         summary = {**provenance, 'rows':len(scored), 'levels':dict(Counter(r['Priority_tier'] for r in scored)),
                    'top_n_selected':sum(r['Top_n_selected'] is True for r in scored),
                    'verification':'all CSV fields and derived Dashboard fields match; both SQLite integrity checks passed',
                    'output_sha256':{name:sha(staging/name) for name in names}}
         # A portable chart source contains exactly the same integer domains and ranks.
-        with (staging/'score_chart_data.csv').open('w',newline='') as f:
+        with (staging/'score_chart_data.csv').open('w', encoding='utf-8', newline='') as f:
             columns=['inchikey','Hazard_score','Exposure_score','Priority_score','Hazard_label','Exposure_label','Priority_level','Priority_rank','Top_n_selected']
             writer=csv.DictWriter(f,fieldnames=columns,lineterminator='\n');writer.writeheader()
             writer.writerows({k:cell(r[k]) for k in columns} for r in scored)
-        (staging/'scenario_manifest.json').write_text(json.dumps(summary,indent=2)+'\n')
+        (staging/'scenario_manifest.json').write_text(json.dumps(summary,indent=2)+'\n', encoding='utf-8')
         if {name:sha(source/name) for name in names} != hashes:
             raise ValueError('Source changed during scoring.')
         from .result_storage import install_package
@@ -132,7 +133,7 @@ if __name__ == '__main__':
     args=parser.parse_args()
     policy=None
     if args.config:
-        config=json.loads(args.config.read_text())
+        config=json.loads(args.config.read_text(encoding='utf-8'))
         if config.get('format') == 'plastprior-scenario-v1':
             if config.get('base_csv_sha256') != sha(args.source/'PlastPrior_results.csv'):
                 parser.error('Scenario configuration belongs to a different source CSV.')

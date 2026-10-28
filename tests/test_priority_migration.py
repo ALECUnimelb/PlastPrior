@@ -86,10 +86,16 @@ class PriorityMigrationTests(unittest.TestCase):
             publish.assert_not_called()
         self.assertTrue(work.exists())
 
-    def test_migration_refuses_existing_destination_before_export(self):
+    def test_failed_migration_preserves_existing_current_directory(self):
         archive = self.root / 'archive'; work = archive / 'run' / 'work'; work.mkdir(parents=True)
         existing = self.root / 'existing'; existing.mkdir()
-        with patch('plastprior.export.export_results') as export:
-            with self.assertRaisesRegex(ValueError, 'new results directory'):
+        previous = existing / 'PlastPrior_results.csv'
+        previous.write_bytes(self.old.read_bytes())
+        package_dir = work.parent / 'package'; package_dir.mkdir()
+        rows = deepcopy(self.after); rows[0]['Priority_rank'] = '99'; self.write(self.new, rows)
+        with patch('plastprior.export.export_results', return_value={'directory': package_dir, 'csv': self.new}), patch('plastprior.delivery.publish_daily') as publish:
+            with self.assertRaisesRegex(ValueError, 'Unexpected migration change'):
                 finish_run(work, existing, archive, priority_migration_baseline=self.old)
-            export.assert_not_called()
+            publish.assert_not_called()
+        self.assertEqual(previous.read_bytes(), self.old.read_bytes())
+        self.assertTrue(work.exists())

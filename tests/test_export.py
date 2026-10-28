@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import sqlite3
+from contextlib import closing
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -118,12 +119,12 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(rows[0]['source_dbs'], 'PlastChem')
         self.assertEqual(list(rows[0]), list(PUBLICATION_FIELDS))
         self.assertEqual(rows[-1]['Ranking_exclusion_reasons'], 'hazard/Persistence: missing_evidence')
-        with sqlite3.connect(package['dashboard_sqlite']) as detail:
+        with closing(sqlite3.connect(package['dashboard_sqlite'])) as detail, detail:
             meta = dict(detail.execute('SELECT * FROM metadata'))
             self.assertEqual(meta['format'], 'plastprior-dashboard-v1')
             self.assertEqual(meta['csv_sha256'], sha(package['csv']))
             self.assertEqual(detail.execute("SELECT Name,Priority_score FROM compound_audit WHERE inchikey_std='missing'").fetchone(), ('NA', ''))
-        with sqlite3.connect(package['sqlite']) as db:
+        with closing(sqlite3.connect(package['sqlite'])) as db, db:
             self.assertEqual(db.execute("SELECT Priority_score, Priority_rank, Top_n_selected FROM compounds WHERE inchikey='missing'").fetchone(), (None, None, None))
             self.assertEqual(db.execute("SELECT Priority_score, Top_n_selected FROM compounds WHERE inchikey='zero'").fetchone(), (0.0, 0))
             self.assertEqual(db.execute("SELECT qsar_identity_status,gic_name_review_required FROM compounds WHERE inchikey='missing'").fetchone(), ('review_required', 1))
@@ -157,7 +158,7 @@ class ExportTests(unittest.TestCase):
         write_csv(path, ['inchikey', 'Priority_score', 'early_only'], expected)
         self.refresh_manifest(('stage5', 'hazard_manifest.json'))
         package = export_results(self.root)
-        with sqlite3.connect(package['sqlite']) as db:
+        with closing(sqlite3.connect(package['sqlite'])) as db, db:
             self.assertEqual(list(read_artifact_records(db, 'stage5/compound_pm_hazard.csv')), expected)
             self.assertEqual(db.execute("SELECT disposition FROM artifacts WHERE path='stage5/compound_pm_hazard.csv'").fetchone()[0], 'final_values_plus_sparse_overrides')
             self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0], 2)
@@ -171,7 +172,7 @@ class ExportTests(unittest.TestCase):
         (source.parent / 'top_priority_including_ties.csv').write_bytes(source.read_bytes())
         self.refresh_manifest(('stage7', '7b', 'ranking_manifest.json'))
         package = export_results(self.root)
-        with sqlite3.connect(package['sqlite']) as db:
+        with closing(sqlite3.connect(package['sqlite'])) as db, db:
             paths = ['stage7/7b/eligible_priority_ranking.csv', 'stage7/7b/top_priority_including_ties.csv']
             self.assertEqual(list(read_artifact_records(db, paths[0])), list(read_artifact_records(db, paths[1])))
 
@@ -187,7 +188,7 @@ class ExportTests(unittest.TestCase):
         self.refresh_manifest(('stage6', '6a', 'exposure_manifest.json'))
         package = export_results(self.root)
         self.assertEqual(package['scope_omitted_records'], 1)
-        with sqlite3.connect(package['sqlite']) as db:
+        with closing(sqlite3.connect(package['sqlite'])) as db, db:
             self.assertEqual(list(read_artifact_records(db, path.relative_to(self.root).as_posix())), examples[1:])
             self.assertEqual(db.execute("SELECT record_number,inchikey FROM evidence WHERE artifact_path='stage6/6a/pubchemlite_patent_records.jsonl' ORDER BY record_number").fetchall(), [(2,'missing'),(3,'a'),(4,'other')])
             self.assertEqual(db.execute('SELECT first_record,last_record FROM omitted_ranges').fetchall(), [(1,1)])
@@ -200,7 +201,7 @@ class ExportTests(unittest.TestCase):
         path.write_text(''.join(json.dumps(r)+'\n' for r in examples), encoding='utf-8')
         self.refresh_manifest(('stage4', 'evidence_manifest.json'))
         package = export_results(self.root)
-        with sqlite3.connect(package['sqlite']) as db:
+        with closing(sqlite3.connect(package['sqlite'])) as db, db:
             self.assertEqual(list(read_artifact_records(db, 'stage4/shared_audit.jsonl')), examples)
             self.assertEqual(db.execute("SELECT record_id,selected FROM evidence WHERE artifact_path='stage4/shared_audit.jsonl' ORDER BY record_number").fetchall(), [('first',0),('second',0)])
             self.assertEqual(db.execute("SELECT count(*) FROM evidence_payloads WHERE kind='value'").fetchone()[0], 1)
@@ -287,7 +288,7 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(row['category_labels'], 'PBDE')
         self.assertEqual((row['Priority_score'], row['Priority_rank']), ('2.0', '1'))
         for database in (package['sqlite'], package['dashboard_sqlite']):
-            with sqlite3.connect(database) as db:
+            with closing(sqlite3.connect(database)) as db, db:
                 self.assertEqual(db.execute("SELECT category_labels,original_smiles FROM chemical_family_audit WHERE inchikey='b'").fetchone(), ('PBDE', smiles))
                 self.assertEqual(db.execute("SELECT classification_status FROM chemical_family_audit WHERE inchikey='zero'").fetchone()[0], 'unclassified')
 

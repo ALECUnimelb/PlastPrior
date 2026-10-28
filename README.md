@@ -28,6 +28,7 @@ Current data are in `result/`; generated figures and decks are in
 | --- | --- |
 | Prepare the exact input collection | [Data preparation](docs/data_preparation.md) |
 | Install, run and check results | [Reproduction guide](docs/reproduction.md) |
+| Install and run on native Windows | [Windows guide](docs/windows.md) |
 | Inspect scientific rules and stage-level evidence | [Methods and stage reference](docs/methods.md) |
 | Locate the retained local CSV, SQLite and verification records | [Local results storage](docs/results_layout.md) |
 | Review source distribution decisions | [Source-by-source checklist](docs/data_distribution_checklist.md) |
@@ -38,6 +39,12 @@ The local result links require the retained files on the reader's machine.
 approved exact-input acquisition route has not yet been established.
 
 ## Installation
+
+On Windows, use the [native Windows guide](docs/windows.md): install 64-bit
+Python 3.12 and Git, then run `.\setup_windows.cmd` followed by
+`.\run_windows.cmd` after placing the frozen data. No WSL or environment
+activation is required. The analysis uses a real `result/` directory on every
+platform; native Windows CI and a full data run must confirm the installation.
 
 Use 64-bit Python 3.12 and Git. From the project directory:
 
@@ -81,6 +88,9 @@ python main.py --require-supporting-inputs --output-dir result
 This inspects primary tables and auxiliary presence. It does not calculate
 scores or verify every auxiliary file; later stages perform their own checks.
 Without additional options, `python main.py` performs input inspection only.
+Inspection-only runs retain `.result-work`; inspect and remove that temporary
+workspace before starting a new run. For a first complete analysis, skip the
+separate inspection command: the complete workflow performs those checks itself.
 
 ## Run the complete workflow
 
@@ -93,9 +103,9 @@ select **PlastPrior (Python 3.12)**, restart the kernel and run all cells.
 python -m jupyterlab
 ```
 
-The setup cell exposes `DATA_ROOT` and `REPORT_DIR`. To preserve earlier
-intermediate files, set `REPORT_DIR` to a new directory, for example
-`Path("result")`.
+The setup cell exposes `DATA_ROOT` and the temporary workspace settings.
+`REPORT_DIR` contains intermediate stages; do not point it at `result/`.
+The final cell validates and installs the complete result set.
 
 **Command line:** the ranking option runs every prerequisite stage and final
 export. Use the fixed result directory; delivery validates before replacement.
@@ -124,8 +134,8 @@ result/
   PlastPrior_results.csv
   PlastPrior_results.sqlite
   PlastPrior_dashboard.sqlite
-  figures/                       # images and their source tables
-  baseline/                      # required frozen evidence, not current scores
+  figures/                       # current flat images
+  figure_data/                   # prepared tables, metadata and retained dependencies
 ```
 
 Builds use temporary `.result-work/` staging. Successful delivery replaces the
@@ -158,7 +168,8 @@ with **265 High**, **3,414 Moderate** and **11,446 Low** priority records under
 available contributions. The inclusive Top-100 has 100 compounds at a cutoff of 20 points; all 41
 records tied at the boundary are retained.
 See [the current scoring policy](docs/zero_contribution_policy.md).
-Final directories are never overwritten by export. Temporary stages are cleaned only after verified publication; archives are retained.
+The low-level exporter creates a staged package; delivery replaces the complete
+current result directory after validation. Successful temporary stages are removed.
 
 For the updated ChemicalPrioDashboard, load `PlastPrior_results.csv` followed by
 `PlastPrior_dashboard.sqlite` from the same export. The full archive
@@ -183,7 +194,8 @@ version 1. Publication field selection is defined in
 - Scores are screening indicators. Agreement with historical computations
   does not independently validate the weights, thresholds, proxies or models.
 - Direct dependencies are pinned, but the transitive environment is not fully
-  locked. Native Windows and a fresh independent installation remain unverified.
+  locked. Native Windows launchers and CI are provided; a passing CI run and a
+  fresh full-data Windows run are still required to confirm portability.
 - Source-access, citation and distribution decisions remain open. `LICENSE`,
   `CITATION.cff` and a versioned public research archive have not been established.
 

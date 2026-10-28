@@ -1,8 +1,8 @@
 """Validate and replace one current result set; no dated delivery directories."""
 import csv
+from contextlib import closing
 import hashlib
 import json
-import os
 from pathlib import Path
 import shutil
 import sqlite3
@@ -61,7 +61,9 @@ def publish_daily(package, results_dir, archive_root, *, baseline_csv=None):
     if not directory.is_relative_to(work_root):
         raise ValueError('Package must be in the temporary workspace.')
     csv_path, detail_path = Path(package['csv']), Path(package['dashboard_sqlite'])
-    with sqlite3.connect(detail_path.as_uri()+'?mode=ro', uri=True) as db:
+    # A Connection context commits/rolls back but does not close the handle.
+    # Windows cannot move this database while the read handle remains open.
+    with closing(sqlite3.connect(detail_path.resolve().as_uri()+'?mode=ro', uri=True)) as db:
         if db.execute('PRAGMA integrity_check').fetchall() != [('ok',)]:
             raise ValueError('Result database integrity check failed.')
         meta = dict(db.execute('SELECT key,value FROM metadata'))
@@ -79,7 +81,7 @@ def publish_daily(package, results_dir, archive_root, *, baseline_csv=None):
         package['dashboard_sqlite'] = dashboard_target
     manifest = dict(run_id=meta['run_id'], daily_files={name:sha256(directory/name) for name in DAILY_NAMES},
                     regression=regression, result=str(results))
-    (directory/'delivery_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    (directory/'delivery_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n', encoding='utf-8')
     install_package(directory, results)
     return manifest
 
@@ -99,7 +101,7 @@ def finish_run(work, results_dir, archive_root, *, keep_intermediates=False, bas
     if priority_migration_baseline is not None:
         from .priority_migration import verify_priority_migration
         report = verify_priority_migration(priority_migration_baseline, package['csv'])
-        (Path(package['directory']) / 'priority_migration.json').write_text(json.dumps(report, indent=2) + '\n')
+        (Path(package['directory']) / 'priority_migration.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     publish_daily(package, results_dir, archive, baseline_csv=baseline_csv)
     if not keep_intermediates:
         shutil.rmtree(work.parent)

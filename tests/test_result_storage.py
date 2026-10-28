@@ -35,6 +35,16 @@ class ResultStorageTests(TestCase):
         self.assertFalse((self.result/'PlastPrior_results.sqlite').exists())
         self.assertFalse(list(self.root.glob('.result-*')))
 
+    def test_windows_sharing_violation_preserves_current_result(self):
+        error = PermissionError(13, 'File is in use by another process')
+        error.winerror = 32
+        with patch('plastprior.result_storage.os.replace', side_effect=error):
+            with self.assertRaises(PermissionError):
+                install_package(self.package, self.result)
+        self.assertEqual((self.result/'PlastPrior_results.csv').read_text(), 'old')
+        self.assertFalse((self.result/'PlastPrior_results.sqlite').exists())
+        self.assertFalse(list(self.root.glob('.result-*')))
+
     def test_concurrent_update_cannot_enter(self):
         with update_lock(self.result):
             with self.assertRaises(RuntimeError):install_package(self.package,self.result)

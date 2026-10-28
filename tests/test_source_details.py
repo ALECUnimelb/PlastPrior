@@ -3,6 +3,7 @@ import csv
 import json
 from pathlib import Path
 import sqlite3
+from contextlib import closing
 import tempfile
 import unittest
 
@@ -48,7 +49,7 @@ class SourceDetailTests(unittest.TestCase):
             r.update(source_tables_json='["plastchem","fcchumon_s1","fcchumon_s2"]')
             for r in rows if r['inchikey'] == 'a'])
         package = export_results(self.root)
-        with sqlite3.connect(package['dashboard_sqlite']) as db:
+        with closing(sqlite3.connect(package['dashboard_sqlite'])) as db, db:
             value = db.execute("SELECT source_info_json FROM compound_audit WHERE inchikey_std='a'").fetchone()[0]
         records = json.loads(value)
         self.assertEqual(len(records), 4)
@@ -75,7 +76,7 @@ class SourceDetailTests(unittest.TestCase):
     def test_refresh_preserves_csv_scientific_fields_and_original_files(self):
         package = export_results(self.root)
         # Simulate the existing browser generation lacking optional source details.
-        with sqlite3.connect(package['dashboard_sqlite']) as db:
+        with closing(sqlite3.connect(package['dashboard_sqlite'])) as db, db:
             db.execute('ALTER TABLE compound_audit DROP COLUMN source_info_json')
             db.execute("DELETE FROM metadata WHERE key='source_details'")
         hashes = {key: sha(package[key]) for key in ('csv', 'sqlite', 'dashboard_sqlite')}
@@ -85,7 +86,7 @@ class SourceDetailTests(unittest.TestCase):
         self.assertEqual(sha(refreshed['csv']), hashes['csv'])
         self.assertEqual(refreshed['verification']['changed_existing_values'], 0)
         self.assertEqual(refreshed['verification']['source_details']['linked_records'], 4)
-        with sqlite3.connect(refreshed['dashboard_sqlite']) as db:
+        with closing(sqlite3.connect(refreshed['dashboard_sqlite'])) as db, db:
             self.assertEqual(db.execute("SELECT Priority_score,Priority_rank FROM compound_audit WHERE inchikey_std='missing'").fetchone(), ('', ''))
 
 

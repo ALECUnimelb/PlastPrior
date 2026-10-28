@@ -111,10 +111,10 @@ class InputTests(unittest.TestCase):
         output_dir = self.root / "reports"
         with patch("main.inspect_inputs", return_value=report), redirect_stdout(io.StringIO()) as output:
             self.assertEqual(main(["--archive-dir", str(self.root / "archive"), "--output-dir", str(output_dir)]), 0)
-            self.assertEqual(main(["--archive-dir", str(self.root / "archive"), "--output-dir", str(output_dir), "--require-supporting-inputs"]), 1)
+            self.assertEqual(main(["--archive-dir", str(self.root / "strict-work"), "--output-dir", str(output_dir), "--require-supporting-inputs"]), 1)
         self.assertIn("Stage 1 source inspection: Passed", output.getvalue())
         self.assertIn("Supporting inputs: Incomplete", output.getvalue())
-        saved = pd.read_csv(next((self.root / "archive").glob("*/work/supporting_inputs.csv")), keep_default_na=False)
+        saved = pd.read_csv(self.root / "archive/work/supporting_inputs.csv", keep_default_na=False)
         self.assertEqual(saved.iloc[0]["status"], "MISSING")
 
         (self.root / "Evidence" / "required.txt").write_text("test", encoding="utf-8")
@@ -124,8 +124,9 @@ class InputTests(unittest.TestCase):
         report = self.inspect()
         with patch("main.inspect_inputs", return_value=report), \
                 patch("main.build_source_records") as assemble, redirect_stdout(io.StringIO()):
-            for options in ([], ["--require-supporting-inputs"], ["--assemble-records"], ["--resolve-identities"], ["--integrate-qsar"], ["--calculate-lrtp"], ["--integrate-evidence"], ["--integrate-specialists"], ["--integrate-annotations"]):
-                self.assertEqual(main(["--archive-dir", str(self.root / "archive"), "--output-dir", str(self.root / "reports"), *options]), 1)
+            for index, options in enumerate(([], ["--require-supporting-inputs"], ["--assemble-records"], ["--resolve-identities"], ["--integrate-qsar"], ["--calculate-lrtp"], ["--integrate-evidence"], ["--integrate-specialists"], ["--integrate-annotations"])):
+                # Each independent invocation retains its failed temporary work.
+                self.assertEqual(main(["--archive-dir", str(self.root / f"work-{index}"), "--output-dir", str(self.root / "reports"), *options]), 1)
             assemble.assert_not_called()
 
     def test_reports_preserve_provenance_hashes_and_dimensions(self):

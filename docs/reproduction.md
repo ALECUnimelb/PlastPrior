@@ -33,7 +33,10 @@ The last verified environment used Python 3.12.13, pandas 3.0.2, NumPy 2.5.4 and
 RDKit 2026.3.1. Requirements pin direct packages and a GIC Git revision, but do
 not fully lock transitive dependencies. NumPy is not explicitly pinned by the
 current requirements. These observed versions are not a tested portable lock.
-Native Windows and a fresh independent installation remain unverified.
+For native Windows, use [the Windows launchers and guide](windows.md). Result
+publication uses a real directory on all platforms and closes SQLite handles
+before moving files; no POSIX-only publication or symlink privilege is required.
+The cross-platform CI tests do not substitute for a fresh full-data Windows run.
 
 ## Output directories and execution
 
@@ -92,6 +95,10 @@ and ranks remain independent of structural family annotations.
 
 Delivery uses a validated temporary package and a directory replacement with
 rollback on failure. Stop readers and figure writers before whole-data updates.
+On Windows, close Excel and SQLite viewers holding result files open; Windows
+sharing restrictions can prevent directory replacement. Failed or partial runs
+retain `.result-work`; inspect it before removing it to retry. The full command
+includes input inspection, so a separate inspection-only run is unnecessary.
 An existing figure-data dependency blocks changed-data publication until a
 coordinated refresh is prepared. Scientific regressions are never bypassed by
 renaming or relocating directories.
