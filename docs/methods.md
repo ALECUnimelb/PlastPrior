@@ -1699,21 +1699,25 @@ all-unavailable records remain unranked. GIC name-only associations do not gain
 inventory-score contributions. Other GIC review flags
 do not create additional exclusions beyond the qualified Stage 7A decision.
 
-**Historical reproduction.** The historical view reproduces the legacy
-single-column descending pandas quicksort on Stage 7A historical scores in
-their original frozen compound order. Both the input key order and the frozen
-Top-100 key sequence are fingerprinted. `Historical_sort_position` is an
-ordinal display position, not a scientific tie rank. Separately labelled
-`Historical_derived_score_rank` values apply the new competition convention
-to historical scores; they were not fields in the old export.
+**Historical comparison and optional strict replay.** Normal runs reconstruct
+historical display order by exact descending historical score and full InChIKey.
+The historical input identity fingerprint, score completeness and validity remain
+mandatory. `Historical_sort_position` is an ordinal in this reconstruction, not
+a scientific rank or an assertion of frozen legacy tie order. The historical
+CSV tables contain `Historical_order_mode`; the change audit contains
+`historical_order_mode`; the ranking summary, manifest and exported database
+metadata record the method, observed and expected Top-100 order hashes, and
+whether those hashes match. Historical strict-N membership comparisons in portable
+mode refer to this reconstruction, not verified frozen membership.
 
-Historical pandas 3.0.2 and NumPy 2.4.4 versions are recorded, alongside the
-actual runtime and an environment-match flag. Different versions are permitted
-only if the frozen Top-100 key-order check passes. If that check fails, use an
-isolated environment with the recorded versions and rerun validation; do not
-replace the historical order with the new identifier order. This fallback uses
-the same Python entrypoint on macOS and Windows. Native Windows execution has
-not been verified.
+For explicit historical regression, use `--strict-historical` on the CLI or
+`integrate_ranking(..., strict_historical=True)`. This retains the original pandas
+quicksort and rejects any frozen Top-100 order mismatch. Matching pandas and
+NumPy versions alone do not guarantee identical unstable tie order across
+platforms. The strict historical validator refuses portable-mode outputs rather
+than reporting them as a successful frozen replay. Both modes preserve historical
+scores and derived competition ranks; neither changes the current analysis
+scores, competition ranks, tie sizes or inclusive Top-N selection.
 
 The historical validation covers full identity order, seven final fields and
 ten input scores, plus the 16 overlapping score/status/tier fields in the old
@@ -1740,14 +1744,14 @@ Top-100 membership is also retained separately when N differs from 100.
 | `eligible_priority_ranking.csv` | Compact complete-case ranking with evidence context |
 | `top_priority_including_ties.csv` | Full inclusive Top-N, without truncating the boundary group |
 | `unranked_review.csv` | All incomplete records, their available evidence and missing reasons |
-| `historical_priority_order.csv` | Legacy sorting with explicit ordinal positions and newly derived tie ranks |
-| `historical_top100.csv` | Reconstructed frozen Top-100 order and migrated scientific fields |
+| `historical_priority_order.csv` | Historical scores, labelled ordering mode, ordinal positions and derived tie ranks |
+| `historical_top100.csv` | First 100 historical-score rows under the declared ordering mode; frozen order is enforced only in strict mode |
 | `ranking_changes.csv` | Pool/score rank shifts, membership changes, reasons and Stage 7A decision references |
 | `ranking_summary.json` | Eligible/unranked counts, requested N, actual size, cutoff and boundary ties |
 | `identity_review_source_links.jsonl` | Unchanged 58 source memberships for the model-review cohort |
 | `ranking_manifest.json` | Implementation, rules, upstream/output hashes and runtime metadata |
 
-Validation:
+Strict historical validation (generate Stage 7B with `--strict-historical` first):
 
 ```text
 python -m plastprior.validation --stage ranking --baseline PATH_TO_FROZEN_RUN --results results/stage7/7b --output-dir results/validation_stage7b

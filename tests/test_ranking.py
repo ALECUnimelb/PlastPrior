@@ -1,9 +1,13 @@
 """Competition-rank and Top-N boundary invariants for Stage 7B."""
 import unittest
+import hashlib
+from copy import deepcopy
+from unittest.mock import patch
 
 import pandas as pd
 
 from plastprior.ranking import eligible_ranking, historical_order
+from plastprior import ranking
 
 
 def table(scores):
@@ -77,6 +81,39 @@ class RankingTests(unittest.TestCase):
     def test_historical_order_cannot_be_silently_replaced(self):
         with self.assertRaisesRegex(ValueError, 'Historical input order'):
             historical_order(table([('a', '1')]))
+
+    def test_portable_history_preserves_scores_and_handles_frozen_order_mismatch(self):
+        frame = table([('c', '2'), ('a', '3'), ('b', '2'), ('z', '0')])
+        original = frame.copy(deep=True)
+        policy = deepcopy(ranking.POLICY)
+        policy['historical']['input_order_sha256'] = hashlib.sha256(b'c\na\nb\nz\n').hexdigest()
+        policy['historical']['top100_order_sha256'] = '0' * 64
+        with patch.object(ranking, 'POLICY', policy):
+            result = historical_order(frame)
+            self.assertEqual(result['inchikey'].tolist(), ['a', 'b', 'c', 'z'])
+            self.assertEqual(result['Historical_derived_score_rank'].tolist(), [1, 2, 2, 4])
+            self.assertEqual(result['Historical_tie_size'].tolist(), [1, 2, 2, 1])
+            self.assertEqual(result.attrs['order_validation']['mode'], 'portable')
+            self.assertFalse(result.attrs['order_validation']['frozen_top100_order_matches'])
+            pd.testing.assert_frame_equal(frame, original)
+            self.assertEqual(result.set_index('inchikey')['Priority_score'].to_dict(),
+                             frame.set_index('inchikey')['Priority_score'].to_dict())
+            with self.assertRaisesRegex(ValueError, 'strict historical mode'):
+                historical_order(frame, strict=True)
+            for bad in ('', 'NaN', '27'):
+                invalid = frame.copy(); invalid.loc[0, 'Priority_score'] = bad
+                with self.subTest(score=bad), self.assertRaises(ValueError):
+                    historical_order(invalid)
+
+    def test_strict_history_still_verifies_the_original_fingerprint(self):
+        frame = table([('b', '2'), ('a', '3')])
+        policy = deepcopy(ranking.POLICY)
+        policy['historical']['input_order_sha256'] = hashlib.sha256(b'b\na\n').hexdigest()
+        policy['historical']['top100_order_sha256'] = hashlib.sha256(b'a\nb\n').hexdigest()
+        with patch.object(ranking, 'POLICY', policy):
+            result = historical_order(frame, strict=True)
+        self.assertTrue(result.attrs['order_validation']['frozen_top100_order_matches'])
+        self.assertEqual(result['Historical_order_mode'].tolist(), ['strict', 'strict'])
 
 
 if __name__ == '__main__':

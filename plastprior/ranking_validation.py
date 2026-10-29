@@ -31,6 +31,9 @@ def compare_ranking(baseline, results, output_dir, upstream_results=None, data_r
         counts = Counter(values.values())
         return {k: 1 + sum(n for v, n in counts.items() if v > score) for k, score in values.items()}
     try:
+        manifest = json.loads((results / 'ranking_manifest.json').read_text(encoding='utf-8'))
+        demand(manifest.get('historical_order', {}).get('mode', 'strict') == 'strict',
+               'Frozen historical validation requires Stage 7B generated with strict_historical=True; portable reconstruction is not frozen replay.')
         previous = compare_priority(baseline, upstream, output_dir / 'stage7a', data_root=data_root)
         demand(previous['status'] == 'passed', 'Stage 7A or upstream validation failed.')
         manifest = json.loads((results / 'ranking_manifest.json').read_text(encoding='utf-8'))
@@ -156,7 +159,7 @@ def compare_ranking(baseline, results, output_dir, upstream_results=None, data_r
         demand(summary == manifest['counts'], 'Summary and manifest disagree.')
         for c, value in shuffled_summary.items(): demand(summary[c] == value, 'Top-N summary differs: ' + c)
         demand(summary['top_n_membership_entered'] == len(set(selected) - old_members) and summary['top_n_membership_left'] == len(old_members - set(selected)), 'Membership-change counts differ.')
-        replay = ranking.integrate_ranking(upstream, n)
+        replay = ranking.integrate_ranking(upstream, n, strict_historical=True)
         with tempfile.TemporaryDirectory(prefix='PlastPrior ranking validation ') as folder:
             replay.write_reports(folder)
             demand(replay.manifest == manifest, 'Deterministic reconstruction differs.')

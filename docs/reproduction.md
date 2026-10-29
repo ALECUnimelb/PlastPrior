@@ -58,6 +58,9 @@ Optional settings:
 - `--output-dir PATH`: current result directory, default `result`.
 - `--archive-dir PATH`: temporary workspace, default `.result-work`.
 - `--keep-intermediates`: retain successful stage files for stage-level checks.
+- `--strict-historical`: require exact legacy quicksort/Top-100 order for a
+  historical regression run. Normal runs use a labelled deterministic historical
+  reconstruction; this choice does not alter current analysis ranking.
 - `--baseline-csv PATH`: explicitly compare previous publication values before publishing.
 
 Relative data/output/archive paths resolve from the project root. Without ranking,
@@ -76,6 +79,10 @@ The timeout is per cell. Export can take several minutes. Original frozen querie
 VEGA outputs are read; no live query or new VEGA prediction is invoked.
 
 ## Expected artifacts and resource use
+
+If an older Windows run stopped at the historical Top-100 order check, retain
+`.result-work` and follow [Stage 7B recovery](windows.md#resume-the-historical-order-failure-at-stage-7b).
+This resumes from verified Stage 7A outputs without recalculating earlier stages.
 
 ```text
 result/

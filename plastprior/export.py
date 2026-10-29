@@ -149,10 +149,12 @@ def _value(field, text, table='compounds'):
     return result
 
 
-def _inventory(root):
-    """Require the complete declared run, with every upstream checksum available."""
+def _inventory(root, *, include_ranking=True):
+    """Verify the declared run, optionally stopping at 7A before ranking resume."""
     artifacts, manifests = {}, []
     for parts in MANIFESTS:
+        if not include_ranking and parts == ('stage7', '7b', 'ranking_manifest.json'):
+            continue
         path = root.joinpath(*parts)
         digest = _hash(path)
         declaration = json.loads(path.read_text(encoding='utf-8'))
@@ -721,7 +723,8 @@ def export_results(results_dir, output_dir=None, *, progress=None):
                 'validation': validation, 'stage_artifact_count': stage_count,
                 'scope': 'Complete final results, source links, shared audit bodies and factored stage values; original data inputs are distributed separately.',
                 'retention_policy': 'compact-v2; no whole-file backups of stage tables; only explicitly out-of-universe Stage 6A PubChemLite patent rows omit bodies.',
-                'historical_role': 'Historical reproduction only; use compounds/results for audited analysis.',
+                'historical_role': 'Historical scores for comparison only; ordinal semantics and frozen-order verification are declared in historical_order. Use compounds/results for audited analysis.',
+                'historical_order': json.loads((root / 'stage7' / '7b' / 'ranking_manifest.json').read_text(encoding='utf-8')).get('historical_order', {'mode': 'legacy_unspecified'}),
                 'ordering': 'Use ORDER BY Priority_rank, inchikey for ranked views; SQL row order is not implicit.',
                 'missingness': 'Declared numeric/boolean fields use NULL for empty input; other fields retain exact text.',
                 'archive_codec': 'Only small provenance files are embedded as independently zlib-compressed chunks.',

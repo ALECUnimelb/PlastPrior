@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "policy_version": "priority-zero-contribution-competition-v1",
+  "policy_version": "priority-zero-contribution-competition-v2",
   "default_top_n": 100,
   "rules": {
     "eligibility": "Rank assessments with any available hazard or exposure evidence. Missing components contribute zero to sums and do not exclude partial assessments.",
@@ -10,7 +10,7 @@
     "top_n": "Include every record tied with the Nth eligible record; return all eligible records when N exceeds the pool.",
     "unranked": "Null rank and null Top-N selection; retain source context and missingness reasons.",
     "tier": "Retain Stage 7A tiers; tiers do not sort or break ties.",
-    "historical": "Reproduce pandas single-column descending quicksort in frozen input order; ordinal position is not a scientific rank."
+    "historical": "Default: reconstruct historical score order by exact descending score then full InChIKey, labelling it portable rather than frozen replay. Optional strict mode reproduces legacy pandas quicksort and enforces the frozen Top-100 order fingerprint. Neither mode changes current analysis ranks or inclusive Top-N."
   },
   "historical": {
     "run_id": "20261006T233429Z",

@@ -72,24 +72,46 @@ def eligible_ranking(frame, top_n):
     return result, order, summary
 
 
-def historical_order(frame):
-    """Retain frozen input order before the legacy single-column sort."""
+def historical_order(frame, *, strict=False):
+    """Order historical scores portably; opt into exact legacy quicksort replay.
+
+    Historical scores are still validated. Ordinals in portable mode are a
+    deterministic reconstruction, not a claim to reproduce frozen tie order.
+    """
+    if frame.empty or frame['inchikey'].eq('').any() or frame['inchikey'].duplicated().any():
+        raise ValueError('Historical identities must be nonempty and unique.')
     digest = hashlib.sha256(('\n'.join(frame['inchikey']) + '\n').encode('utf-8')).hexdigest()
     if digest != POLICY['historical']['input_order_sha256']:
         raise ValueError('Historical input order differs from the frozen run.')
     scores = {r['inchikey']: score_value(r['Priority_score'], 26) for r in frame.to_dict('records')}
     if any(v is None for v in scores.values()):
         raise ValueError('Historical priority scores must be complete.')
-    result = frame.copy()
-    result['_sort_score'] = pd.to_numeric(result['Priority_score'], errors='raise')
-    result = result.sort_values('_sort_score', ascending=False, na_position='last', kind='quicksort').drop(columns='_sort_score').reset_index(drop=True)
+    if strict:
+        result = frame.copy()
+        result['_sort_score'] = pd.to_numeric(result['Priority_score'], errors='raise')
+        result = result.sort_values('_sort_score', ascending=False, na_position='last', kind='quicksort').drop(columns='_sort_score').reset_index(drop=True)
+    else:
+        order = sorted(scores, key=lambda key: (-scores[key], key))
+        result = frame.set_index('inchikey').loc[order].reset_index()
     top_digest = hashlib.sha256(('\n'.join(result.head(100)['inchikey']) + '\n').encode('utf-8')).hexdigest()
-    if top_digest != POLICY['historical']['top100_order_sha256']:
-        raise ValueError('Historical Top-100 order differs from its frozen fingerprint. Use the recorded pandas/NumPy environment and rerun validation; do not substitute a new tie order.')
+    matches = top_digest == POLICY['historical']['top100_order_sha256']
+    if strict and not matches:
+        raise ValueError('Historical Top-100 order differs from its frozen fingerprint in strict historical mode. Exact legacy tie ordering is platform-dependent; use portable mode for normal analysis, or reproduce the original environment for historical validation.')
     result['Historical_sort_position'] = range(1, len(result) + 1)
     ranks = rank_scores(scores)
     result['Historical_derived_score_rank'] = [ranks[k][0] for k in result['inchikey']]
     result['Historical_tie_size'] = [ranks[k][1] for k in result['inchikey']]
+    result['Historical_order_mode'] = 'strict' if strict else 'portable'
+    result.attrs['order_validation'] = {
+        'mode': 'strict' if strict else 'portable',
+        'method': 'legacy_pandas_quicksort' if strict else 'exact_score_descending_then_inchikey',
+        'ordinal_semantics': 'legacy_replay' if strict else 'deterministic_reconstruction_not_frozen_order',
+        'input_order_sha256': digest,
+        'top100_order_sha256': top_digest,
+        'expected_frozen_top100_order_sha256': POLICY['historical']['top100_order_sha256'],
+        'frozen_top100_order_matches': matches,
+        'strict_check_required': strict,
+    }
     return result
 
 
@@ -121,7 +143,7 @@ class RankingResult:
         (out / 'ranking_manifest.json').write_text(json.dumps(self.manifest, indent=2) + '\n', encoding='utf-8')
 
 
-def integrate_ranking(priority_results, top_n=100):
+def integrate_ranking(priority_results, top_n=100, *, strict_historical=False):
     valid_n(top_n)
     upstream = Path(priority_results).resolve()
     path = upstream / 'priority_manifest.json'
@@ -167,7 +189,8 @@ def integrate_ranking(priority_results, top_n=100):
     ranked = all_records.set_index('inchikey').loc[order].reset_index()[compact]
     top = ranked.loc[ranked['Top_n_selected'].fillna(False)].copy()
     unranked = all_records.loc[~all_records['Ranking_eligible'], compact].copy()
-    historical = historical_order(history)
+    historical = historical_order(history, strict=strict_historical)
+    history_validation = historical.attrs['order_validation']
     old_positions = dict(zip(historical['inchikey'], historical['Historical_sort_position']))
     display_positions = {key: i + 1 for i, key in enumerate(order)}
     old_scores = {r['inchikey']: score_value(r['Priority_score'], 26) for r in history.to_dict('records')}
@@ -204,7 +227,9 @@ def integrate_ranking(priority_results, top_n=100):
             reasons.append('top_n_membership_changed')
         if not reasons:
             reasons.append('unchanged_competition_rank_and_membership')
-        membership.append({'inchikey': key, 'requested_n': top_n, 'historical_top100_member': key in old_top100,
+        membership.append({'inchikey': key, 'requested_n': top_n,
+                           'historical_order_mode': history_validation['mode'],
+                           'historical_top100_member': key in old_top100,
                            'historical_strict_top_n_member': key in old_top, 'analysis_top_n_member': key in current if eligible else None,
                            'historical_score': float(old_scores[key]), 'analysis_score': float(new_score) if eligible else None,
                            'historical_sort_position': old_positions[key],
@@ -222,7 +247,9 @@ def integrate_ranking(priority_results, top_n=100):
     summary.update({'compounds': len(compounds), 'unranked_compounds': len(unranked),
                     'identity_review_compounds': int(compounds['qsar_identity_status'].eq('review_required').sum()),
                     'historical_top100_count': min(100, len(historical)),
-                    'historical_comparison': 'Legacy ordinal positions are distinct from newly derived competition ranks.',
+                    'historical_order': history_validation,
+                    'historical_comparison': ('Strict legacy replay; ordinal positions are not scientific ranks.' if strict_historical else
+                                              'Historical score reconstruction with deterministic tie order; ordinal positions and strict Top-N membership are not asserted to match the frozen run.'),
                     'top_n_membership_entered': len(current - old_top), 'top_n_membership_left': len(old_top - current)})
     tables = {'compound_rankings': all_records, 'eligible_priority_ranking': ranked,
               'top_priority_including_ties': top, 'unranked_review': unranked,
@@ -235,6 +262,7 @@ def integrate_ranking(priority_results, top_n=100):
     manifest = {'schema_version': 1, 'stage': '7B', 'policy_sha256': POLICY_HASH,
                 'implementation_sha256': IMPLEMENTATION_HASH, 'upstream_manifest_sha256': fingerprint,
                 'top_n': top_n, 'rules': POLICY['rules'], 'counts': summary,
+                'historical_order': history_validation,
                 'historical_environment_matches': pd.__version__ == POLICY['historical']['environment']['pandas'] and np.__version__ == POLICY['historical']['environment']['numpy'],
                 'runtime': {'python': platform.python_version(), 'pandas': pd.__version__, 'numpy': np.__version__}}
     return RankingResult(tables, summary, manifest, upstream)

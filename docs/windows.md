@@ -92,6 +92,8 @@ not both concurrently.
 
 ## If a run stops
 
+- **Historical Top-100 order differs:** use the Stage 7B recovery instructions
+  below. Keep `.result-work`; you do not need to repeat Stages 1–7A.
 - **Missing input / fingerprint mismatch:** check the exact supplied package,
   filenames and nesting. Do not substitute newer files or edit expected hashes.
 - **Previous or active work exists:** confirm no run is active and inspect
@@ -105,6 +107,38 @@ not both concurrently.
 - **Dependency installation failure:** retain the entire terminal error, plus
   `py -3.12 --version` and `git --version`. Do not replace the pinned GIC dependency
   with the unrelated PyPI package named `gic`.
+
+## Resume the historical-order failure at Stage 7B
+
+This recovery applies when the notebook stopped inside `integrate_ranking`,
+before writing Stage 7B or exporting results. Stop the notebook kernel first.
+In a terminal opened in the project directory, run:
+
+```text
+git pull --ff-only
+.\.venv\Scripts\python.exe -X utf8 -m plastprior.resume_ranking
+```
+
+Do not delete `.result-work` and do not rerun the notebook setup cell. The command
+uses `.result-work/work`, verifies all stage manifests and artifact fingerprints
+through 7A, checks the current score/eligibility consistency, and runs only
+ranking and export. The final CSV and both databases are validated before the
+complete result directory is installed. Successful delivery removes temporary
+work; failures retain it for diagnosis. If `git pull` reports local changes,
+preserve them and resolve the update rather than resetting the checkout.
+
+Normal runs now use exact descending score and full InChIKey for portable
+historical display order. Historical tables and audit metadata explicitly label
+this as a deterministic reconstruction, not verified frozen tie order. Current
+analysis scores, competition ranks and inclusive Top-N rules are unchanged.
+Exact historical quicksort replay remains available with `--strict-historical`
+on `main.py` or the recovery command, or `strict_historical=True` when calling
+`integrate_ranking`. It can still fail across platforms even with matching
+pandas/NumPy versions; do not enable it for routine analysis.
+
+If Stage 7B output or an export package already exists, recovery refuses to
+overwrite it. Preserve the error and workspace for diagnosis instead of deleting
+stages or changing hashes. Only one notebook or CLI process may use the workspace.
 
 ## Validation status
 

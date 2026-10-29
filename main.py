@@ -43,6 +43,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Also generate eligible competition ranks and inclusive Top-N (7B).")
     parser.add_argument("--top-n", type=int, default=100,
                         help="Requested eligible Top-N size; boundary ties are included (default: 100).")
+    parser.add_argument("--strict-historical", action="store_true",
+                        help="Require exact frozen historical quicksort order; not needed for normal analysis.")
     parser.add_argument("--archive-dir", type=Path, default=Path(".result-work"),
                         help="Temporary workspace (removed after successful delivery).")
     parser.add_argument("--keep-intermediates", action="store_true",
@@ -196,7 +198,8 @@ def main(argv: list[str] | None = None) -> int:
         from plastprior.ranking import integrate_ranking
 
         print("\nStage 7B: eligible competition ranks and inclusive Top-N", flush=True)
-        rankings = integrate_ranking(output_dir / "stage7" / "7a", args.top_n)
+        rankings = integrate_ranking(output_dir / "stage7" / "7a", args.top_n,
+                                     strict_historical=args.strict_historical)
         rankings.write_reports(output_dir / "stage7" / "7b")
         print(rankings.summary)
         print("Only records with no available evidence retain null ranks. Identifier order only stabilises the display of ties.")
